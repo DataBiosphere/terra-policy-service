@@ -1,0 +1,9 @@
+{
+  "name": "FullIntegration",
+  "description": "All alpha tests",
+  "serverSpecificationFile": "tps-alpha.json",
+  "testConfigurationFiles": [
+    "integration/GetStatus.json",
+    "integration/GetVersion.json"
+  ]
+}

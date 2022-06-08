@@ -1,0 +1,17 @@
+{
+  "name": "GetStatus",
+  "description": "Call the service status multiple times. No authentication required.",
+  "serverSpecificationFile": "catalog-perf.json",
+  "kubernetes": {},
+  "application": {},
+  "testScripts": [
+    {
+      "name": "GetStatus",
+      "numberOfUserJourneyThreadsToRun": 10,
+      "userJourneyThreadPoolSize": 2,
+      "expectedTimeForEach": 5,
+      "expectedTimeForEachUnit": "SECONDS"
+    }
+  ],
+  "testUserFiles": []
+}

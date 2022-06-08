@@ -1,0 +1,9 @@
+{
+  "name": "FullIntegration",
+  "description": "All perf tests",
+  "serverSpecificationFile": "tps-perf.json",
+  "testConfigurationFiles": [
+    "perf/GetStatus.json",
+    "perf/GetVersion.json"
+  ]
+}
