@@ -7,6 +7,7 @@ import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.model.ApiPaoCreateRequest;
 import bio.terra.policy.model.ApiPaoGetResult;
 import bio.terra.policy.service.pao.PaoService;
+import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import java.util.UUID;
@@ -34,11 +35,13 @@ public class PaoApiController implements PaoApi {
   @Override
   public ResponseEntity<Void> createPao(ApiPaoCreateRequest body) {
     // TODO: permissions
+
     paoService.createPao(
         body.getObjectId(),
         PaoComponent.fromApi(body.getComponent()),
         PaoObjectType.fromApi(body.getObjectType()),
         PolicyInputs.fromApi(body.getAttributes()));
+
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
@@ -49,7 +52,9 @@ public class PaoApiController implements PaoApi {
 
   @Override
   public ResponseEntity<ApiPaoGetResult> getPao(UUID objectId) {
-    return PaoApi.super.getPao(objectId);
+    // TODO: permissions
+    Pao pao = paoService.getPao(objectId);
+    return new ResponseEntity<>(pao.toApi(), HttpStatus.OK);
   }
 
   private BearerToken getBearerToken() {

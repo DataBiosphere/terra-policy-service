@@ -2,6 +2,7 @@ package bio.terra.policy.service.pao;
 
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
+import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import java.util.UUID;
@@ -24,10 +25,7 @@ public class PaoService {
   /**
    * Create a Poliy Attribute Object in the database
    *
-   * @param objectId incoming component object id
-   * @param component policy-bearing component
-   * @param objectType policy-bearing object
-   * @param inputs policies
+   * @param pao policy attribute object to create
    */
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
@@ -41,5 +39,10 @@ public class PaoService {
 
     // The DAO does the heavy lifting.
     paoDao.createPao(objectId, component, objectType, inputs);
+  }
+
+  public Pao getPao(UUID objectId) {
+    logger.info("Get PAO id {}", objectId);
+    return paoDao.getPao(objectId);
   }
 }

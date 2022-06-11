@@ -1,0 +1,14 @@
+policy:
+  sam.base-path: https://sam.dsde-dev.broadinstitute.org
+
+  policy-database:
+    initialize-on-start: true
+    password: dbpwd
+    uri: jdbc:postgresql://127.0.0.1:5432/policy_db
+    username: dbuser
+
+terra.common:
+  kubernetes:
+    in-kubernetes: false
+  tracing:
+    stackdriverExportEnabled: false
