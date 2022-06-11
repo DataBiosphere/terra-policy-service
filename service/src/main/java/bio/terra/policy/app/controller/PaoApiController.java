@@ -47,7 +47,8 @@ public class PaoApiController implements PaoApi {
 
   @Override
   public ResponseEntity<Void> deletePao(UUID objectId) {
-    return PaoApi.super.deletePao(objectId);
+    paoService.deletePao(objectId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override

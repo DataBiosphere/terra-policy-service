@@ -1,5 +1,6 @@
 package bio.terra.policy.service.pao;
 
+import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.model.ApiPolicyInput;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PaoServiceTest extends AppTest {
   private static final String TERRA = "terra";
@@ -61,7 +63,9 @@ public class PaoServiceTest extends AppTest {
     checkAttributeSet(pao.getEffectiveAttributes());
 
     // Delete
-    // TODO: When I implement DELETE...
+    paoService.deletePao(objectId);
+
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId));
   }
 
   private void checkAttributeSet(PolicyInputs attributeSet) {

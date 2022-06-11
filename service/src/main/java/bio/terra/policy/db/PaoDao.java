@@ -81,9 +81,59 @@ public class PaoDao {
     }
   }
 
+  @WriteTransaction
+  public void deletePao(UUID objectId) {
+    try {
+      // Lookup the policy object
+      DbPao dbPao = getDbPao(objectId);
+
+      // Delete associated attribute set(s)
+      deleteAttributeSet(dbPao.attributeSetId());
+      if (!dbPao.attributeSetId().equals(dbPao.effectiveSetId())) {
+        deleteAttributeSet(dbPao.effectiveSetId());
+      }
+
+      // Delete the policy object
+      final String sql = "DELETE FROM policy_object WHERE object_id = :object_id";
+      MapSqlParameterSource params =
+          new MapSqlParameterSource().addValue("object_id", objectId.toString());
+      jdbcTemplate.update(sql, params);
+    } catch (EmptyResultDataAccessException e) {
+      // Delete throws no error on not found
+    }
+  }
+
+  private void deleteAttributeSet(String setId) {
+    final String sql = "DELETE FROM attribute_set WHERE set_id = :set_id";
+    final var params = new MapSqlParameterSource().addValue("set_id", setId);
+    jdbcTemplate.update(sql, params);
+  }
+
   @ReadTransaction
   public Pao getPao(UUID objectId) {
+    try {
+      DbPao dbPao = getDbPao(objectId);
+      PolicyInputs attributeSet = getAttributeSet(dbPao.attributeSetId());
+      PolicyInputs effectiveSet;
+      if (dbPao.attributeSetId().equals(dbPao.effectiveSetId())) {
+        effectiveSet = attributeSet;
+      } else {
+        effectiveSet = getAttributeSet(dbPao.effectiveSetId());
+      }
+      return new Pao.Builder()
+          .setObjectId(dbPao.objectId())
+          .setComponent(dbPao.component())
+          .setObjectType(dbPao.objectType())
+          .setAttributes(attributeSet)
+          .setEffectiveAttributes(effectiveSet)
+          .setInConflict(dbPao.inConflict())
+          .build();
+    } catch (EmptyResultDataAccessException e) {
+      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
+    }
+  }
 
+  private DbPao getDbPao(UUID objectId) {
     final String sql =
         "SELECT object_id, component, object_type, in_conflict, attribute_set_id, effective_set_id"
             + " FROM policy_object WHERE object_id = :object_id";
@@ -91,33 +141,18 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    try {
-      return jdbcTemplate.queryForObject(
-          sql,
-          params,
-          (rs, rowNum) -> {
-            String attributeSetId = rs.getString("attribute_set_id");
-            String effectiveSetId = rs.getString("effective_set_id");
-            PolicyInputs attributeSet = getAttributeSet(attributeSetId);
-            PolicyInputs effectiveSet;
-            if (attributeSetId.equals(effectiveSetId)) {
-              effectiveSet = attributeSet;
-            } else {
-              effectiveSet = getAttributeSet(effectiveSetId);
-            }
-
-            return new Pao.Builder()
-                .setObjectId(UUID.fromString(rs.getString("object_id")))
-                .setComponent(PaoComponent.fromDb(rs.getString("component")))
-                .setObjectType(PaoObjectType.fromDb(rs.getString("object_type")))
-                .setAttributes(attributeSet)
-                .setEffectiveAttributes(effectiveSet)
-                .setInConflict(rs.getBoolean("in_conflict"))
-                .build();
-          });
-    } catch (EmptyResultDataAccessException e) {
-      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
-    }
+    return jdbcTemplate.queryForObject(
+        sql,
+        params,
+        (rs, rowNum) -> {
+          return new DbPao(
+              UUID.fromString(rs.getString("object_id")),
+              PaoComponent.fromDb(rs.getString("component")),
+              PaoObjectType.fromDb(rs.getString("object_type")),
+              rs.getBoolean("in_conflict"),
+              rs.getString("attribute_set_id"),
+              rs.getString("effective_set_id"));
+        });
   }
 
   private PolicyInputs getAttributeSet(String setId) {
