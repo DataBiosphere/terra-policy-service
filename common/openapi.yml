@@ -39,7 +39,7 @@ paths:
 
   # Region policy paths
   /api/policies/v1alpha1/region-constraint:
-    get:
+    put:
       summary: Test compliance with region constraint.
       description: |
         The policy service looks for a region constraint attributes in the policy inputs. It resolves to
@@ -75,9 +75,71 @@ paths:
           $ref: '#/components/responses/ServerError'
 
  # Policy Attribute Object Interface (PAO)
+  /api/policy/v1alpha1/pao:
+    post:
+      summary: Create a policy attribute object
+      description: |
+        A policy attribute object holds the policy attributes for a Terra component object,
+        for example, a workspace or a dataset.
+      operationId: createPao
+      tags: [Pao]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaoCreateRequest'
+      responses:
+        '204':
+          description: Policy attribue created successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
-
-
+  /api/policy/v1alpha1/pao/{objectId}:
+    parameters:
+      - $ref: '#/components/parameters/ObjectId'
+    delete:
+      summary: delete a policy attribute object
+      operationId: deletePao
+      tags: [Pao]
+      responses:
+        '204':
+          description: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    get:
+      summary: retrieve a policy attribute object
+      operationId: getPao
+      tags: [Pao]
+      responses:
+        '200':
+          description: Policy retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaoGetResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   schemas:
@@ -100,8 +162,50 @@ components:
           items:
             type: string
 
+    ObjectId:
+      description: UUID format object id referring to an object managed by the Terra component.
+      type: string
+      format: uuid
+
+    PaoCreateRequest:
+      type: object
+      required: [objectId, component, objectType]
+      properties:
+        objectId:
+          $ref: '#/components/schemas/ObjectId'
+        component:
+          $ref: '#/components/schemas/TerraComponent'
+        objectType:
+          $ref: '#/components/schemas/TerraObjectType'
+        attributes:
+          $ref: '#/components/schemas/PolicyInputs'
+
+    PaoGetResult:
+      type: object
+      required: [objectId, component, objectType]
+      properties:
+        objectId:
+          description: UUID format object id referring to an object managed by the Terra component.
+          type: string
+          format: uuid
+        component:
+          $ref: '#/components/schemas/TerraComponent'
+        objectType:
+          $ref: '#/components/schemas/TerraObjectType'
+        attributes:
+          $ref: '#/components/schemas/PolicyInputs'
+        effectiveAttributes:
+          $ref: '#/components/schemas/PolicyInputs'
+        inConflict:
+          type: boolean
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+
     PolicyInputs:
       type: object
+      required: [inputs]
       properties:
         inputs:
           type: array
@@ -165,8 +269,13 @@ components:
 
     TerraComponent:
       type: string
-      description: Enum representing a cloud platform type.
+      description: Enum representing a policy-bearing Terra component.
       enum: [ 'WSM' ]
+
+    TerraObjectType:
+      type: string
+      description: Enum representing an object type of a policy-bearing Terra component.
+      enum: [ 'workspace' ]
 
     VersionProperties:
       type: object
@@ -221,6 +330,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorReport'
+
+  parameters:
+    ObjectId:
+      name: objectId
+      in: path
+      description: A UUID to used to identify a policy attribute object in the TPS
+      required: true
+      schema:
+        $ref: '#/components/schemas/ObjectId'
 
   securitySchemes:
     authorization:

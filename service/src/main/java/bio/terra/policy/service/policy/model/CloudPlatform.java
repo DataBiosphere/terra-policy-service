@@ -1,7 +1,7 @@
 package bio.terra.policy.service.policy.model;
 
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.model.ApiCloudPlatform;
-import bio.terra.policy.service.policy.exception.InvalidInputException;
 
 public enum CloudPlatform {
   AZURE(ApiCloudPlatform.AZURE, "azure"),

@@ -41,6 +41,6 @@ gitProperties {
     keys = []
     customProperty('policy.version.gitTag', { it.describe(tags: true) })
     customProperty('policy.version.gitHash', { it.head().abbreviatedId })
-    customProperty('policy.version.github', { "https://github.com/DataBiosphere/terra-data-policy/tree/${it.describe(tags: true)}" })
+    customProperty('policy.version.github', { "https://github.com/DataBiosphere/terra-policy-service/tree/${it.describe(tags: true)}" })
     customProperty('policy.version.build', version)
 }

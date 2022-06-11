@@ -12,7 +12,7 @@ import org.springframework.core.env.MapPropertySource;
 /** Read from the git.properties file auto-generated at build time */
 @Configuration
 @ConfigurationProperties("policy.version")
-@PropertySource("git.properties")
+@PropertySource("classpath:/git.properties")
 public class VersionConfiguration implements InitializingBean {
   private final ConfigurableEnvironment configurableEnvironment;
   private String gitHash;

@@ -4,7 +4,7 @@ env:
   db:
     host: jdbc:postgresql://${DATABASE_HOSTNAME:127.0.0.1}:5432
     init: ${INIT_DB:false}
-    catalog:
+    policy:
       name: ${DATABASE_NAME:policy_db}
       pass: ${DATABASE_USER_PASSWORD:dbpwd}
       user: ${DATABASE_USER:dbuser}
@@ -42,11 +42,7 @@ spring:
         useLastModified: false
       staticLocations: classpath:/api/
 
-catalog:
-  ingress:
-    # Default value that's overridden by Helm.
-    domainName: localhost:8080
-
+policy:
   status-check:
     enabled: true
     pollingIntervalSeconds: 60
@@ -63,12 +59,6 @@ catalog:
   sam:
     basePath: ${env.sam.basePath}
     resourceId: ${env.sam.resourceId}
-
-  datarepo:
-    basePath: ${env.datarepo.basePath}
-
-  rawls:
-    basePath: ${env.rawls.basePath}
 
 terra.common:
   kubernetes:

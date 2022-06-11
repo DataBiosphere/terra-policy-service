@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       DataSourceAutoConfiguration.class,
     },
     scanBasePackages = {
+      // Scan for iam components
+      "bio.terra.common.iam",
       // Scan for logging-related components & configs
       "bio.terra.common.logging",
       // Scan for Liquibase migration components & configs

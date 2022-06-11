@@ -50,8 +50,7 @@ dependencies {
     testImplementation 'ch.qos.logback:logback-classic:1.2.10'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
-    implementation 'bio.terra:terra-common-lib:0.0.53-SNAPSHOT'
-    implementation 'bio.terra:datarepo-client:1.349.0-SNAPSHOT'
+    implementation 'bio.terra:terra-common-lib:0.0.60-SNAPSHOT'
 }
 
 tasks.named('test') {

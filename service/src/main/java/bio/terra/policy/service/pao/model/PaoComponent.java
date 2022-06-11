@@ -2,6 +2,7 @@ package bio.terra.policy.service.pao.model;
 
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.InvalidInputException;
+import bio.terra.policy.model.ApiTerraComponent;
 import org.apache.commons.lang3.StringUtils;
 
 public enum PaoComponent {
@@ -37,7 +38,7 @@ public enum PaoComponent {
 
   public static PaoComponent fromDb(String dbComponent) {
     for (PaoComponent component : PaoComponent.values()) {
-      if (StringUtils.equals(dbComponent, component.getDbComponent()) {
+      if (StringUtils.equals(dbComponent, component.getDbComponent())) {
         return component;
       }
     }
