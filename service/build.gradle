@@ -1,15 +1,13 @@
 plugins {
-    id 'bio.terra.policy.java-spring-conventions'
+    id 'bio.terra.policy.java-spring-library-conventions'
     id 'de.undercouch.download'
     id 'com.google.cloud.tools.jib'
     id 'com.srcclr.gradle'
     id 'org.sonarqube'
-
-    id 'com.gorylenko.gradle-git-properties' version '2.3.1'
+    id 'com.jfrog.artifactory' version '4.18.2'
     id 'org.liquibase.gradle' version '2.1.0'
 }
 
-apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
@@ -34,6 +32,16 @@ dependencies {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
+}
+
+// We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
+// Disable bootJar and enable jar task back since this is actually not a Spring Boot app.
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }
 
 test {
