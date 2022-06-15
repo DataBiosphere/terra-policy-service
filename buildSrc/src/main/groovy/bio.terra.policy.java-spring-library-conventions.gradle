@@ -1,7 +1,7 @@
 plugins {
-    // Apply the common convention plugin for shared build configuration between library and application projects.
     id 'bio.terra.policy.java-common-conventions'
-
     id 'io.spring.dependency-management'
     id 'org.springframework.boot'
+    id 'java-library'
+    id 'maven-publish'
 }

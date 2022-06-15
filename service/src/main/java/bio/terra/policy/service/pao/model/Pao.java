@@ -1,7 +1,6 @@
 package bio.terra.policy.service.pao.model;
 
 import bio.terra.policy.common.model.PolicyInputs;
-import bio.terra.policy.model.ApiPaoGetResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,17 +57,6 @@ public class Pao {
 
   public List<UUID> getChildObjectIds() {
     return childObjectIds;
-  }
-
-  public ApiPaoGetResult toApi() {
-    return new ApiPaoGetResult()
-        .objectId(objectId)
-        .component(component.getApiTerraComponent())
-        .objectType(objectType.getApiTerraObjectType())
-        .attributes(attributes.toApi())
-        .effectiveAttributes(effectiveAttributes.toApi())
-        .inConflict(inConflict)
-        .children(childObjectIds);
   }
 
   public static class Builder {
