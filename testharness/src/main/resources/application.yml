@@ -32,38 +32,12 @@ server:
   port: 8080
 
 spring:
-  application.name: policy
-  web:
-    resources:
-      cache:
-        cachecontrol:
-          maxAge: 0
-          mustRevalidate: true
-        useLastModified: false
-      staticLocations: classpath:/api/
+  application.name: policytestharness
 
 policy:
-  status-check:
-    enabled: true
-    pollingIntervalSeconds: 60
-    startupWaitSeconds: 5
-    stalenessThresholdSeconds: 125
-
   policy-database:
     initializeOnStart: ${env.db.init}
     password: ${env.db.policy.pass}
     upgradeOnStart: true
     uri: ${env.db.host}/${env.db.policy.name}
     username: ${env.db.policy.user}
-
-  sam:
-    basePath: ${env.sam.basePath}
-    resourceId: ${env.sam.resourceId}
-
-terra.common:
-  kubernetes:
-    inKubernetes: false
-
-  tracing:
-    stackdriverExportEnabled: ${env.tracing.exportEnabled}
-    samplingRate: ${env.tracing.samplingRate}
