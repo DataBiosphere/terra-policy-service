@@ -4,7 +4,7 @@ import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.exception.DuplicateObjectException;
-import bio.terra.policy.library.TpsMain;
+import bio.terra.policy.library.configuration.TpsDatabaseConfiguration;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -28,17 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class PaoDao {
   private final Logger logger = LoggerFactory.getLogger(PaoDao.class);
-  private NamedParameterJdbcTemplate tpsJdbcTemplate;
+  private final TpsDatabaseConfiguration tpsDatabaseConfiguration;
+  private final NamedParameterJdbcTemplate tpsJdbcTemplate;
 
-  //  @Autowired JdbcTransactionManager tpsTransactionManager;
-
-  // The data source is not populated until after the PaoDao component is scanned into the
-  // application context. We make a lazy template creator to generate the template just in time.
-  private NamedParameterJdbcTemplate getJdbcTemplate() {
-    if (tpsJdbcTemplate == null) {
-      tpsJdbcTemplate = new NamedParameterJdbcTemplate(TpsMain.getTpsDataSource());
-    }
-    return tpsJdbcTemplate;
+  @Autowired
+  public PaoDao(TpsDatabaseConfiguration tpsDatabaseConfiguration) {
+    this.tpsDatabaseConfiguration = tpsDatabaseConfiguration;
+    this.tpsJdbcTemplate = new NamedParameterJdbcTemplate(tpsDatabaseConfiguration.getDataSource());
   }
 
   @Transactional(
@@ -66,7 +63,7 @@ public class PaoDao {
             .addValue("effective_set_id", setId);
 
     try {
-      getJdbcTemplate().update(sql, params);
+      tpsJdbcTemplate.update(sql, params);
       logger.info("Inserted record for pao {}", objectId);
     } catch (DuplicateKeyException e) {
       throw new DuplicateObjectException(
@@ -86,12 +83,12 @@ public class PaoDao {
               .addValue("name", input.getName())
               .addValue("properties", DbSerDes.propertiesToJson(input.getAdditionalData()));
 
-      getJdbcTemplate().update(setsql, setparams);
+      tpsJdbcTemplate.update(setsql, setparams);
       logger.info(
           "Inserted record for pao set id {}, namespace {}, name {}",
           setId,
-          input.getAdditionalData(),
-          input.getAdditionalData());
+          input.getNamespace(),
+          input.getName());
     }
   }
 
@@ -114,7 +111,7 @@ public class PaoDao {
       final String sql = "DELETE FROM policy_object WHERE object_id = :object_id";
       MapSqlParameterSource params =
           new MapSqlParameterSource().addValue("object_id", objectId.toString());
-      getJdbcTemplate().update(sql, params);
+      tpsJdbcTemplate.update(sql, params);
     } catch (EmptyResultDataAccessException e) {
       // Delete throws no error on not found
     }
@@ -123,7 +120,7 @@ public class PaoDao {
   private void deleteAttributeSet(String setId) {
     final String sql = "DELETE FROM attribute_set WHERE set_id = :set_id";
     final var params = new MapSqlParameterSource().addValue("set_id", setId);
-    getJdbcTemplate().update(sql, params);
+    tpsJdbcTemplate.update(sql, params);
   }
 
   @Transactional(
@@ -162,19 +159,18 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    return getJdbcTemplate()
-        .queryForObject(
-            sql,
-            params,
-            (rs, rowNum) -> {
-              return new DbPao(
-                  UUID.fromString(rs.getString("object_id")),
-                  PaoComponent.fromDb(rs.getString("component")),
-                  PaoObjectType.fromDb(rs.getString("object_type")),
-                  rs.getBoolean("in_conflict"),
-                  rs.getString("attribute_set_id"),
-                  rs.getString("effective_set_id"));
-            });
+    return tpsJdbcTemplate.queryForObject(
+        sql,
+        params,
+        (rs, rowNum) -> {
+          return new DbPao(
+              UUID.fromString(rs.getString("object_id")),
+              PaoComponent.fromDb(rs.getString("component")),
+              PaoObjectType.fromDb(rs.getString("object_type")),
+              rs.getBoolean("in_conflict"),
+              rs.getString("attribute_set_id"),
+              rs.getString("effective_set_id"));
+        });
   }
 
   private PolicyInputs getAttributeSet(String setId) {
@@ -184,16 +180,15 @@ public class PaoDao {
     final var params = new MapSqlParameterSource().addValue("set_id", setId);
 
     List<PolicyInput> inputList =
-        getJdbcTemplate()
-            .query(
-                sql,
-                params,
-                (rs, rowNum) -> {
-                  return new PolicyInput(
-                      rs.getString("namespace"),
-                      rs.getString("name"),
-                      DbSerDes.jsonToProperties(rs.getString("properties")));
-                });
+        tpsJdbcTemplate.query(
+            sql,
+            params,
+            (rs, rowNum) -> {
+              return new PolicyInput(
+                  rs.getString("namespace"),
+                  rs.getString("name"),
+                  DbSerDes.jsonToProperties(rs.getString("properties")));
+            });
 
     return PolicyInputs.fromDb(inputList);
   }
