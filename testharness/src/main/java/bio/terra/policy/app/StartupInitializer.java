@@ -8,18 +8,8 @@ public final class StartupInitializer {
   private static final String CHANGELOG_PATH = "policydb/changelog.xml";
 
   public static void initialize(ApplicationContext applicationContext) {
-    // Initialize or upgrade the database depending on the configuration
+    // Initialize the Terra Policy Service library
     LiquibaseMigrator migrateService = applicationContext.getBean(LiquibaseMigrator.class);
-
-    TpsDatabaseConfiguration tpsDatabaseConfiguration =
-        applicationContext.getBean(TpsDatabaseConfiguration.class);
-
-    if (tpsDatabaseConfiguration.isInitializeOnStart()) {
-      migrateService.initialize(CHANGELOG_PATH, tpsDatabaseConfiguration.getDataSource());
-    } else if (tpsDatabaseConfiguration.isUpgradeOnStart()) {
-      migrateService.upgrade(CHANGELOG_PATH, tpsDatabaseConfiguration.getDataSource());
-    }
-
-    TpsMain.initialize(tpsDatabaseConfiguration.getDataSource());
+    TpsMain.initialize(applicationContext, migrateService);
   }
 }
