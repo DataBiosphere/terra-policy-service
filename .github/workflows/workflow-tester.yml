@@ -1,0 +1,20 @@
+# Workflow for testing new actions and workflows
+#
+# Github does not provide a way to run workflows that are not already merged to the
+# default branch. Once a workflow that is configured for manual running is merged,
+# then when you change it in a branch and execute your changes.
+#
+# The purpose of this workflow is to be a scratch space for developing workflows.
+# Use it to prepare a workflow. When it is ready, you can copy the file to the
+# proper name and merge from there.
+
+name: Workflow Tester
+on:
+  workflow_dispatch: {}
+
+jobs:
+  workflow-test-job:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
