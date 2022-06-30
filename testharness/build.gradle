@@ -22,18 +22,26 @@ dependencies {
     // Allows us to mock final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
+    jacocoTestReport {
+        reports {
+            // sonarqube requires XML coverage output to upload coverage data
+            xml.required = true
+            html.required = true
+        }
+
+        additionalSourceDirs.from = files("$rootDir/service/src")
+        additionalClassDirs.from = files("$rootDir/service/build/classes")
+    }
+
     test {
         useJUnitPlatform {
             includeTags "library"
         }
         outputs.upToDateWhen { false }
-    }
-
-    task libraryTest(type: Test) {
-        useJUnitPlatform {
-            includeTags "library"
-        }
-        outputs.upToDateWhen { false }
         finalizedBy jacocoTestReport
+        jacoco {
+            includes = ["bio.terra.policy.**" ]
+            includeNoLocationClasses = true
+        }
     }
 }

@@ -7,9 +7,9 @@ plugins {
     id 'com.github.spotbugs'
 }
 
-boolean isCiServer = System.getenv().containsKey("CI")
+boolean isGithubAction = System.getenv().containsKey("GITHUB_ACTIONS")
 
-if (!isCiServer) {
+if (!isGithubAction) {
     tasks.withType(JavaExec).configureEach {
         systemProperty 'spring.profiles.include', 'human-readable-logging'
     }
@@ -65,7 +65,7 @@ spotless {
 
 // Run spotless check when running in github actions, otherwise run spotless apply.
 compileJava {
-    if (isCiServer) {
+    if (isGithubAction) {
         dependsOn(spotlessCheck)
     } else {
         dependsOn(spotlessApply)
@@ -79,7 +79,7 @@ spotbugs {
 }
 spotbugsMain {
     reports {
-        if (isCiServer) {
+        if (isGithubAction) {
             sarif.enabled = true
         } else {
             html.enabled = true
@@ -87,9 +87,3 @@ spotbugsMain {
     }
 }
 
-jacocoTestReport {
-    reports {
-        // sonarqube requires XML coverage output to upload coverage data
-        xml.required = true
-    }
-}
