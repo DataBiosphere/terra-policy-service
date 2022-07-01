@@ -23,6 +23,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
+    - uses: actions/checkout@v2
     - name: Skip version bump merges
       id: skiptest
       uses: ./.github/actions/bump-skip
