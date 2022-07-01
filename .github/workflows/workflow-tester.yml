@@ -103,11 +103,10 @@ jobs:
         # see https://github.com/broadinstitute/action-slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
         with:
           status: ${{ job.status }}
           channel: "#terra-wsm-alerts"
           username: "TPS push to main branch"
-          author_name: "${{ matrix.gradleTask }}"
+          author_name: "build-and-test"
           icon_emoji: ":triangular_ruler:"
           fields: job, commit

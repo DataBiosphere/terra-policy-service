@@ -74,6 +74,7 @@ compileJava {
 
 // Spotbugs configuration
 spotbugs {
+    toolVersion = '4.7.0'
     reportLevel = 'high'
     effort = 'max'
 }
