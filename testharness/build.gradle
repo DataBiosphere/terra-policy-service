@@ -12,8 +12,9 @@ dependencies {
 
     //implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "5.7.0"
 
-    // Spotbugs dependency
-    spotbugs 'com.github.spotbugs:spotbugs:4.7.0'
+    // Spotbugs dependencies
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    spotbugs "com.github.spotbugs:spotbugs:${spotbugs.toolVersion.get()}"
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
@@ -22,18 +23,26 @@ dependencies {
     // Allows us to mock final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
+    jacocoTestReport {
+        reports {
+            // sonarqube requires XML coverage output to upload coverage data
+            xml.required = true
+            html.required = true
+        }
+
+        additionalSourceDirs.from = files("$rootDir/service/src")
+        additionalClassDirs.from = files("$rootDir/service/build/classes")
+    }
+
     test {
         useJUnitPlatform {
             includeTags "library"
         }
         outputs.upToDateWhen { false }
-    }
-
-    task libraryTest(type: Test) {
-        useJUnitPlatform {
-            includeTags "library"
-        }
-        outputs.upToDateWhen { false }
         finalizedBy jacocoTestReport
+        jacoco {
+            includes = ["bio.terra.policy.**" ]
+            includeNoLocationClasses = true
+        }
     }
 }

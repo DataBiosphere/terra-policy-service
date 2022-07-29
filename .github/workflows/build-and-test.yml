@@ -1,15 +1,20 @@
-# Workflow for testing new actions and workflows
-#
-# Github does not provide a way to run workflows that are not already merged to the
-# default branch. Once a workflow that is configured for manual running is merged,
-# then when you change it in a branch and execute your changes.
-#
-# The purpose of this workflow is to be a scratch space for developing workflows.
-# Use it to prepare a workflow. When it is ready, you can copy the file to the
-# proper name and merge from there.
+name: Build and Test
 
-name: Workflow Tester
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - '.github/**'
+  pull_request:
+    branches: [ '**' ]
+    # There is an issue with GitHub required checks and paths-ignore. We don't really need to
+    # run the tests if there are only irrelevant changes (see paths-ignore above). However,
+    # we require tests to pass by making a "required check" rule on the branch. If the action
+    # is not triggered, the required check never passes and you are stuck. Therefore, we have
+    # to run tests even when we only change a markdown file. So don't do what I did and put a
+    # paths-ignore right here!
   workflow_dispatch: {}
 
 jobs:
