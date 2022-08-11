@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: attribute_set_index
+      author: dd
+      changes:
+      - createIndex:
+          indexName: attribute_set_id_index
+          tableName: attribute_set
+          unique: false
+          columns:
+            - column:
+                name: set_id

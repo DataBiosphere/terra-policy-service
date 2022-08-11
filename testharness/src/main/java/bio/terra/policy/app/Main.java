@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       "bio.terra.common.logging",
       // Scan for Liquibase migration components & configs
       "bio.terra.common.migrate",
+      // Transaction management and DB retry configuration
+      "bio.terra.common.retry.transaction",
       // Scan all policy service packages
       "bio.terra.policy",
     })
