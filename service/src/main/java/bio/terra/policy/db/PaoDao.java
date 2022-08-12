@@ -17,6 +17,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,6 +39,7 @@ public class PaoDao {
     this.tpsJdbcTemplate = new NamedParameterJdbcTemplate(tpsDatabaseConfiguration.getDataSource());
   }
 
+  @Retryable(interceptor = "transactionRetryInterceptor")
   @Transactional(
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
@@ -92,6 +94,7 @@ public class PaoDao {
     }
   }
 
+  @Retryable(interceptor = "transactionRetryInterceptor")
   @Transactional(
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
@@ -123,6 +126,7 @@ public class PaoDao {
     tpsJdbcTemplate.update(sql, params);
   }
 
+  @Retryable(interceptor = "transactionRetryInterceptor")
   @Transactional(
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
