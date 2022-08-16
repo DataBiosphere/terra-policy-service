@@ -16,7 +16,11 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class PaoService {
@@ -61,6 +65,11 @@ public class PaoService {
    * @param sourceObjectId id of the source object
    * @param updateMode link mode: fail on conflict or dry_run
    */
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
   public LinkSourceResult linkSourcePao(
       UUID objectId, UUID sourceObjectId, PaoUpdateMode updateMode) {
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
