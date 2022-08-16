@@ -1,18 +1,18 @@
 package bio.terra.policy.service.pao.model;
 
 import bio.terra.policy.common.model.PolicyInputs;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class Pao {
   private final UUID objectId;
   private final PaoComponent component;
   private final PaoObjectType objectType;
-  private final PolicyInputs attributes;
-  private final PolicyInputs effectiveAttributes;
-  private final boolean inConflict;
-  private final List<UUID> childObjectIds;
+  private PolicyInputs attributes;
+  private PolicyInputs effectiveAttributes;
+  private Set<UUID> sourceObjectIds;
+  private UUID predecessorId;
 
   public Pao(
       UUID objectId,
@@ -20,15 +20,15 @@ public class Pao {
       PaoObjectType objectType,
       PolicyInputs attributes,
       PolicyInputs effectiveAttributes,
-      boolean inConflict,
-      List<UUID> childObjectIds) {
+      Set<UUID> sourceObjectIds,
+      UUID predecessorId) {
     this.objectId = objectId;
     this.component = component;
     this.objectType = objectType;
     this.attributes = attributes;
     this.effectiveAttributes = effectiveAttributes;
-    this.inConflict = inConflict;
-    this.childObjectIds = childObjectIds;
+    this.sourceObjectIds = sourceObjectIds;
+    this.predecessorId = predecessorId;
   }
 
   public UUID getObjectId() {
@@ -47,16 +47,44 @@ public class Pao {
     return attributes;
   }
 
+  public void setAttributes(PolicyInputs attributes) {
+    this.attributes = attributes;
+  }
+
   public PolicyInputs getEffectiveAttributes() {
     return effectiveAttributes;
   }
 
-  public boolean isInConflict() {
-    return inConflict;
+  public void setEffectiveAttributes(PolicyInputs effectiveAttributes) {
+    this.effectiveAttributes = effectiveAttributes;
   }
 
-  public List<UUID> getChildObjectIds() {
-    return childObjectIds;
+  public Set<UUID> getSourceObjectIds() {
+    return sourceObjectIds;
+  }
+
+  public void setSourceObjectIds(Set<UUID> sourceObjectIds) {
+    this.sourceObjectIds = sourceObjectIds;
+  }
+
+  public UUID getPredecessorId() {
+    return predecessorId;
+  }
+
+  public void setPredecessorId(UUID predecessorId) {
+    this.predecessorId = predecessorId;
+  }
+
+  public Pao duplicateWithoutConflicts() {
+    return new Builder()
+        .setObjectId(objectId)
+        .setComponent(component)
+        .setObjectType(objectType)
+        .setAttributes(attributes.duplicateWithoutConflicts()) // there are never conflicts in here
+        .setEffectiveAttributes(effectiveAttributes.duplicateWithoutConflicts())
+        .setSourceObjectIds(new HashSet<>(sourceObjectIds))
+        .setPredecessorId(predecessorId)
+        .build();
   }
 
   public static class Builder {
@@ -65,8 +93,8 @@ public class Pao {
     private PaoObjectType objectType;
     private PolicyInputs attributes;
     private PolicyInputs effectiveAttributes;
-    private boolean inConflict;
-    private List<UUID> childObjectIds;
+    private Set<UUID> sourceObjectIds;
+    private UUID predecessorId;
 
     public Builder setObjectId(UUID objectId) {
       this.objectId = objectId;
@@ -93,19 +121,19 @@ public class Pao {
       return this;
     }
 
-    public Builder setInConflict(boolean inConflict) {
-      this.inConflict = inConflict;
+    public Builder setSourceObjectIds(Set<UUID> sourceObjectIds) {
+      this.sourceObjectIds = sourceObjectIds;
       return this;
     }
 
-    public Builder setChildObjectIds(List<UUID> childObjectIds) {
-      this.childObjectIds = childObjectIds;
+    public Builder setPredecessorId(UUID predecessorId) {
+      this.predecessorId = predecessorId;
       return this;
     }
 
     public Pao build() {
-      if (childObjectIds == null) {
-        childObjectIds = new ArrayList<>();
+      if (sourceObjectIds == null) {
+        sourceObjectIds = new HashSet<>();
       }
       return new Pao(
           objectId,
@@ -113,8 +141,8 @@ public class Pao {
           objectType,
           attributes,
           effectiveAttributes,
-          inConflict,
-          childObjectIds);
+          sourceObjectIds,
+          predecessorId);
     }
   }
 }

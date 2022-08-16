@@ -1,0 +1,62 @@
+package bio.terra.policy.service.policy;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import bio.terra.policy.common.model.PolicyInput;
+import bio.terra.policy.testutils.LibraryTestBase;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class CombinerTest extends LibraryTestBase {
+  private static final String TERRA = "terra";
+  private static final String GROUP_CONSTRAINT = "group-constraint";
+  private static final String GROUP = "group";
+  private static final String DDGROUP = "ddgroup";
+  private static final String MCGROUP = "mcgroup";
+  private static final String YUGROUP = "yugroup";
+
+  private Multimap<String, String> buildMultimap(String key, String... values) {
+    Multimap<String, String> mm = ArrayListMultimap.create();
+    for (String value : values) {
+      mm.put(key, value);
+    }
+    return mm;
+  }
+
+  @Test
+  void groupConstraintTest() throws Exception {
+    var policyGroup = new PolicyGroupConstraint();
+
+    var ddgroupPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, DDGROUP));
+    var mcgroupPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, MCGROUP));
+    var mcyugroupPolicy =
+        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, MCGROUP, YUGROUP));
+
+    PolicyInput ddmc = policyGroup.combine(ddgroupPolicy, mcgroupPolicy);
+
+    // Simple case
+    Set<String> groupSet = policyGroup.dataToSet(ddmc.getAdditionalData().get(GROUP));
+    assertEquals(2, groupSet.size(), "Contains 2 groups");
+    Assertions.assertTrue(groupSet.contains(DDGROUP));
+    Assertions.assertTrue(groupSet.contains(MCGROUP));
+
+    // Multiple case
+    PolicyInput ddmcyu = policyGroup.combine(ddgroupPolicy, mcyugroupPolicy);
+    groupSet = policyGroup.dataToSet(ddmcyu.getAdditionalData().get(GROUP));
+    assertEquals(3, groupSet.size(), "Contains 3 groups");
+    Assertions.assertTrue(groupSet.contains(DDGROUP));
+    Assertions.assertTrue(groupSet.contains(MCGROUP));
+    Assertions.assertTrue(groupSet.contains(YUGROUP));
+
+    // Make sure order is not important
+    PolicyInput mcyudd = policyGroup.combine(mcyugroupPolicy, ddgroupPolicy);
+    groupSet = policyGroup.dataToSet(mcyudd.getAdditionalData().get(GROUP));
+    assertEquals(3, groupSet.size(), "Contains 3 groups");
+    Assertions.assertTrue(groupSet.contains(DDGROUP));
+    Assertions.assertTrue(groupSet.contains(MCGROUP));
+    Assertions.assertTrue(groupSet.contains(YUGROUP));
+  }
+}
