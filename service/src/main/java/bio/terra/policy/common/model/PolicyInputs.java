@@ -38,6 +38,10 @@ public class PolicyInputs {
     return inputs;
   }
 
+  public void removeInput(PolicyInput removeInput) {
+    inputs.remove(removeInput.getKey());
+  }
+
   public static PolicyInputs fromDb(List<PolicyInput> inputList) {
     PolicyInputs inputs = new PolicyInputs();
     for (PolicyInput input : inputList) {

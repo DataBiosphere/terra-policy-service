@@ -1,9 +1,13 @@
 package bio.terra.policy.service.pao.model;
 
 import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.db.DbPao;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Pao {
   private final UUID objectId;
@@ -84,6 +88,35 @@ public class Pao {
         .setEffectiveAttributes(effectiveAttributes.duplicateWithoutConflicts())
         .setSourceObjectIds(new HashSet<>(sourceObjectIds))
         .setPredecessorId(predecessorId)
+        .build();
+  }
+
+  public String toShortString() {
+    return String.format("%s:%s (%s)", component, objectType, objectId);
+  }
+
+  @Override
+  public String toString() {
+    return new StringJoiner(", ", Pao.class.getSimpleName() + "[", "]")
+        .add("objectId=" + objectId)
+        .add("component=" + component)
+        .add("objectType=" + objectType)
+        .add("attributes=" + attributes)
+        .add("effectiveAttributes=" + effectiveAttributes)
+        .add("sourceObjectIds=" + sourceObjectIds)
+        .add("predecessorId=" + predecessorId)
+        .toString();
+  }
+
+  public static Pao fromDb(DbPao dbPao, Map<String, PolicyInputs> attributeSetMap) {
+    return new Pao.Builder()
+        .setObjectId(dbPao.objectId())
+        .setComponent(dbPao.component())
+        .setObjectType(dbPao.objectType())
+        .setSourceObjectIds(
+            dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet()))
+        .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
+        .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
         .build();
   }
 
