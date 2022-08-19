@@ -85,33 +85,14 @@ public class PaoDao {
   public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
     DbPao sourcePao = getDbPao(sourceObjectId);
 
-    final String sql =
-        "INSERT INTO policy_object (object_id, component, object_type, sources,"
-            + " attribute_set_id, effective_set_id, predecessor_id)"
-            + " VALUES (:object_id, :component, :object_type, string_to_array(:sources, ','),"
-            + " :attribute_set_id, :effective_set_id, :predecessor_id)";
-
-    final String sourceIds = String.join(",", sourcePao.sources());
-
-    // The cloned PAO has all the same values as the source except that:
-    // it has its own object_id and the predecessor_id points to the source PAO.
-    MapSqlParameterSource params =
-        new MapSqlParameterSource()
-            .addValue("object_id", destinationObjectId.toString())
-            .addValue("component", sourcePao.component().getDbComponent())
-            .addValue("object_type", sourcePao.objectType().getDbObjectType())
-            .addValue("sources", sourceIds)
-            .addValue("attribute_set_id", sourcePao.attributeSetId())
-            .addValue("effective_set_id", sourcePao.effectiveSetId())
-            .addValue("predecessor_id", sourcePao.objectId());
-
-    try {
-      tpsJdbcTemplate.update(sql, params);
-      logger.info("Cloned Pao with id {} to {}", sourceObjectId, destinationObjectId);
-    } catch (DuplicateKeyException e) {
-      throw new DuplicateObjectException(
-          "Duplicate policy attributes object with destination objectId " + destinationObjectId);
-    }
+    createDbPao(
+        destinationObjectId,
+        sourcePao.component().getDbComponent(),
+        sourcePao.objectType().getDbObjectType(),
+        String.join(",", sourcePao.sources()),
+        sourcePao.attributeSetId(),
+        sourcePao.effectiveSetId(),
+        sourcePao.objectId());
   }
 
   @Retryable(interceptor = "transactionRetryInterceptor")
@@ -122,12 +103,6 @@ public class PaoDao {
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
 
-    final String sql =
-        """
-        INSERT INTO policy_object (object_id, component, object_type, sources, attribute_set_id, effective_set_id)
-        VALUES (:object_id, :component, :object_type, '{}', :attribute_set_id, :effective_set_id)
-        """;
-
     // Store the attribute set twice: once as the object's set and once as its effective set.
     // We could optimize this case, but the logic is cleaner if we treat them distinctly from the
     // outset.
@@ -136,22 +111,14 @@ public class PaoDao {
     createAttributeSet(attributeSetId, inputs);
     createAttributeSet(effectiveSetId, inputs);
 
-    // Store the policy object pointing both attribute and effective to the same attribute set
-    MapSqlParameterSource params =
-        new MapSqlParameterSource()
-            .addValue("object_id", objectId.toString())
-            .addValue("component", component.getDbComponent())
-            .addValue("object_type", objectType.getDbObjectType())
-            .addValue("attribute_set_id", attributeSetId)
-            .addValue("effective_set_id", effectiveSetId);
-
-    try {
-      tpsJdbcTemplate.update(sql, params);
-      logger.info("Inserted record for pao {}", objectId);
-    } catch (DuplicateKeyException e) {
-      throw new DuplicateObjectException(
-          "Duplicate policy attributes object with objectId " + objectId);
-    }
+    createDbPao(
+        objectId,
+        component.getDbComponent(),
+        objectType.getDbObjectType(),
+        "",
+        attributeSetId,
+        effectiveSetId,
+        null);
   }
 
   @Retryable(interceptor = "transactionRetryInterceptor")
@@ -346,6 +313,41 @@ public class PaoDao {
           setId,
           input.getPolicyName(),
           conflictCsv);
+    }
+  }
+
+  private void createDbPao(
+      UUID objectId,
+      String component,
+      String objectType,
+      String sources,
+      String attributeSetId,
+      String effectiveSetId,
+      UUID predecessorId) {
+    final String sql =
+        """
+        INSERT INTO policy_object
+          (object_id, component, object_type, sources, attribute_set_id, effective_set_id, predecessor_id)
+        VALUES
+          (:object_id, :component, :object_type, string_to_array(:sources, ','), :attribute_set_id, :effective_set_id, :predecessor_id)
+        """;
+
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue("object_id", objectId)
+            .addValue("component", component)
+            .addValue("object_type", objectType)
+            .addValue("sources", sources)
+            .addValue("attribute_set_id", attributeSetId)
+            .addValue("effective_set_id", effectiveSetId)
+            .addValue("predecessor_id", predecessorId);
+
+    try {
+      tpsJdbcTemplate.update(sql, params);
+      logger.info("Inserted record for pao {}", objectId);
+    } catch (DuplicateKeyException e) {
+      throw new DuplicateObjectException(
+          "Duplicate policy attributes object with objectId " + objectId);
     }
   }
 
