@@ -1,6 +1,7 @@
 package bio.terra.policy.service.policy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.LibraryTestBase;
@@ -10,7 +11,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CombinerTest extends LibraryTestBase {
+public class MutatorTest extends LibraryTestBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String GROUP = "group";
@@ -34,6 +35,8 @@ public class CombinerTest extends LibraryTestBase {
     var mcgroupPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, MCGROUP));
     var mcyugroupPolicy =
         new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, MCGROUP, YUGROUP));
+    var mcyuddgroupPolicy =
+        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, MCGROUP, YUGROUP, DDGROUP));
 
     PolicyInput ddmc = policyGroup.combine(ddgroupPolicy, mcgroupPolicy);
 
@@ -58,5 +61,23 @@ public class CombinerTest extends LibraryTestBase {
     Assertions.assertTrue(groupSet.contains(DDGROUP));
     Assertions.assertTrue(groupSet.contains(MCGROUP));
     Assertions.assertTrue(groupSet.contains(YUGROUP));
+
+    // remove dd from a group of 3
+    PolicyInput nodd = policyGroup.remove(mcyuddgroupPolicy, ddgroupPolicy);
+    groupSet = policyGroup.dataToSet(nodd.getAdditionalData().get(GROUP));
+    assertEquals(2, groupSet.size(), "Contains 2 groups");
+    Assertions.assertTrue(groupSet.contains(MCGROUP));
+    Assertions.assertTrue(groupSet.contains(YUGROUP));
+
+    // remove dd when dd is not there to start with
+    nodd = policyGroup.remove(mcyugroupPolicy, ddgroupPolicy);
+    groupSet = policyGroup.dataToSet(nodd.getAdditionalData().get(GROUP));
+    assertEquals(2, groupSet.size(), "Contains 2 groups");
+    Assertions.assertTrue(groupSet.contains(MCGROUP));
+    Assertions.assertTrue(groupSet.contains(YUGROUP));
+
+    // remove dd when dd is the only group there
+    nodd = policyGroup.remove(ddgroupPolicy, ddgroupPolicy);
+    assertNull(nodd);
   }
 }

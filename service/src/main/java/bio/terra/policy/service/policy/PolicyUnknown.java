@@ -6,10 +6,10 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 /** When we process a policy that is not known to TPS, then we use this combiner. */
-public class PolicyUnknownPolicyCombiner implements PolicyBase {
+public class PolicyUnknown implements PolicyBase {
   private final PolicyName policyName;
 
-  public PolicyUnknownPolicyCombiner(PolicyName policyName) {
+  public PolicyUnknown(PolicyName policyName) {
     this.policyName = policyName;
   }
 
@@ -48,6 +48,19 @@ public class PolicyUnknownPolicyCombiner implements PolicyBase {
       return new PolicyInput(dependent.getPolicyName(), newData);
     }
 
+    return null;
+  }
+
+  /**
+   * Removing unknowns uses an even simpler algorithm: always return null, meaning the policy is
+   * deleted.
+   *
+   * @param target existing policy
+   * @param removePolicy policy to remove
+   * @return null
+   */
+  @Override
+  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
     return null;
   }
 }

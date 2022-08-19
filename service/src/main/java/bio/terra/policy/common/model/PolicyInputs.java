@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 /**
@@ -57,6 +58,13 @@ public class PolicyInputs {
       dupMap.put(entry.getKey(), dupInput);
     }
     return new PolicyInputs(dupMap);
+  }
+
+  @Override
+  public String toString() {
+    return new StringJoiner(", ", PolicyInputs.class.getSimpleName() + "[", "]")
+        .add("inputs=" + inputs)
+        .toString();
   }
 
   @Override

@@ -3,12 +3,12 @@ package bio.terra.policy.service.policy;
 import bio.terra.policy.common.model.PolicyName;
 import java.util.Optional;
 
-public enum PolicyKnownPolicy {
+public enum KnownPolicy {
   GROUP_CONSTRAINT(new PolicyGroupConstraint());
 
   private final PolicyBase policy;
 
-  PolicyKnownPolicy(PolicyBase policy) {
+  KnownPolicy(PolicyBase policy) {
     this.policy = policy;
   }
 
@@ -24,7 +24,7 @@ public enum PolicyKnownPolicy {
    * @return a policy object or null ifn ot a known policy
    */
   public static Optional<PolicyBase> findPolicyBaseByName(PolicyName policyName) {
-    for (PolicyKnownPolicy policyCombiner : values()) {
+    for (KnownPolicy policyCombiner : values()) {
       if (policyCombiner.getPolicy().getPolicyName().equals(policyName)) {
         return Optional.of(policyCombiner.getPolicy());
       }

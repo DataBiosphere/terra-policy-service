@@ -37,6 +37,28 @@ public class PolicyGroupConstraint implements PolicyBase {
     return new PolicyInput(dependent.getPolicyName(), newData);
   }
 
+  /**
+   * Remove groups - remove groups in the removePolicy from groups in the target policy Removing a
+   * group that is not found is not an error. If there is nothing left over, return null.
+   *
+   * @param target existing policy
+   * @param removePolicy policy to remove
+   * @return the target with groups removed; null if no groups left
+   */
+  @Override
+  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
+    Set<String> targetGroups = dataToSet(target.getData(DATA_KEY));
+    Set<String> removeGroups = dataToSet(removePolicy.getData(DATA_KEY));
+    targetGroups.removeAll(removeGroups);
+    if (targetGroups.isEmpty()) {
+      return null;
+    }
+
+    Multimap<String, String> newData = ArrayListMultimap.create();
+    targetGroups.forEach(group -> newData.put(DATA_KEY, group));
+    return new PolicyInput(target.getPolicyName(), newData);
+  }
+
   @VisibleForTesting
   Set<String> dataToSet(Collection<String> groups) {
     return new HashSet<>(groups);

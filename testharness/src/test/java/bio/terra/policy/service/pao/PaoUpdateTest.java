@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.exception.InternalTpsErrorException;
+import bio.terra.policy.common.exception.InvalidDirectConflictException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
@@ -15,7 +16,7 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
-import bio.terra.policy.service.policy.PolicyCombiner;
+import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.testutils.LibraryTestBase;
 import java.util.Collections;
@@ -44,14 +45,14 @@ public class PaoUpdateTest extends LibraryTestBase {
     var flagPolicyA1 = makeFlagInput(TEST_FLAG_POLICY_A);
     var flagPolicyA2 = makeFlagInput(TEST_FLAG_POLICY_A);
 
-    PolicyInput flagResult = PolicyCombiner.combine(flagPolicyA1, flagPolicyA2);
+    PolicyInput flagResult = PolicyMutator.combine(flagPolicyA1, flagPolicyA2);
     assertEquals(flagResult.getKey(), flagPolicyA1.getKey());
     assertEquals(0, flagResult.getAdditionalData().size());
 
     var flagPolicyB = makeFlagInput(TEST_FLAG_POLICY_B);
 
     assertThrows(
-        InternalTpsErrorException.class, () -> PolicyCombiner.combine(flagPolicyA1, flagPolicyB));
+        InternalTpsErrorException.class, () -> PolicyMutator.combine(flagPolicyA1, flagPolicyB));
   }
 
   @Test
@@ -60,13 +61,13 @@ public class PaoUpdateTest extends LibraryTestBase {
     var data1Policy1 = makeDataInput(TEST_DATA_POLICY_X, DATA1);
     var data1Policy2 = makeDataInput(TEST_DATA_POLICY_X, DATA1);
 
-    PolicyInput dataResult = PolicyCombiner.combine(data1Policy1, data1Policy2);
+    PolicyInput dataResult = PolicyMutator.combine(data1Policy1, data1Policy2);
     assertEquals(dataResult.getKey(), data1Policy1.getKey());
     assertEquals(dataResult.getAdditionalData(), data1Policy1.getAdditionalData());
 
     // conflict test
     var data2Policy = makeDataInput(TEST_DATA_POLICY_X, DATA2);
-    dataResult = PolicyCombiner.combine(data1Policy1, data2Policy);
+    dataResult = PolicyMutator.combine(data1Policy1, data2Policy);
     assertNull(dataResult);
   }
 
@@ -274,18 +275,75 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertEquals(new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_Y), conflict.policyName());
 
     // Same comparison as with Link C to None
-    /*
     // Because of the ordering issue above, the resulting policies are not reliably unchanged.
-        resultPao = result.computedPao();
-        assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
-        checkForPolicies(
-            resultPao,
-            makeFlagInput(TEST_FLAG_POLICY_A),
-            makeFlagInput(TEST_FLAG_POLICY_B),
-            makeDataInput(TEST_DATA_POLICY_X, DATA1),
-            makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+    // so we cannot test for (TEST_DATA_POLICY_Y, DATA1)
+    resultPao = result.computedPao();
+    assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
+    checkForPolicies(
+        resultPao,
+        makeFlagInput(TEST_FLAG_POLICY_A),
+        makeFlagInput(TEST_FLAG_POLICY_B),
+        makeDataInput(TEST_DATA_POLICY_X, DATA1));
+  }
 
-     */
+  @Test
+  void updateSingleTest() throws Exception {
+    // Basic updates on a single Pao
+    // Pao has flag A and data policy X, data1
+    UUID paoId =
+        makePao(makeFlagInput(TEST_FLAG_POLICY_A), makeDataInput(TEST_DATA_POLICY_X, DATA1));
+    logger.info("paoId: {}", paoId);
+
+    PolicyInputs removes = makePolicyInputs(makeDataInput(TEST_DATA_POLICY_X, DATA1));
+    PolicyInputs adds =
+        makePolicyInputs(makeFlagInput(TEST_FLAG_POLICY_B), makeFlagInput(TEST_FLAG_POLICY_A));
+
+    PolicyUpdateResult result =
+        paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Update 1 removes {} adds {} result {}", removes, adds, result);
+    assertTrue(result.conflicts().isEmpty());
+    Pao resultPao = result.computedPao();
+    checkForPolicies(
+        resultPao, makeFlagInput(TEST_FLAG_POLICY_A), makeFlagInput(TEST_FLAG_POLICY_B));
+    checkForMissingPolicies(resultPao, makeDataInput(TEST_DATA_POLICY_X, DATA1));
+
+    // Repeating the operation should get the same result.
+    result = paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Update 2 removes {} adds {} result {}", removes, adds, result);
+    assertTrue(result.conflicts().isEmpty());
+    resultPao = result.computedPao();
+    checkForPolicies(
+        resultPao, makeFlagInput(TEST_FLAG_POLICY_A), makeFlagInput(TEST_FLAG_POLICY_B));
+    checkForMissingPolicies(resultPao, makeDataInput(TEST_DATA_POLICY_X, DATA1));
+
+    // Go from zero to one policy
+    UUID paoNone = makePao();
+    logger.info("paoNone: {}", paoNone);
+    PolicyInputs empty = makePolicyInputs();
+    PolicyInputs oneFlag = makePolicyInputs(makeFlagInput(TEST_FLAG_POLICY_A));
+    result = paoService.updatePao(paoNone, oneFlag, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Update 3 removes {} adds {} result {}", removes, adds, result);
+    assertTrue(result.conflicts().isEmpty());
+    resultPao = result.computedPao();
+    checkForPolicies(resultPao, makeFlagInput(TEST_FLAG_POLICY_A));
+
+    // Go from one to zero policy
+    result = paoService.updatePao(paoNone, empty, oneFlag, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Update 4 removes {} adds {} result {}", removes, adds, result);
+    assertTrue(result.conflicts().isEmpty());
+    resultPao = result.computedPao();
+    assertTrue(resultPao.getEffectiveAttributes().getInputs().isEmpty());
+
+    // Try to add a conflicting policy
+    UUID paoConflict = makePao(makeDataInput(TEST_DATA_POLICY_X, DATA1));
+    logger.info("paoConflict: {}", paoConflict);
+    PolicyInputs conflictPolicy = makePolicyInputs(makeDataInput(TEST_DATA_POLICY_X, DATA2));
+
+    assertThrows(
+        InvalidDirectConflictException.class,
+        () ->
+            paoService.updatePao(
+                paoConflict, conflictPolicy, empty, PaoUpdateMode.ENFORCE_CONFLICTS));
   }
 
   private void checkForPolicies(Pao pao, PolicyInput... inputList) {
@@ -297,11 +355,24 @@ public class PaoUpdateTest extends LibraryTestBase {
     }
   }
 
-  private UUID makePao(PolicyInput... inputList) {
+  private void checkForMissingPolicies(Pao pao, PolicyInput... inputList) {
+    PolicyInputs inputs = pao.getEffectiveAttributes();
+    for (PolicyInput input : inputList) {
+      var foundInput = inputs.lookupPolicy(input);
+      assertNull(foundInput);
+    }
+  }
+
+  private PolicyInputs makePolicyInputs(PolicyInput... inputList) {
     var inputs = new PolicyInputs();
     for (PolicyInput input : inputList) {
       inputs.addInput(input);
     }
+    return inputs;
+  }
+
+  private UUID makePao(PolicyInput... inputList) {
+    var inputs = makePolicyInputs(inputList);
     UUID id = UUID.randomUUID();
     paoService.createPao(id, PaoComponent.WSM, PaoObjectType.WORKSPACE, inputs);
     return id;

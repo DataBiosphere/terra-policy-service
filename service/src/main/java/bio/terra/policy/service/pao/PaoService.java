@@ -11,8 +11,10 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
+import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -87,6 +89,7 @@ public class PaoService {
     // Build a copy of the Pao with the desired change
     // We duplicate the target Pao, but we do not copy the conflict annotations.
     // That way we can detect new conflicts and when conflicts are resolved.
+    // TODO[PF-1927]: This initial state and the conflict tracking have issues.
     Pao targetPao = paoDao.getPao(objectId);
     Pao modifiedPao = targetPao.duplicateWithoutConflicts();
     modifiedPao.getSourceObjectIds().add(sourceObjectId);
@@ -129,15 +132,51 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
-    Pao modifiedPao = targetPao.duplicateWithoutConflicts();
+    PolicyInputs newAttributes = new PolicyInputs();
 
     // We do the removes first, so we don't remove newly added things
-    for (PolicyInput removeInput : removeAttributes.getInputs().values()) {
-      modifiedPao.getAttributes().removeInput(removeInput);
+    for (PolicyInput removePolicy : removeAttributes.getInputs().values()) {
+      PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(removePolicy);
+      if (existingPolicy != null) {
+        // We have something to remove
+        PolicyInput removeResult = PolicyMutator.remove(existingPolicy, removePolicy);
+        if (removeResult != null) {
+          // There is something left of the policy to keep
+          newAttributes.addInput(removeResult);
+        }
+      }
     }
-    for (PolicyInput addInput : addAttributes.getInputs().values()) {
-      modifiedPao.getAttributes().addInput(addInput);
+
+    for (PolicyInput addPolicy : addAttributes.getInputs().values()) {
+      PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
+      if (existingPolicy == null) {
+        // Nothing to combine; just take the new
+        newAttributes.addInput(addPolicy);
+      } else {
+        PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
+        if (addResult != null) {
+          // We have a combined policy to add
+          newAttributes.addInput(addResult);
+        } else {
+          throw new InvalidDirectConflictException(
+              String.format(
+                  "Update of policy %s adding %s creates a conflict",
+                  existingPolicy.getKey(), addPolicy.getKey()));
+        }
+      }
     }
+
+    // Construct the modified Pao using the newly computed attributes
+    Pao modifiedPao =
+        new Pao.Builder()
+            .setObjectId(targetPao.getObjectId())
+            .setComponent(targetPao.getComponent())
+            .setObjectType(targetPao.getObjectType())
+            .setAttributes(newAttributes)
+            .setEffectiveAttributes(newAttributes.duplicateWithoutConflicts())
+            .setSourceObjectIds(new HashSet<>(targetPao.getSourceObjectIds()))
+            .setPredecessorId(targetPao.getPredecessorId())
+            .build();
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
     Walker walker = new Walker(paoDao, targetPao, modifiedPao);

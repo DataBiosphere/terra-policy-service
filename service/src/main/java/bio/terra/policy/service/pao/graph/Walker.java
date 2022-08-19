@@ -6,7 +6,7 @@ import bio.terra.policy.db.PaoDao;
 import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.policy.PolicyCombiner;
+import bio.terra.policy.service.policy.PolicyMutator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +97,7 @@ public class Walker {
       if (sourceInput == null) {
         newDependentEffective.addInput(dependentInput);
       } else {
-        PolicyInput resultInput = PolicyCombiner.combine(dependentInput, sourceInput);
+        PolicyInput resultInput = PolicyMutator.combine(dependentInput, sourceInput);
         if (resultInput == null) {
           // Combiner failed, so we have a conflict. Record the conflict in the input's
           // conflict set. Use the existing dependent input as the effective policy; that is,
