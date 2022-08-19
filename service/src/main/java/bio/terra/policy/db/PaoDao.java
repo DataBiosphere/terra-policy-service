@@ -93,7 +93,8 @@ public class PaoDao {
 
     final String sourceIds = String.join(",", sourcePao.sources());
 
-    // First we store the policy object with a "forward reference" to the set.
+    // The cloned PAO has all the same values as the source except that:
+    // it has its own object_id and the predecessor_id points to the source PAO.
     MapSqlParameterSource params =
         new MapSqlParameterSource()
             .addValue("object_id", destinationObjectId.toString())
