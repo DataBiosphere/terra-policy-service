@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.db.exception.DuplicateObjectException;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
@@ -59,6 +60,45 @@ public class PaoServiceTest extends LibraryTestBase {
     paoService.deletePao(objectId);
 
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId));
+  }
+
+  @Test
+  void clonePaoTest() throws Exception {
+    var objectId = UUID.randomUUID();
+
+    var groupPolicy =
+        PolicyInput.createFromMap(
+            TERRA, GROUP_CONSTRAINT, Collections.singletonMap(GROUP, DDGROUP));
+    var regionPolicy =
+        PolicyInput.createFromMap(
+            TERRA, REGION_CONSTRAINT, Collections.singletonMap(REGION, US_REGION));
+
+    var inputs = new PolicyInputs();
+    inputs.addInput(groupPolicy);
+    inputs.addInput(regionPolicy);
+
+    // Create a PAO
+    paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, inputs);
+
+    // Clone the PAO
+    final var destinationObjectId = UUID.randomUUID();
+    paoService.clonePao(objectId, destinationObjectId);
+
+    // Retrieve and validate source against clone
+    Pao sourcePao = paoService.getPao(objectId);
+    Pao clonePao = paoService.getPao(destinationObjectId);
+    assertEquals(destinationObjectId, clonePao.getObjectId());
+    assertEquals(objectId, clonePao.getPredecessorId());
+    assertEquals(sourcePao.getComponent(), clonePao.getComponent());
+    assertEquals(sourcePao.getObjectType(), clonePao.getObjectType());
+    checkAttributeSet(clonePao.getAttributes(), groupPolicy, regionPolicy);
+    checkAttributeSet(clonePao.getEffectiveAttributes(), groupPolicy, regionPolicy);
+
+    assertThrows(DuplicateObjectException.class, () -> paoService.clonePao(objectId, destinationObjectId));
+
+    // Delete
+    paoService.deletePao(objectId);
+    paoService.deletePao(destinationObjectId);
   }
 
   private void checkAttributeSet(
