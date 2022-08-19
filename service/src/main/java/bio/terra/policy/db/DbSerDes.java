@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import java.util.Map;
+import com.google.common.collect.Multimap;
 
 /**
  * Object mapper for use in the DAO modules. This mapper must stay constant over time to ensure that
@@ -40,13 +40,13 @@ public class DbSerDes {
   }
 
   // Specific mappers for key-value properties
-  public static String propertiesToJson(Map<String, String> kvmap) {
+  public static String propertiesToJson(Multimap<String, String> kvmap) {
     return toJson(kvmap);
   }
 
-  public static Map<String, String> jsonToProperties(String json) {
+  public static Multimap<String, String> jsonToProperties(String json) {
     try {
-      return serdesMapper.readValue(json, new TypeReference<Map<String, String>>() {});
+      return serdesMapper.readValue(json, new TypeReference<Multimap<String, String>>() {});
     } catch (JsonProcessingException ex) {
       throw new SerializationException("Failed to deserialize properties", ex);
     }

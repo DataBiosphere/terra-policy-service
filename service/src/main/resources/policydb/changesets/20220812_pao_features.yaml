@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: pao_features
+      author: dd
+      changes:
+      - addColumn:
+          tableName: policy_object
+          columns:
+            - column:
+                name: predecessor_id
+                type: text
+                remarks: UUID of the predecessor PAO
+      - dropColumn:
+          tableName: policy_object
+          columnName: in_conflict
+      - renameColumn:
+          tableName: policy_object
+          oldColumnName: children
+          newColumnName: sources
+          remarks: Array of ids of paos that this pao depends on
+      - addColumn:
+          tableName: attribute_set
+          columns:
+            - column:
+                name: conflicts
+                type: text[]
+                remarks: Array of conflicting PAOs. There should always be an array, even if it is empty.

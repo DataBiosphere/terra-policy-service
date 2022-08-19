@@ -3,6 +3,7 @@ package bio.terra.policy.service.pao;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
@@ -11,9 +12,8 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.testutils.LibraryTestBase;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +34,15 @@ public class PaoServiceTest extends LibraryTestBase {
     var objectId = UUID.randomUUID();
 
     var groupPolicy =
-        new PolicyInput(TERRA, GROUP_CONSTRAINT, Collections.singletonMap(GROUP, DDGROUP));
+        PolicyInput.createFromMap(
+            TERRA, GROUP_CONSTRAINT, Collections.singletonMap(GROUP, DDGROUP));
     var regionPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, Collections.singletonMap(REGION, US_REGION));
+        PolicyInput.createFromMap(
+            TERRA, REGION_CONSTRAINT, Collections.singletonMap(REGION, US_REGION));
 
-    Map<String, PolicyInput> policyMap = new HashMap<>();
-    policyMap.put(
-        PolicyInputs.composeKey(groupPolicy.getNamespace(), groupPolicy.getName()), groupPolicy);
-    policyMap.put(
-        PolicyInputs.composeKey(regionPolicy.getNamespace(), regionPolicy.getName()), regionPolicy);
-
-    var inputs = new PolicyInputs(policyMap);
+    var inputs = new PolicyInputs();
+    inputs.addInput(groupPolicy);
+    inputs.addInput(regionPolicy);
 
     // Create a PAO
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, inputs);
@@ -54,8 +52,8 @@ public class PaoServiceTest extends LibraryTestBase {
     assertEquals(objectId, pao.getObjectId());
     assertEquals(PaoComponent.WSM, pao.getComponent());
     assertEquals(PaoObjectType.WORKSPACE, pao.getObjectType());
-    checkAttributeSet(pao.getAttributes());
-    checkAttributeSet(pao.getEffectiveAttributes());
+    checkAttributeSet(pao.getAttributes(), groupPolicy, regionPolicy);
+    checkAttributeSet(pao.getEffectiveAttributes(), groupPolicy, regionPolicy);
 
     // Delete
     paoService.deletePao(objectId);
@@ -63,23 +61,22 @@ public class PaoServiceTest extends LibraryTestBase {
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId));
   }
 
-  private void checkAttributeSet(PolicyInputs attributeSet) {
-    String groupKey = PolicyInputs.composeKey(TERRA, GROUP_CONSTRAINT);
-    PolicyInput groupConstraint = attributeSet.getInputs().get(groupKey);
+  private void checkAttributeSet(
+      PolicyInputs attributeSet, PolicyInput groupPolicy, PolicyInput regionPolicy) {
+    PolicyInput groupConstraint = attributeSet.getInputs().get(groupPolicy.getKey());
     assertNotNull(groupConstraint);
-    assertEquals(TERRA, groupConstraint.getNamespace());
-    assertEquals(GROUP_CONSTRAINT, groupConstraint.getName());
-    String dataValue = groupConstraint.getAdditionalData().get(GROUP);
+    assertEquals(TERRA, groupConstraint.getPolicyName().getNamespace());
+    assertEquals(GROUP_CONSTRAINT, groupConstraint.getPolicyName().getName());
+    Collection<String> dataValue = groupConstraint.getAdditionalData().get(GROUP);
     assertNotNull(dataValue);
-    assertEquals(DDGROUP, dataValue);
+    assertTrue(dataValue.contains(DDGROUP));
 
-    String regionKey = PolicyInputs.composeKey(TERRA, REGION_CONSTRAINT);
-    PolicyInput regionConstraint = attributeSet.getInputs().get(regionKey);
+    PolicyInput regionConstraint = attributeSet.getInputs().get(regionPolicy.getKey());
     assertNotNull(regionConstraint);
-    assertEquals(TERRA, regionConstraint.getNamespace());
-    assertEquals(REGION_CONSTRAINT, regionConstraint.getName());
+    assertEquals(TERRA, regionConstraint.getPolicyName().getNamespace());
+    assertEquals(REGION_CONSTRAINT, regionConstraint.getPolicyName().getName());
     dataValue = regionConstraint.getAdditionalData().get(REGION);
     assertNotNull(dataValue);
-    assertEquals(US_REGION, dataValue);
+    assertTrue(dataValue.contains(US_REGION));
   }
 }
