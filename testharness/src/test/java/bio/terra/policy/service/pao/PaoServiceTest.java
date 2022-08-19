@@ -94,7 +94,8 @@ public class PaoServiceTest extends LibraryTestBase {
     checkAttributeSet(clonePao.getAttributes(), groupPolicy, regionPolicy);
     checkAttributeSet(clonePao.getEffectiveAttributes(), groupPolicy, regionPolicy);
 
-    assertThrows(DuplicateObjectException.class, () -> paoService.clonePao(objectId, destinationObjectId));
+    assertThrows(
+        DuplicateObjectException.class, () -> paoService.clonePao(objectId, destinationObjectId));
 
     // Delete
     paoService.deletePao(objectId);
