@@ -33,6 +33,11 @@ public class PaoService {
     this.paoDao = paoDao;
   }
 
+  public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
+    logger.info("Clone PAO id {} to {}", sourceObjectId, destinationObjectId);
+    paoDao.clonePao(sourceObjectId, destinationObjectId);
+  }
+
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
     logger.info(
