@@ -79,6 +79,42 @@ public class PaoDao {
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
       transactionManager = "tpsTransactionManager")
+  public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
+    DbPao sourcePao = getDbPao(sourceObjectId);
+
+    final String sql =
+        "INSERT INTO policy_object (object_id, component, object_type, sources,"
+            + " attribute_set_id, effective_set_id, predecessor_id)"
+            + " VALUES (:object_id, :component, :object_type, string_to_array(:sources, ','),"
+            + " :attribute_set_id, :effective_set_id, :predecessor_id)";
+
+    final String sourceIds = String.join(",", sourcePao.sources());
+
+    // First we store the policy object with a "forward reference" to the set.
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue("object_id", destinationObjectId.toString())
+            .addValue("component", sourcePao.component().getDbComponent())
+            .addValue("object_type", sourcePao.objectType().getDbObjectType())
+            .addValue("sources", sourceIds)
+            .addValue("attribute_set_id", sourcePao.attributeSetId())
+            .addValue("effective_set_id", sourcePao.effectiveSetId())
+            .addValue("predecessor_id", sourcePao.objectId());
+
+    try {
+      tpsJdbcTemplate.update(sql, params);
+      logger.info("Cloned Pao with id {} to {}", sourceObjectId, destinationObjectId);
+    } catch (DuplicateKeyException e) {
+      throw new DuplicateObjectException(
+          "Duplicate policy attributes object with destination objectId " + destinationObjectId);
+    }
+  }
+
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
 
