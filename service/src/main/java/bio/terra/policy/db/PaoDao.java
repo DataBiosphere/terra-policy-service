@@ -43,13 +43,16 @@ public class PaoDao {
       (rs, rowNum) -> {
         String[] sourcesArray = (String[]) rs.getArray("sources").getArray();
         Set<String> sources = new HashSet<>(Arrays.asList(sourcesArray));
+        var predecessorId = rs.getString("predecessor_id");
+        UUID predecessorUuid = predecessorId == null ? null : UUID.fromString(predecessorId);
         return new DbPao(
             UUID.fromString(rs.getString("object_id")),
             PaoComponent.fromDb(rs.getString("component")),
             PaoObjectType.fromDb(rs.getString("object_type")),
             sources,
             rs.getString("attribute_set_id"),
-            rs.getString("effective_set_id"));
+            rs.getString("effective_set_id"),
+            predecessorUuid);
       };
 
   private static final RowMapper<DbAttribute> DB_ATTRIBUTE_SET_ROW_MAPPER =
@@ -192,6 +195,7 @@ public class PaoDao {
           .setObjectType(dbPao.objectType())
           .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
           .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
+          .setPredecessorId(dbPao.predecessorId())
           .build();
     } catch (EmptyResultDataAccessException e) {
       throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
@@ -353,7 +357,7 @@ public class PaoDao {
   private DbPao getDbPao(UUID objectId) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, predecessor_id
         FROM policy_object WHERE object_id = :object_id
         """;
 

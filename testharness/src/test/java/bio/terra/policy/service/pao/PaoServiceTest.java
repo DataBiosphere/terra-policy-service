@@ -1,9 +1,6 @@
 package bio.terra.policy.service.pao;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
@@ -53,6 +50,7 @@ public class PaoServiceTest extends LibraryTestBase {
     assertEquals(objectId, pao.getObjectId());
     assertEquals(PaoComponent.WSM, pao.getComponent());
     assertEquals(PaoObjectType.WORKSPACE, pao.getObjectType());
+    assertNull(pao.getPredecessorId());
     checkAttributeSet(pao.getAttributes(), groupPolicy, regionPolicy);
     checkAttributeSet(pao.getEffectiveAttributes(), groupPolicy, regionPolicy);
 
