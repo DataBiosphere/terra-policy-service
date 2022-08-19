@@ -14,7 +14,6 @@ import java.util.Map;
  */
 public class DbAdditionalData {
   private record DbDataPair(String key, String value) {}
-  ;
 
   private final List<DbDataPair> dataPairList;
 

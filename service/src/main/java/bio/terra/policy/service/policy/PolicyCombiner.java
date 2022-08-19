@@ -4,6 +4,7 @@ import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
 public enum PolicyCombiner {
@@ -24,19 +25,19 @@ public enum PolicyCombiner {
     if (!StringUtils.equals(dependent.getKey(), source.getKey())) {
       throw new InternalTpsErrorException("Dependent and source have different policy keys");
     }
-    PolicyBase policy = findPolicyBaseByName(dependent.getPolicyName());
-    if (policy == null) {
+    Optional<PolicyBase> optionalPolicy = findPolicyBaseByName(dependent.getPolicyName());
+    if (optionalPolicy.isEmpty()) {
       throw new PolicyNotImplementedException("Combining unknown policies is not yet implemented");
     }
-    return policy.combine(dependent, source);
+    return optionalPolicy.get().combine(dependent, source);
   }
 
-  public static PolicyBase findPolicyBaseByName(PolicyName name) {
+  public static Optional<PolicyBase> findPolicyBaseByName(PolicyName name) {
     for (PolicyCombiner policyCombiner : values()) {
       if (policyCombiner.getPolicy().getPolicyName().equals(name)) {
-        return policyCombiner.getPolicy();
+        return Optional.of(policyCombiner.getPolicy());
       }
     }
-    return null;
+    return Optional.empty();
   }
 }

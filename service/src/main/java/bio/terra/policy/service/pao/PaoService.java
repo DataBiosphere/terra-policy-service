@@ -77,6 +77,8 @@ public class PaoService {
     }
 
     // Build a copy of the Pao with the desired change
+    // We duplicate the target Pao, but we do not copy the conflict annotations.
+    // That way we can detect new conflicts and when conflicts are resolved.
     Pao targetPao = paoDao.getPao(objectId);
     Pao modifiedPao = targetPao.duplicateWithoutConflicts();
     modifiedPao.getSourceObjectIds().add(sourceObjectId);
@@ -97,10 +99,4 @@ public class PaoService {
 
     return new LinkSourceResult(modifiedPao, conflicts);
   }
-
-  public void updatePao(
-      UUID targetPaoId,
-      PolicyInputs addAttributes,
-      PolicyInputs removeAttributes,
-      PaoUpdateMode updateMode) {}
 }

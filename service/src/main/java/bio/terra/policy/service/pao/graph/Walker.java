@@ -68,7 +68,7 @@ public class Walker {
     Pao inputPao = inputNode.getComputePao();
     PolicyInputs runningEffectiveSet = inputPao.getEffectiveAttributes();
     for (GraphNode source : inputNode.getSources()) {
-      runningEffectiveSet = computeEffective(runningEffectiveSet, inputNode, source);
+      runningEffectiveSet = computeEffective(runningEffectiveSet, source);
     }
 
     // If there is no change to the input effective attribute set, then we stop recursing.
@@ -90,26 +90,25 @@ public class Walker {
     }
   }
 
-  private PolicyInputs computeEffective(
-      PolicyInputs dependentInputs, GraphNode inputNode, GraphNode sourceNode) {
+  private PolicyInputs computeEffective(PolicyInputs dependentInputs, GraphNode sourceNode) {
     PolicyInputs newDependentEffective = new PolicyInputs();
     PolicyInputs sourceInputs = sourceNode.getComputePao().getEffectiveAttributes();
 
     // First traverse the input and probe the source. We take care of all combining
     // in this pass.
-    for (PolicyInput input : dependentInputs.getInputs().values()) {
-      PolicyInput sourceInput = sourceInputs.lookupPolicy(input);
+    for (PolicyInput dependentInput : dependentInputs.getInputs().values()) {
+      PolicyInput sourceInput = sourceInputs.lookupPolicy(dependentInput);
       if (sourceInput == null) {
-        newDependentEffective.addInput(input);
+        newDependentEffective.addInput(dependentInput);
       } else {
-        PolicyInput resultInput = PolicyCombiner.combine(input, sourceInput);
+        PolicyInput resultInput = PolicyCombiner.combine(dependentInput, sourceInput);
         if (resultInput == null) {
           // Combiner failed, so we have a conflict. Record the conflict in the input's
           // conflict set. Use the existing dependent input as the effective policy; that is,
           // when there is a conflict, we retain the existing policy setting and remember
           // the conflict.
-          input.getConflicts().add(sourceNode.getComputePao().getObjectId());
-          newDependentEffective.addInput(input);
+          dependentInput.getConflicts().add(sourceNode.getComputePao().getObjectId());
+          newDependentEffective.addInput(dependentInput);
         } else {
           newDependentEffective.addInput(resultInput);
         }
