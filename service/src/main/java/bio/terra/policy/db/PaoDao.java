@@ -363,7 +363,7 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, predecessor_id
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;

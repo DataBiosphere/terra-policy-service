@@ -117,6 +117,7 @@ public class Pao {
             dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet()))
         .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
         .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
+        .setPredecessorId(dbPao.predecessorId())
         .build();
   }
 
