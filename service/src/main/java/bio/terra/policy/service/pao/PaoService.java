@@ -14,7 +14,6 @@ import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -132,6 +131,7 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
+    Pao modifiedPao = targetPao.duplicateWithoutConflicts();
     PolicyInputs newAttributes = new PolicyInputs();
 
     // We do the removes first, so we don't remove newly added things
@@ -166,17 +166,10 @@ public class PaoService {
       }
     }
 
-    // Construct the modified Pao using the newly computed attributes
-    Pao modifiedPao =
-        new Pao.Builder()
-            .setObjectId(targetPao.getObjectId())
-            .setComponent(targetPao.getComponent())
-            .setObjectType(targetPao.getObjectType())
-            .setAttributes(newAttributes)
-            .setEffectiveAttributes(newAttributes.duplicateWithoutConflicts())
-            .setSourceObjectIds(new HashSet<>(targetPao.getSourceObjectIds()))
-            .setPredecessorId(targetPao.getPredecessorId())
-            .build();
+    // Set the attributes to the newly computed attributes
+    // Note: we have to leave the effective attributes set to the original
+    // value so the walker detects the change.
+    modifiedPao.setAttributes(newAttributes);
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
     Walker walker = new Walker(paoDao, targetPao, modifiedPao);
