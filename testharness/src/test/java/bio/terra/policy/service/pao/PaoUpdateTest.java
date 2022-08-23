@@ -82,7 +82,7 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   @Test
-  void linkSourceToEmptyTest() throws Exception {
+  void linkSourceToEmptyTest_policiesPropagateCorrectly() throws Exception {
     // PaoA - has flag A and data policy X, data1
     UUID paoAid =
         makePao(makeFlagInput(TEST_FLAG_POLICY_A), makeDataInput(TEST_DATA_POLICY_X, DATA1));
@@ -181,7 +181,7 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   @Test
-  void linkSourceHierarchyTest() throws Exception {
+  void linkSourceHierarchyTest_policesCombineCorrectly() throws Exception {
     // PaoA - has flag A and data policy X, data1
     UUID paoAid =
         makePao(makeFlagInput(TEST_FLAG_POLICY_A), makeDataInput(TEST_DATA_POLICY_X, DATA1));
@@ -289,7 +289,7 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   @Test
-  void updateSingleTest() throws Exception {
+  void updateSinglePaoTest_paoAttributesUpdateCorrectly() throws Exception {
     // Basic updates on a single Pao
     // Pao has flag A and data policy X, data1
     UUID paoId =
@@ -349,7 +349,7 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   @Test
-  void updatePropagateOneTest() throws Exception {
+  void updateOneSourceTest_sourcePolicyPropagatesCorrectly() throws Exception {
     // Start empty S --> D
     // add to S; should show up in D
     // remove from S; should disappear from D
@@ -436,12 +436,15 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   private void checkConflict(
-      PolicyUpdateResult result, UUID dependent, UUID source, PolicyName policyName) {
+      PolicyUpdateResult result,
+      UUID expectedDependent,
+      UUID expectedSource,
+      PolicyName expectedPolicyName) {
     assertEquals(1, result.conflicts().size());
     PolicyConflict conflict = result.conflicts().get(0);
-    assertEquals(dependent, conflict.dependent().getObjectId());
-    assertEquals(source, conflict.source().getObjectId());
-    assertEquals(policyName, conflict.policyName());
+    assertEquals(expectedDependent, conflict.dependent().getObjectId());
+    assertEquals(expectedSource, conflict.source().getObjectId());
+    assertEquals(expectedPolicyName, conflict.policyName());
   }
 
   private void checkForPolicies(Pao pao, PolicyInput... inputList) {

@@ -12,7 +12,7 @@ import com.google.common.collect.Multimap;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-public class MutatorTest extends LibraryTestBase {
+public class PolicyMutatorTest extends LibraryTestBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String GROUP = "group";
@@ -29,7 +29,7 @@ public class MutatorTest extends LibraryTestBase {
   }
 
   @Test
-  void groupConstraintTest() throws Exception {
+  void groupConstraintTest_groupPolicyInputsCombineCorrectly() throws Exception {
     var policyGroup = new PolicyGroupConstraint();
 
     var ddgroupPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP, DDGROUP));

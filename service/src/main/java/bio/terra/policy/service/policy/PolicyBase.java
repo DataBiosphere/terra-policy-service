@@ -16,12 +16,11 @@ public interface PolicyBase {
   PolicyInput combine(PolicyInput dependent, PolicyInput source);
 
   /**
-   * Remove a policy.
+   * Remove a policy. In most cases, this results in the policy being gone.
    *
    * @param target existing policy
    * @param removePolicy policy to remove
    * @return resulting policy or null if the policy is gone
    */
-  // Remove a policy from a policy; in most cases this results in
   PolicyInput remove(PolicyInput target, PolicyInput removePolicy);
 }
