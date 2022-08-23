@@ -1,5 +1,7 @@
 package bio.terra.policy.service.policy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -8,7 +10,6 @@ import bio.terra.policy.testutils.LibraryTestBase;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MutatorTest extends LibraryTestBase {
@@ -43,38 +44,27 @@ public class MutatorTest extends LibraryTestBase {
     // Simple case
     Set<String> groupSet = policyGroup.dataToSet(ddmc.getAdditionalData().get(GROUP));
     assertEquals(2, groupSet.size(), "Contains 2 groups");
-    Assertions.assertTrue(groupSet.contains(DDGROUP));
-    Assertions.assertTrue(groupSet.contains(MCGROUP));
+    assertThat(groupSet, containsInAnyOrder(DDGROUP, MCGROUP));
 
     // Multiple case
     PolicyInput ddmcyu = policyGroup.combine(ddgroupPolicy, mcyugroupPolicy);
     groupSet = policyGroup.dataToSet(ddmcyu.getAdditionalData().get(GROUP));
-    assertEquals(3, groupSet.size(), "Contains 3 groups");
-    Assertions.assertTrue(groupSet.contains(DDGROUP));
-    Assertions.assertTrue(groupSet.contains(MCGROUP));
-    Assertions.assertTrue(groupSet.contains(YUGROUP));
+    assertThat(groupSet, containsInAnyOrder(DDGROUP, MCGROUP, YUGROUP));
 
     // Make sure order is not important
     PolicyInput mcyudd = policyGroup.combine(mcyugroupPolicy, ddgroupPolicy);
     groupSet = policyGroup.dataToSet(mcyudd.getAdditionalData().get(GROUP));
-    assertEquals(3, groupSet.size(), "Contains 3 groups");
-    Assertions.assertTrue(groupSet.contains(DDGROUP));
-    Assertions.assertTrue(groupSet.contains(MCGROUP));
-    Assertions.assertTrue(groupSet.contains(YUGROUP));
+    assertThat(groupSet, containsInAnyOrder(DDGROUP, MCGROUP, YUGROUP));
 
     // remove dd from a group of 3
     PolicyInput nodd = policyGroup.remove(mcyuddgroupPolicy, ddgroupPolicy);
     groupSet = policyGroup.dataToSet(nodd.getAdditionalData().get(GROUP));
-    assertEquals(2, groupSet.size(), "Contains 2 groups");
-    Assertions.assertTrue(groupSet.contains(MCGROUP));
-    Assertions.assertTrue(groupSet.contains(YUGROUP));
+    assertThat(groupSet, containsInAnyOrder(MCGROUP, YUGROUP));
 
     // remove dd when dd is not there to start with
     nodd = policyGroup.remove(mcyugroupPolicy, ddgroupPolicy);
     groupSet = policyGroup.dataToSet(nodd.getAdditionalData().get(GROUP));
-    assertEquals(2, groupSet.size(), "Contains 2 groups");
-    Assertions.assertTrue(groupSet.contains(MCGROUP));
-    Assertions.assertTrue(groupSet.contains(YUGROUP));
+    assertThat(groupSet, containsInAnyOrder(MCGROUP, YUGROUP));
 
     // remove dd when dd is the only group there
     nodd = policyGroup.remove(ddgroupPolicy, ddgroupPolicy);

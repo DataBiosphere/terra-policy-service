@@ -1,7 +1,7 @@
 package bio.terra.policy.service.pao;
 
+import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
-import bio.terra.policy.common.exception.InvalidDirectConflictException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
@@ -158,7 +158,7 @@ public class PaoService {
           // We have a combined policy to add
           newAttributes.addInput(addResult);
         } else {
-          throw new InvalidDirectConflictException(
+          throw new DirectConflictException(
               String.format(
                   "Update of policy %s adding %s creates a conflict",
                   existingPolicy.getKey(), addPolicy.getKey()));
@@ -186,7 +186,7 @@ public class PaoService {
       // Paos.
       for (PolicyConflict conflict : conflicts) {
         if (conflict.dependent().getObjectId().equals(targetPaoId)) {
-          throw new InvalidDirectConflictException(
+          throw new DirectConflictException(
               String.format(
                   "Update of policy %s on %s creates a conflict",
                   conflict.policyName().getKey(), conflict.dependent().toShortString()));

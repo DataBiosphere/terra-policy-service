@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
-import bio.terra.policy.common.exception.InvalidDirectConflictException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
@@ -42,30 +42,40 @@ public class PaoUpdateTest extends LibraryTestBase {
 
   @Test
   void unknownFlagCombinerTest() throws Exception {
+    // Flag policies refer to unknown policies that have no additional data.
+    // They act like flags. If anyone sets the flag, it is set.
+
     var flagPolicyA1 = makeFlagInput(TEST_FLAG_POLICY_A);
     var flagPolicyA2 = makeFlagInput(TEST_FLAG_POLICY_A);
 
+    // Combining two of the same flag should result in the A flag being set.
     PolicyInput flagResult = PolicyMutator.combine(flagPolicyA1, flagPolicyA2);
     assertEquals(flagResult.getKey(), flagPolicyA1.getKey());
     assertEquals(0, flagResult.getAdditionalData().size());
 
+    // It is an error to combine policies with different names. This is an internal
+    // error, because in the production code, combiner check should never happen.
     var flagPolicyB = makeFlagInput(TEST_FLAG_POLICY_B);
-
     assertThrows(
         InternalTpsErrorException.class, () -> PolicyMutator.combine(flagPolicyA1, flagPolicyB));
   }
 
   @Test
   void unknownDataCombinerTest() throws Exception {
-    // matching test
+    // The term "data policy" here refers to an unknown policy with additional data.
+    // The rule in the PolicyUnknown implementation is that if the data is different
+    // the policies conflict.
     var data1Policy1 = makeDataInput(TEST_DATA_POLICY_X, DATA1);
     var data1Policy2 = makeDataInput(TEST_DATA_POLICY_X, DATA1);
 
+    // Combining identical data policies should result in a single data policy with the same
+    // additional data
     PolicyInput dataResult = PolicyMutator.combine(data1Policy1, data1Policy2);
     assertEquals(dataResult.getKey(), data1Policy1.getKey());
     assertEquals(dataResult.getAdditionalData(), data1Policy1.getAdditionalData());
 
-    // conflict test
+    // Combining the same policy name with different additional data should be a conflict.
+    // The combiner reports conflicts by returning null.
     var data2Policy = makeDataInput(TEST_DATA_POLICY_X, DATA2);
     dataResult = PolicyMutator.combine(data1Policy1, data2Policy);
     assertNull(dataResult);
@@ -332,7 +342,7 @@ public class PaoUpdateTest extends LibraryTestBase {
     PolicyInputs conflictPolicy = makePolicyInputs(makeDataInput(TEST_DATA_POLICY_X, DATA2));
 
     assertThrows(
-        InvalidDirectConflictException.class,
+        DirectConflictException.class,
         () ->
             paoService.updatePao(
                 paoConflict, conflictPolicy, empty, PaoUpdateMode.ENFORCE_CONFLICTS));
