@@ -1,17 +1,13 @@
 package bio.terra.policy.service.pao.graph;
 
 import bio.terra.policy.common.exception.InternalTpsErrorException;
-import bio.terra.policy.common.model.PolicyInput;
-import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
 import bio.terra.policy.service.pao.graph.model.AttributeEvaluator;
 import bio.terra.policy.service.pao.graph.model.GraphAttribute;
-import bio.terra.policy.service.pao.graph.model.GraphAttributeConflict;
 import bio.terra.policy.service.pao.graph.model.GraphAttributeSet;
 import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.policy.PolicyMutator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,15 +24,14 @@ public class Walker {
   private final Map<UUID, GraphNode> paoMap;
   private final List<PolicyConflict> newConflicts;
   /**
-   * Constructing the Walker object performs the graph walk. That computes new effective
-   * policies for the objects. The modifiedPao
+   * Constructing the Walker object performs the graph walk. That computes new effective policies
+   * for the objects. The modifiedPao
    *
    * @param paoDao reference to the DAO so we can read and possibly update policies
    * @param pao with proposed modification
-   * @param changedPaoId object id of the change. If this is a change to the policy of an
-   *                     object, the id will be the same as the pao. If this is adding
-   *                     a new source to the object, this will be the id of the new source Pao.
-   * TODO: is this the best way to express the change?
+   * @param changedPaoId object id of the change. If this is a change to the policy of an object,
+   *     the id will be the same as the pao. If this is adding a new source to the object, this will
+   *     be the id of the new source Pao. TODO: is this the best way to express the change?
    */
   public Walker(PaoDao paoDao, Pao pao, UUID changedPaoId) {
     this.paoDao = paoDao;
@@ -48,23 +43,22 @@ public class Walker {
     walkNode(targetNode, changedPaoId);
   }
 
-  /**
-   * Apply the changes computed by the walker
-   */
+  /** Apply the changes computed by the walker */
   public void applyChanges() {
+    // Collect all of the changed graph nodes
     List<GraphNode> changeList = new ArrayList<>();
     for (GraphNode node : paoMap.values()) {
-      // If we hit a conflict and there wasn't one before, or we modified the effective
-      // attribute set, then we need to update the Pao.
-      if (node.isNewConflict() || node.isModified()) {
+      if (node.isModified()) {
         changeList.add(node);
       }
     }
+    // Ask the DAO to update them
     paoDao.updatePaos(changeList);
   }
 
   /**
    * Getter for returning conflicts from the walk
+   *
    * @return list of policy conflicts
    */
   public List<PolicyConflict> getNewConflicts() {
@@ -73,6 +67,7 @@ public class Walker {
 
   /**
    * Recursive graph walker
+   *
    * @param inputNode graph node we are processing
    * @param changedPaoId the object id of the Pao that changed
    */
@@ -91,7 +86,8 @@ public class Walker {
 
     // If there is no change to the input effective attribute set and there are no new
     // conflicts, then we stop recursing. We won't cause a change to our dependents.
-    if (newEffectiveAttributes.equals(inputNode.getEffectiveAttributeSet()) && conflicts.isEmpty()) {
+    if (newEffectiveAttributes.equals(inputNode.getEffectiveAttributeSet())
+        && conflicts.isEmpty()) {
       return;
     }
 
@@ -158,12 +154,14 @@ public class Walker {
   private List<PolicyConflict> gatherNewConflicts(GraphAttributeSet attributeSet) {
     List<PolicyConflict> conflicts = new ArrayList<>();
     for (GraphAttribute graphAttribute : attributeSet.getAttributes()) {
-      Pao containingPao = getPaoFromGraphNode(graphAttribute.getContainingPaoId());
+      Pao containingPao = graphAttribute.getContainingPao();
 
       // Build a conflict result for each new conflict
       for (UUID conflictId : graphAttribute.getNewConflicts()) {
         Pao conflictPao = getPaoFromGraphNode(conflictId);
-        conflicts.add(new PolicyConflict(containingPao, conflictPao, graphAttribute.getPolicyInput().getPolicyName()));
+        conflicts.add(
+            new PolicyConflict(
+                containingPao, conflictPao, graphAttribute.getPolicyInput().getPolicyName()));
       }
     }
     return conflicts;

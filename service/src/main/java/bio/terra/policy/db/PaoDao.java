@@ -234,37 +234,50 @@ public class PaoDao {
    * @param change graph node that has the initial and newly computed Paos
    */
   private void updatePao(GraphNode change) {
-    Pao initialPao = change.getInitialPao();
-    Pao computedPao = change.getComputePao();
-    DbPao initialDbPao = getDbPao(initialPao.getObjectId());
+    // Get the modified pao and attribute sets from the graph node
+    Pao pao = change.getPao();
+    PolicyInputs attributes = change.getPolicyAttributes();
+    PolicyInputs effectiveAttributes = change.getEffectivePolicyAttributes();
 
-    if (!initialPao.getAttributes().equals(computedPao.getAttributes())) {
-      String attributeSetId = initialDbPao.attributeSetId();
+    // Get the dbPao and the attribute sets from the db
+    DbPao dbPao = getDbPao(pao.getObjectId());
+    Map<String, PolicyInputs> attributeSetMap =
+        getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
+    PolicyInputs dbAttributes = attributeSetMap.get(dbPao.attributeSetId());
+    PolicyInputs dbEffectiveAttributes = attributeSetMap.get(dbPao.effectiveSetId());
+
+    // Update attributes if changed
+    if (!attributes.equals(dbAttributes)) {
+      String attributeSetId = dbPao.attributeSetId();
       deleteAttributeSet(attributeSetId);
-      createAttributeSet(attributeSetId, computedPao.getAttributes());
+      createAttributeSet(attributeSetId, attributes);
     }
 
-    if (!initialPao.getEffectiveAttributes().equals(computedPao.getEffectiveAttributes())) {
-      String effectiveSetId = initialDbPao.effectiveSetId();
+    // Update effective attributes if changed
+    if (!effectiveAttributes.equals(dbEffectiveAttributes)) {
+      String effectiveSetId = dbPao.effectiveSetId();
       deleteAttributeSet(effectiveSetId);
-      createAttributeSet(effectiveSetId, computedPao.getEffectiveAttributes());
+      createAttributeSet(effectiveSetId, effectiveAttributes);
     }
 
-    if (!initialPao.getSourceObjectIds().equals(computedPao.getSourceObjectIds())) {
+    // Update sources if changed
+    Set<UUID> dbSources =
+        dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet());
+    if (!dbSources.equals(pao.getSourceObjectIds())) {
       final String sql =
           "UPDATE policy_object SET sources = string_to_array(:sources, ',') WHERE object_id = :object_id";
 
-      String sourcesSqlArray = makeCsvFromUuidSet(computedPao.getSourceObjectIds());
+      String sourcesSqlArray = makeCsvFromUuidSet(pao.getSourceObjectIds());
 
       MapSqlParameterSource params =
           new MapSqlParameterSource()
-              .addValue("object_id", initialPao.getObjectId().toString())
+              .addValue("object_id", pao.getObjectId().toString())
               .addValue("sources", sourcesSqlArray);
 
       tpsJdbcTemplate.update(sql, params);
       logger.info(
           "Update sources array for pao object id {}, sources {}",
-          initialPao.getObjectId().toString(),
+          pao.getObjectId().toString(),
           sourcesSqlArray);
     }
   }
