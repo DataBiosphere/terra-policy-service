@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 /**
@@ -38,6 +39,10 @@ public class PolicyInputs {
     return inputs;
   }
 
+  public void removeInput(PolicyInput removeInput) {
+    inputs.remove(removeInput.getKey());
+  }
+
   public static PolicyInputs fromDb(List<PolicyInput> inputList) {
     PolicyInputs inputs = new PolicyInputs();
     for (PolicyInput input : inputList) {
@@ -53,6 +58,13 @@ public class PolicyInputs {
       dupMap.put(entry.getKey(), dupInput);
     }
     return new PolicyInputs(dupMap);
+  }
+
+  @Override
+  public String toString() {
+    return new StringJoiner(", ", PolicyInputs.class.getSimpleName() + "[", "]")
+        .add("inputs=" + inputs)
+        .toString();
   }
 
   @Override

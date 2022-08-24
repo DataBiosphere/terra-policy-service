@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 public class PolicyInput {
@@ -63,5 +64,14 @@ public class PolicyInput {
 
   public PolicyInput duplicateWithoutConflicts() {
     return new PolicyInput(policyName, additionalData);
+  }
+
+  @Override
+  public String toString() {
+    return new StringJoiner(", ", PolicyInput.class.getSimpleName() + "[", "]")
+        .add("policyName=" + policyName)
+        .add("additionalData=" + additionalData)
+        .add("conflicts=" + conflicts)
+        .toString();
   }
 }

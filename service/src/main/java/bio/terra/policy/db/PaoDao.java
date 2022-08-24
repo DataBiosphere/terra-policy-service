@@ -156,15 +156,7 @@ public class PaoDao {
       DbPao dbPao = getDbPao(objectId);
       Map<String, PolicyInputs> attributeSetMap =
           getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
-
-      return new Pao.Builder()
-          .setObjectId(dbPao.objectId())
-          .setComponent(dbPao.component())
-          .setObjectType(dbPao.objectType())
-          .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
-          .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
-          .setPredecessorId(dbPao.predecessorId())
-          .build();
+      return Pao.fromDb(dbPao, attributeSetMap);
     } catch (EmptyResultDataAccessException e) {
       throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
     }
@@ -184,6 +176,12 @@ public class PaoDao {
    * @return List of Pao objects
    */
   public List<Pao> getPaos(List<UUID> objectIdList) {
+    List<Pao> paoList = new ArrayList<>();
+    if (objectIdList.isEmpty()) {
+      // Nothing to do
+      return paoList;
+    }
+
     List<DbPao> dbPaoList = getDbPaos(objectIdList);
     List<String> setIdList = new ArrayList<>();
     for (DbPao dbPao : dbPaoList) {
@@ -194,16 +192,8 @@ public class PaoDao {
     // Gather all of the attribute sets
     Map<String, PolicyInputs> attributeSetMap = getAttributeSets(setIdList);
 
-    List<Pao> paoList = new ArrayList<>();
     for (DbPao dbPao : dbPaoList) {
-      paoList.add(
-          new Pao.Builder()
-              .setObjectId(dbPao.objectId())
-              .setComponent(dbPao.component())
-              .setObjectType(dbPao.objectType())
-              .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
-              .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
-              .build());
+      paoList.add(Pao.fromDb(dbPao, attributeSetMap));
     }
 
     return paoList;
@@ -216,7 +206,7 @@ public class PaoDao {
    * @return Set of dependent UUIDs that reference that source
    */
   public Set<UUID> getDependentIds(UUID sourceId) {
-    final String sql = "SELECT object_id FROM policy_object WHERE ARRAY[:source_id] <@ sources";
+    final String sql = "SELECT object_id FROM policy_object WHERE :source_id = ANY(sources)";
 
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("source_id", sourceId.toString());
@@ -373,13 +363,18 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, predecessor_id
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;
 
+    if (objectIdList.isEmpty()) {
+      return new ArrayList<>();
+    }
+    List<String> stringIdList = objectIdList.stream().map(UUID::toString).toList();
+
     MapSqlParameterSource params =
-        new MapSqlParameterSource().addValue("object_id_list", objectIdList);
+        new MapSqlParameterSource().addValue("object_id_list", stringIdList);
 
     return tpsJdbcTemplate.query(sql, params, DB_PAO_ROW_MAPPER);
   }
@@ -396,8 +391,13 @@ public class PaoDao {
         SELECT set_id, namespace, name, properties, conflicts
         FROM attribute_set
         WHERE set_id IN (:set_id_list)
-        ORDER BY set_id
         """;
+
+    var attributeSets = new HashMap<String, PolicyInputs>();
+    if (setIdList.isEmpty()) {
+      // Nothing to do - skip the query
+      return attributeSets;
+    }
 
     var uniqueSetIds = new HashSet<>(setIdList);
     var params = new MapSqlParameterSource().addValue("set_id_list", uniqueSetIds);
@@ -405,27 +405,18 @@ public class PaoDao {
     List<DbAttribute> attributeList =
         tpsJdbcTemplate.query(sql, params, DB_ATTRIBUTE_SET_ROW_MAPPER);
 
-    var attributeSets = new HashMap<String, PolicyInputs>();
-    if (attributeList.isEmpty()) {
-      return attributeSets;
+    // Initialize the attributeSets with all input set ids and an empty PolicyInputs.
+    // That is a valid return and covers the case where attribute sets are empty,
+    // so do not have any rows in the attribute set table.
+    for (String id : uniqueSetIds) {
+      attributeSets.put(id, new PolicyInputs());
     }
 
-    // We rely on the set_id order to properly split the resulting of attributes into their
-    // attribute sets
-    String currentSetId = attributeList.get(0).setId();
-    List<PolicyInput> inputList = new ArrayList<>();
+    // For attribute rows we have, find their attribute set and add the policy
     for (DbAttribute attribute : attributeList) {
-      // If we are switching sets, finish the current one and start the next one
-      if (!attribute.setId().equals(currentSetId)) {
-        attributeSets.put(currentSetId, PolicyInputs.fromDb(inputList));
-        currentSetId = attribute.setId();
-        inputList = new ArrayList<>();
-      }
-      // Add this attribute to the current collection
-      inputList.add(attribute.policyInput());
+      PolicyInputs policyInputs = attributeSets.get(attribute.setId());
+      policyInputs.addInput(attribute.policyInput());
     }
-    // Finish the last set
-    attributeSets.put(currentSetId, PolicyInputs.fromDb(inputList));
 
     return attributeSets;
   }

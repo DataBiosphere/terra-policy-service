@@ -28,6 +28,11 @@ public class PolicyName {
   }
 
   @Override
+  public String toString() {
+    return getKey();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof PolicyName)) return false;

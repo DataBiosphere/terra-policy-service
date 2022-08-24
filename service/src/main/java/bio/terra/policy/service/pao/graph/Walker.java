@@ -6,7 +6,7 @@ import bio.terra.policy.db.PaoDao;
 import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.policy.PolicyCombiner;
+import bio.terra.policy.service.policy.PolicyMutator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +21,18 @@ import java.util.UUID;
 public class Walker {
   private final PaoDao paoDao;
   private final Map<UUID, GraphNode> paoMap;
-  private final Pao initialPao;
-  private final Pao modifiedPao;
+  private final GraphNode targetNode;
 
   public Walker(PaoDao paoDao, Pao initialPao, Pao modifiedPao) {
     this.paoDao = paoDao;
     this.paoMap = new HashMap<>();
-    this.initialPao = initialPao;
-    this.modifiedPao = modifiedPao;
+    this.targetNode =
+        new GraphNode()
+            .setInitialPao(initialPao)
+            .setComputePao(modifiedPao)
+            .setModified(true)
+            .setNewConflict(false);
+    paoMap.put(modifiedPao.getObjectId(), targetNode);
   }
 
   public void applyChanges() {
@@ -50,23 +54,15 @@ public class Walker {
    * @return list of policy conflicts
    */
   public List<PolicyConflict> walk() {
-    var targetNode =
-        new GraphNode()
-            .setInitialPao(initialPao)
-            .setComputePao(modifiedPao)
-            .setModified(true)
-            .setNewConflict(false);
-    paoMap.put(modifiedPao.getObjectId(), targetNode);
     walkNode(targetNode);
     return computeConflict();
   }
 
   private void walkNode(GraphNode inputNode) {
+    // We re-compute the effective attribute set from our set attributes and our sources
     makeSourcesList(inputNode);
-
-    // We compute the new effective attribute set from our sources
     Pao inputPao = inputNode.getComputePao();
-    PolicyInputs runningEffectiveSet = inputPao.getEffectiveAttributes();
+    PolicyInputs runningEffectiveSet = inputPao.getAttributes();
     for (GraphNode source : inputNode.getSources()) {
       runningEffectiveSet = computeEffective(runningEffectiveSet, source);
     }
@@ -101,7 +97,7 @@ public class Walker {
       if (sourceInput == null) {
         newDependentEffective.addInput(dependentInput);
       } else {
-        PolicyInput resultInput = PolicyCombiner.combine(dependentInput, sourceInput);
+        PolicyInput resultInput = PolicyMutator.combine(dependentInput, sourceInput);
         if (resultInput == null) {
           // Combiner failed, so we have a conflict. Record the conflict in the input's
           // conflict set. Use the existing dependent input as the effective policy; that is,
