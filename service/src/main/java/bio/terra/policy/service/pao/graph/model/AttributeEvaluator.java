@@ -107,7 +107,7 @@ public class AttributeEvaluator {
     if (resultInput == null || attribute.hasNewConflict()) {
       UUID id = attribute.getContainingPao().getObjectId();
       if (attribute.getPolicyInput().getConflicts().contains(id)) {
-        newAttribute.setExistingConflict(id);
+        newAttribute.setReFoundConflict(id);
       } else {
         newAttribute.setNewConflict(id);
       }

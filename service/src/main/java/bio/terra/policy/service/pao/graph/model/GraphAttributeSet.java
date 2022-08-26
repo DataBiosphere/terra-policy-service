@@ -42,7 +42,7 @@ public class GraphAttributeSet {
   public PolicyInputs makeAttributeSet() {
     var inputs = new PolicyInputs();
     for (GraphAttribute attribute : getAttributes()) {
-      Set<UUID> combinedConflicts = new HashSet<>(attribute.getExistingConflicts());
+      Set<UUID> combinedConflicts = new HashSet<>(attribute.getReFoundConflicts());
       combinedConflicts.addAll(attribute.getNewConflicts());
       var input =
           new PolicyInput(
