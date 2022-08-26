@@ -41,6 +41,8 @@ public class Walker {
     GraphNode targetNode = new GraphNode(pao, true);
     paoMap.put(pao.getObjectId(), targetNode);
     walkNode(targetNode, changedPaoId);
+    // Fill in the resulting effective attributes, so they can be returned in the update response
+    targetNode.getPao().setEffectiveAttributes(targetNode.getEffectivePolicyAttributes());
   }
 
   /** Apply the changes computed by the walker */
@@ -75,9 +77,9 @@ public class Walker {
     // Build graph nodes for all of the sources
     makeSourcesList(inputNode);
 
-    // Construct the evaluation structure for computing the effective
+    // Construct the evaluation structure for computing the effective of this node
     AttributeEvaluator evaluator = new AttributeEvaluator();
-    evaluator.addAttributeSet(inputNode.getEffectiveAttributeSet());
+    evaluator.addAttributeSet(inputNode.getObjectAttributeSet());
     for (GraphNode source : inputNode.getSources()) {
       evaluator.addAttributeSet(source.getEffectiveAttributeSet());
     }

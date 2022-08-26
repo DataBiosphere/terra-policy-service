@@ -56,6 +56,10 @@ public class GraphNode {
     this.effectiveAttributeSet = effectiveAttributeSet;
   }
 
+  public GraphAttributeSet getObjectAttributeSet() {
+    return objectAttributeSet;
+  }
+
   public PolicyInputs getPolicyAttributes() {
     return objectAttributeSet.makeAttributeSet();
   }
