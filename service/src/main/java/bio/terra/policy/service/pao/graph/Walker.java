@@ -78,7 +78,7 @@ public class Walker {
     makeSourcesList(inputNode);
 
     // Construct the evaluation structure for computing the effective of this node
-    AttributeEvaluator evaluator = new AttributeEvaluator();
+    AttributeEvaluator evaluator = new AttributeEvaluator(inputNode.getPao());
     evaluator.addAttributeSet(inputNode.getObjectAttributeSet());
     for (GraphNode source : inputNode.getSources()) {
       evaluator.addAttributeSet(source.getEffectiveAttributeSet());
@@ -95,7 +95,7 @@ public class Walker {
 
     // There was a change. Save the change as the new effective attributes
     // and mark the node modified so we know to write it back to the database later.
-    // Save the conflicts to the object list
+    // Save the conflicts to the walker list of all new conflicts
     inputNode.setEffectiveAttributeSet(newEffectiveAttributes);
     inputNode.setModified(true);
     newConflicts.addAll(conflicts);

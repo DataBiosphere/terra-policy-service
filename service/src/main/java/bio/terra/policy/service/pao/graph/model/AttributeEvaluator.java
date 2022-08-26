@@ -1,6 +1,7 @@
 package bio.terra.policy.service.pao.graph.model;
 
 import bio.terra.policy.common.model.PolicyInput;
+import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.PolicyMutator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +19,11 @@ import org.slf4j.LoggerFactory;
 public class AttributeEvaluator {
   private static final Logger logger = LoggerFactory.getLogger(AttributeEvaluator.class);
   private final Map<String, List<GraphAttribute>> inputs;
+  private final Pao containingPao; // The PAO we are evaluating
 
-  public AttributeEvaluator() {
+  public AttributeEvaluator(Pao containingPao) {
     this.inputs = new HashMap<>();
+    this.containingPao = containingPao;
   }
 
   public void addAttributeSet(GraphAttributeSet attributeSet) {
@@ -98,23 +101,36 @@ public class AttributeEvaluator {
   private GraphAttribute combineAttribute(GraphAttribute newAttribute, GraphAttribute attribute) {
     PolicyInput input = attribute.getPolicyInput();
     if (newAttribute == null) {
-      return new GraphAttribute(attribute.getContainingPao(), input);
+      newAttribute = new GraphAttribute(containingPao, input);
+      if (attribute.hasNewConflict()) {
+        propagateConflict(newAttribute, attribute);
+      }
     }
 
     PolicyInput currentInput = newAttribute.getPolicyInput();
     PolicyInput resultInput = PolicyMutator.combine(currentInput, input);
     // We propagate conflicts through dependents even if the policies are fine otherwise.
     if (resultInput == null || attribute.hasNewConflict()) {
-      UUID id = attribute.getContainingPao().getObjectId();
-      if (attribute.getPolicyInput().getConflicts().contains(id)) {
-        newAttribute.setReFoundConflict(id);
-      } else {
-        newAttribute.setNewConflict(id);
-      }
+      propagateConflict(newAttribute, attribute);
     } else {
       newAttribute.setPolicyInput(resultInput);
     }
     return newAttribute;
+  }
+
+  /**
+   * We need to propagate conflicts through dependents, even if there is no conflict on the policy.
+   *
+   * @param newAttribute attribute we are configuring
+   * @param attribute possible source of the conflict
+   */
+  private void propagateConflict(GraphAttribute newAttribute, GraphAttribute attribute) {
+    UUID id = attribute.getContainingPao().getObjectId();
+    if (attribute.getPolicyInput().getConflicts().contains(id)) {
+      newAttribute.setReFoundConflict(id);
+    } else {
+      newAttribute.setNewConflict(id);
+    }
   }
 
   private void addAttribute(String key, GraphAttribute graphAttribute) {

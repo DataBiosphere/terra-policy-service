@@ -14,7 +14,7 @@ public class GraphAttribute {
 
   public GraphAttribute(Pao containingPao, PolicyInput policyInput) {
     this.containingPao = containingPao;
-    this.policyInput = policyInput.duplicateWithoutConflicts();
+    this.policyInput = policyInput.duplicate();
     reFoundConflicts = new HashSet<>();
     newConflicts = new HashSet<>();
   }
