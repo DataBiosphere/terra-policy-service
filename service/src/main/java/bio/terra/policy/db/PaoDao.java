@@ -48,7 +48,8 @@ public class PaoDao {
             PaoObjectType.fromDb(rs.getString("object_type")),
             sources,
             rs.getString("attribute_set_id"),
-            rs.getString("effective_set_id"));
+            rs.getString("effective_set_id"),
+            rs.getBoolean("deleted"));
       };
 
   private static final RowMapper<DbAttribute> DB_ATTRIBUTE_SET_ROW_MAPPER =
@@ -104,21 +105,22 @@ public class PaoDao {
       propagation = Propagation.REQUIRED,
       transactionManager = "tpsTransactionManager")
   public void deletePao(UUID objectId) {
-    try {
-      // Lookup the policy object
-      DbPao dbPao = getDbPao(objectId);
+    // Lookup the policy object
+    DbPao dbPao = getDbPao(objectId);
+    final Set<UUID> dependents = getDependentIds(objectId);
+    final Set<UUID> successors = getSuccessorIds(objectId);
 
-      // Delete associated attribute set(s)
-      deleteAttributeSet(dbPao.attributeSetId());
-      deleteAttributeSet(dbPao.effectiveSetId());
+    if (dependents.isEmpty() && successors.isEmpty()) {
+      HashMap<UUID, DbPao> paosToRemove = new HashMap<>();
+      paosToRemove.put(objectId, dbPao);
+      walkRemovePao(dbPao, paosToRemove);
 
-      // Delete the policy object
-      final String sql = "DELETE FROM policy_object WHERE object_id = :object_id";
-      MapSqlParameterSource params =
-          new MapSqlParameterSource().addValue("object_id", objectId.toString());
-      tpsJdbcTemplate.update(sql, params);
-    } catch (PolicyObjectNotFoundException e) {
-      // Delete throws no error on not found
+      paosToRemove.forEach(
+          (id, pao) -> {
+            removeDbPao(pao);
+          });
+    } else {
+      setPaoDeleted(dbPao.objectId(), true);
     }
   }
 
@@ -173,6 +175,37 @@ public class PaoDao {
   }
 
   /**
+   * Recursive function used by the delete PAO process. When a PAO is removed from the graph, we
+   * recursively inspect its sources to see if they now have no dependents. If they do not, then
+   * those PAOs can also be removed if they were previously flagged as deleted. And so on,
+   * recursively.
+   *
+   * @param pao the current PAO being evaluated.
+   * @param paosToRemove a set of PAO UUIDs for PAOs that should be removed from the graph after the
+   *     walk is performed.
+   */
+  private void walkRemovePao(DbPao pao, HashMap<UUID, DbPao> paosToRemove) {
+    if (!(pao.deleted() || paosToRemove.containsKey(pao.objectId()))) {
+      return;
+    }
+
+    paosToRemove.put(pao.objectId(), pao);
+
+    // Walk each branch once to build up the list of PAOs to remove
+    // There are no cycles in the graph, so we can consider a branch at a time.
+    for (var source : pao.sources()) {
+      walkRemovePao(getDbPao(UUID.fromString(source)), paosToRemove);
+    }
+
+    // See if we will still have dependents, if so then this PAO cannot be removed.
+    for (var dependent : getDependentIds(pao.objectId())) {
+      if (!(paosToRemove.containsKey(dependent))) {
+        paosToRemove.remove(pao.objectId());
+      }
+    }
+  }
+
+  /**
    * Given a source id, find all of the dependents and return their ids
    *
    * @param sourceId source to hunt for
@@ -180,6 +213,18 @@ public class PaoDao {
    */
   public Set<UUID> getDependentIds(UUID sourceId) {
     final String sql = "SELECT object_id FROM policy_object WHERE :source_id = ANY(sources)";
+
+    MapSqlParameterSource params =
+        new MapSqlParameterSource().addValue("source_id", sourceId.toString());
+
+    return new HashSet<>(
+        tpsJdbcTemplate.query(
+            sql, params, (rs, rowNum) -> UUID.fromString(rs.getString("object_id"))));
+  }
+
+  // Get a list of policies where the provided policy is a predecessor.
+  public Set<UUID> getSuccessorIds(UUID sourceId) {
+    final String sql = "SELECT object_id FROM policy_object WHERE predecessor_id=:source_id";
 
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("source_id", sourceId.toString());
@@ -253,6 +298,31 @@ public class PaoDao {
           pao.getObjectId().toString(),
           sourcesSqlArray);
     }
+  }
+
+  private void removeDbPao(DbPao dbPao) {
+    try {
+      // Delete associated attribute set(s)
+      deleteAttributeSet(dbPao.attributeSetId());
+      deleteAttributeSet(dbPao.effectiveSetId());
+
+      // Delete the policy object
+      final String sql = "DELETE FROM policy_object WHERE object_id=:object_id";
+      MapSqlParameterSource params =
+          new MapSqlParameterSource().addValue("object_id", dbPao.objectId().toString());
+      tpsJdbcTemplate.update(sql, params);
+    } catch (EmptyResultDataAccessException e) {
+      // Delete throws no error on not found
+    }
+  }
+
+  private void setPaoDeleted(UUID objectId, boolean isDeleted) {
+    final String sql = "UPDATE policy_object SET deleted=:deleted WHERE object_id=:object_id";
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue("object_id", objectId.toString())
+            .addValue("deleted", isDeleted);
+    tpsJdbcTemplate.update(sql, params);
   }
 
   /**
