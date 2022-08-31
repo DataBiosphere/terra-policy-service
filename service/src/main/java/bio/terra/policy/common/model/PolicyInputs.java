@@ -51,15 +51,6 @@ public class PolicyInputs {
     return inputs;
   }
 
-  public PolicyInputs duplicateWithoutConflicts() {
-    Map<String, PolicyInput> dupMap = new HashMap<>();
-    for (var entry : inputs.entrySet()) {
-      var dupInput = entry.getValue().duplicateWithoutConflicts();
-      dupMap.put(entry.getKey(), dupInput);
-    }
-    return new PolicyInputs(dupMap);
-  }
-
   @Override
   public String toString() {
     return new StringJoiner(", ", PolicyInputs.class.getSimpleName() + "[", "]")

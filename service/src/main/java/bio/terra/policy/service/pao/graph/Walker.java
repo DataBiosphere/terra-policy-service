@@ -1,12 +1,13 @@
 package bio.terra.policy.service.pao.graph;
 
-import bio.terra.policy.common.model.PolicyInput;
-import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.db.PaoDao;
+import bio.terra.policy.service.pao.graph.model.AttributeEvaluator;
+import bio.terra.policy.service.pao.graph.model.GraphAttribute;
+import bio.terra.policy.service.pao.graph.model.GraphAttributeSet;
 import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.policy.PolicyMutator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,105 +22,91 @@ import java.util.UUID;
 public class Walker {
   private final PaoDao paoDao;
   private final Map<UUID, GraphNode> paoMap;
-  private final GraphNode targetNode;
-
-  public Walker(PaoDao paoDao, Pao initialPao, Pao modifiedPao) {
+  private final List<PolicyConflict> newConflicts;
+  /**
+   * Constructing the Walker object performs the graph walk. That computes new effective policies
+   * for the objects.
+   *
+   * @param paoDao reference to the DAO so we can read and possibly update policies
+   * @param pao with proposed modification
+   * @param changedPaoId object id of the change. If this is a change to the policy of an object,
+   *     the id will be the same as the pao. If this is adding a new source to the object, this will
+   *     be the id of the new source Pao. TODO: is this the best way to express the change?
+   */
+  public Walker(PaoDao paoDao, Pao pao, UUID changedPaoId) {
     this.paoDao = paoDao;
     this.paoMap = new HashMap<>();
-    this.targetNode =
-        new GraphNode()
-            .setInitialPao(initialPao)
-            .setComputePao(modifiedPao)
-            .setModified(true)
-            .setNewConflict(false);
-    paoMap.put(modifiedPao.getObjectId(), targetNode);
+    this.newConflicts = new ArrayList<>();
+
+    GraphNode targetNode = new GraphNode(pao, true);
+    paoMap.put(pao.getObjectId(), targetNode);
+    walkNode(targetNode, changedPaoId);
+    // Fill in the resulting effective attributes, so they can be returned in the update response
+    targetNode.getPao().setEffectiveAttributes(targetNode.getEffectivePolicyAttributes());
   }
 
+  /** Apply the changes computed by the walker */
   public void applyChanges() {
+    // Collect all of the changed graph nodes
     List<GraphNode> changeList = new ArrayList<>();
     for (GraphNode node : paoMap.values()) {
-      // If we hit a conflict and there wasn't one before, or we modified the effective
-      // attribute set, then we need to update the Pao.
-      if (node.isNewConflict() || node.isModified()) {
+      if (node.isModified()) {
         changeList.add(node);
       }
     }
+    // Ask the DAO to update them
     paoDao.updatePaos(changeList);
   }
 
   /**
-   * Recursively walk the policy graph building a map of modified Paos and a list of the conflicts
-   * caused by the modified policy.
+   * Getter for returning new conflicts from the walk
    *
-   * @return list of policy conflicts
+   * @return list of any new policy conflicts
    */
-  public List<PolicyConflict> walk() {
-    walkNode(targetNode);
-    return computeConflict();
+  public List<PolicyConflict> getNewConflicts() {
+    return newConflicts;
   }
 
-  private void walkNode(GraphNode inputNode) {
-    // We re-compute the effective attribute set from our set attributes and our sources
+  /**
+   * Recursive graph walker
+   *
+   * @param inputNode graph node we are processing
+   * @param changedPaoId the object id of the Pao that changed
+   */
+  private void walkNode(GraphNode inputNode, UUID changedPaoId) {
+    // Build graph nodes for all of the sources
     makeSourcesList(inputNode);
-    Pao inputPao = inputNode.getComputePao();
-    PolicyInputs runningEffectiveSet = inputPao.getAttributes();
-    for (GraphNode source : inputNode.getSources()) {
-      runningEffectiveSet = computeEffective(runningEffectiveSet, source);
-    }
 
-    // If there is no change to the input effective attribute set, then we stop recursing.
-    // We will not cause a change in any of our dependents. We still might have a conflict.
-    if (runningEffectiveSet.equals(inputPao.getEffectiveAttributes())) {
+    // Construct the evaluation structure for computing the effective of this node
+    AttributeEvaluator evaluator = new AttributeEvaluator(inputNode.getPao());
+    evaluator.addAttributeSet(inputNode.getObjectAttributeSet());
+    for (GraphNode source : inputNode.getSources()) {
+      evaluator.addAttributeSet(source.getEffectiveAttributeSet());
+    }
+    GraphAttributeSet newEffectiveAttributes = evaluator.evaluate(changedPaoId);
+    List<PolicyConflict> conflicts = gatherNewConflicts(newEffectiveAttributes);
+
+    // If there is no change to the input effective attribute set and there are no new
+    // conflicts, then we stop recursing. We won't cause a change to our dependents.
+    if (newEffectiveAttributes.equals(inputNode.getEffectiveAttributeSet())
+        && conflicts.isEmpty()) {
       return;
     }
 
-    // There was a change, so we have more work to do.
-    // Save the changes and mark us as changed.
-    inputPao.setEffectiveAttributes(runningEffectiveSet);
+    // There was a change. Save the change as the new effective attributes
+    // and mark the node modified so we know to write it back to the database later.
+    // Save the conflicts to the walker list of all new conflicts
+    inputNode.setEffectiveAttributeSet(newEffectiveAttributes);
     inputNode.setModified(true);
+    newConflicts.addAll(conflicts);
 
     // Recursively walk our dependents. We know that these dependents will
     // refer to this changed node in recalculating their effective attribute set.
+    // When we recurse, this Pao is the one that changed
     makeDependentsList(inputNode);
     for (GraphNode dependent : inputNode.getDependents()) {
-      walkNode(dependent);
+      walkNode(dependent, inputNode.getPao().getObjectId());
     }
-  }
-
-  private PolicyInputs computeEffective(PolicyInputs dependentInputs, GraphNode sourceNode) {
-    PolicyInputs newDependentEffective = new PolicyInputs();
-    PolicyInputs sourceInputs = sourceNode.getComputePao().getEffectiveAttributes();
-
-    // First traverse the input and probe the source. We take care of all combining
-    // in this pass.
-    for (PolicyInput dependentInput : dependentInputs.getInputs().values()) {
-      PolicyInput sourceInput = sourceInputs.lookupPolicy(dependentInput);
-      if (sourceInput == null) {
-        newDependentEffective.addInput(dependentInput);
-      } else {
-        PolicyInput resultInput = PolicyMutator.combine(dependentInput, sourceInput);
-        if (resultInput == null) {
-          // Combiner failed, so we have a conflict. Record the conflict in the input's
-          // conflict set. Use the existing dependent input as the effective policy; that is,
-          // when there is a conflict, we retain the existing policy setting and remember
-          // the conflict.
-          dependentInput.getConflicts().add(sourceNode.getComputePao().getObjectId());
-          newDependentEffective.addInput(dependentInput);
-        } else {
-          newDependentEffective.addInput(resultInput);
-        }
-      }
-    }
-
-    // Second traverse the source and probe the dependents. Add any non-matches and ignore the rest
-    for (PolicyInput input : sourceInputs.getInputs().values()) {
-      PolicyInput dependentInput = dependentInputs.lookupPolicy(input);
-      if (dependentInput == null) {
-        newDependentEffective.addInput(input);
-      }
-    }
-
-    return newDependentEffective;
   }
 
   private void makeSourcesList(GraphNode node) {
@@ -127,7 +114,7 @@ public class Walker {
     if (node.getSources() != null) {
       return;
     }
-    List<GraphNode> sources = makeGraphList(node.getComputePao().getSourceObjectIds());
+    List<GraphNode> sources = makeGraphList(node.getPao().getSourceObjectIds());
     node.setSources(sources);
   }
 
@@ -136,7 +123,7 @@ public class Walker {
     if (node.getDependents() != null) {
       return;
     }
-    Set<UUID> dependentIds = paoDao.getDependentIds(node.getComputePao().getObjectId());
+    Set<UUID> dependentIds = paoDao.getDependentIds(node.getPao().getObjectId());
     List<GraphNode> dependents = makeGraphList(dependentIds);
     node.setDependents(dependents);
   }
@@ -156,67 +143,37 @@ public class Walker {
     }
 
     // Fetch the Paos that were not in the map; make graph nodes and add them to the map.
-    // New nodes always start without conflicts and unmodified.
+    // New nodes always start without new conflicts and unmodified.
     List<Pao> daoFetchResult = paoDao.getPaos(daoFetchIds);
     for (Pao pao : daoFetchResult) {
-      var node =
-          new GraphNode()
-              .setInitialPao(pao)
-              .setComputePao(pao.duplicateWithoutConflicts())
-              .setModified(false)
-              .setNewConflict(false);
+      var node = new GraphNode(pao, false);
       graphList.add(node);
       paoMap.put(pao.getObjectId(), node);
     }
     return graphList;
   }
 
-  /**
-   * Make a pass through the graph checking to see if the evaluation of the change caused any new
-   * conflicts. Return the list of conflicts, if any.
-   *
-   * @return conflictList
-   */
-  private List<PolicyConflict> computeConflict() {
-    List<PolicyConflict> conflictList = new ArrayList<>();
-    for (GraphNode node : paoMap.values()) {
-      if (computeNodeConflict(node, conflictList)) {
-        node.setNewConflict(true);
+  private List<PolicyConflict> gatherNewConflicts(GraphAttributeSet attributeSet) {
+    List<PolicyConflict> conflicts = new ArrayList<>();
+    for (GraphAttribute graphAttribute : attributeSet.getAttributes()) {
+      Pao containingPao = graphAttribute.getContainingPao();
+
+      // Build a conflict result for each new conflict
+      for (UUID conflictId : graphAttribute.getNewConflicts()) {
+        Pao conflictPao = getPaoFromGraphNode(conflictId);
+        conflicts.add(
+            new PolicyConflict(
+                containingPao, conflictPao, graphAttribute.getPolicyInput().getPolicyName()));
       }
     }
-    return conflictList;
+    return conflicts;
   }
 
-  private boolean computeNodeConflict(GraphNode node, List<PolicyConflict> conflicts) {
-    // If the node is not modified, there is nothing to do
-    if (!node.isModified()) {
-      return false;
+  private Pao getPaoFromGraphNode(UUID objectId) {
+    GraphNode node = paoMap.get(objectId);
+    if (node == null) {
+      throw new InternalTpsErrorException("Unexpected null graph node!");
     }
-
-    boolean foundNewConflicts = false;
-    PolicyInputs initialInputs = node.getInitialPao().getEffectiveAttributes();
-    PolicyInputs modifiedInputs = node.getComputePao().getEffectiveAttributes();
-
-    for (var entry : modifiedInputs.getInputs().entrySet()) {
-      PolicyInput initialInput = initialInputs.getInputs().get(entry.getKey());
-      // If there is no existing matching policy, there can be no conflict
-      if (initialInput == null) {
-        continue;
-      }
-      Set<UUID> initialConflicts = initialInput.getConflicts();
-      Set<UUID> newConflicts = entry.getValue().getConflicts();
-      for (var conflictId : newConflicts) {
-        // If the conflict is new - not in the initial state - then we mark the node
-        if (!initialConflicts.contains(conflictId)) {
-          conflicts.add(
-              new PolicyConflict(
-                  node.getComputePao(),
-                  paoMap.get(conflictId).getComputePao(),
-                  initialInput.getPolicyName()));
-          foundNewConflicts = true;
-        }
-      }
-    }
-    return foundNewConflicts;
+    return node.getPao();
   }
 }

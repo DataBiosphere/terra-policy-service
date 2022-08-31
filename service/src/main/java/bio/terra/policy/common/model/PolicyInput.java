@@ -62,8 +62,11 @@ public class PolicyInput {
     return conflicts;
   }
 
-  public PolicyInput duplicateWithoutConflicts() {
-    return new PolicyInput(policyName, additionalData);
+  public PolicyInput duplicate() {
+    PolicyName dupPolicyName = new PolicyName(policyName.getNamespace(), policyName.getName());
+    Multimap<String, String> dupAdditionalData = ArrayListMultimap.create(additionalData);
+    Set<UUID> dupConflicts = new HashSet<>(conflicts);
+    return new PolicyInput(dupPolicyName, dupAdditionalData, dupConflicts);
   }
 
   @Override

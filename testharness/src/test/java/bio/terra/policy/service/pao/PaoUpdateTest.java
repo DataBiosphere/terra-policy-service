@@ -260,32 +260,21 @@ public class PaoUpdateTest extends LibraryTestBase {
     // Link D to None - none should stay in previous state with data policy Y with a conflict
     result = paoService.linkSourcePao(paoNone, paoDid, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Link D to None result: {}", result);
+    // Check that we got the right conflict
     assertEquals(1, result.conflicts().size());
     PolicyConflict conflict = result.conflicts().get(0);
-    assertEquals(paoNone, conflict.dependent().getObjectId());
-    // NOTE: The conflict source can be either C or D depending on the order of evaluation.
-    // If D is walked first, then it is the "good" policy and C is the conflict.
-    // If C is walked first, then is is the "good" policy and D is the conflict.
-    // Is that the right thing? An alternative is to sequence the walking, so we walk all existing
-    // sources first and then the new source. The crux is the best way to express the conflict;
-    // Ideally we would say "policy X (with data A) from (PAO: could be the attributes of the node
-    // or
-    // the source), conflicts with policy X from (ditto).
-    assertTrue(
-        conflict.source().getObjectId().equals(paoCid)
-            || conflict.source().getObjectId().equals(paoDid));
+    assertEquals(paoNone, conflict.pao().getObjectId());
+    assertEquals(paoDid, conflict.conflictPao().getObjectId());
     assertEquals(new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_Y), conflict.policyName());
-
-    // Same comparison as with Link C to None
-    // Because of the ordering issue above, the resulting policies are not reliably unchanged.
-    // so we cannot test for (TEST_DATA_POLICY_Y, DATA1)
+    // Check that None remains unchanged
     resultPao = result.computedPao();
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
     checkForPolicies(
         resultPao,
         makeFlagInput(TEST_FLAG_POLICY_A),
         makeFlagInput(TEST_FLAG_POLICY_B),
-        makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        makeDataInput(TEST_DATA_POLICY_X, DATA1),
+        makeDataInput(TEST_DATA_POLICY_Y, DATA1));
   }
 
   @Test
@@ -383,8 +372,9 @@ public class PaoUpdateTest extends LibraryTestBase {
   }
 
   @Test
-  void updatePropagateConflictTest() throws Exception {
-    // Start S1 empty, S2 policy X data2; link to D
+  void updatePropagateConflictTest_sourcesConflict() throws Exception {
+    // Two sources and a dependent
+    // Start S1 empty, S2 policy X data2; link both to D
     // add S1 policy X data1; conflict - try with DRY_RUN, FAIL_ON_CONFLICT, ENFORCE_CONFLICT
     PolicyInput xData2 = makeDataInput(TEST_DATA_POLICY_X, DATA2);
 
@@ -397,6 +387,7 @@ public class PaoUpdateTest extends LibraryTestBase {
     paoService.linkSourcePao(paoDid, paoS1id, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoDid, paoS2id, PaoUpdateMode.FAIL_ON_CONFLICT);
 
+    // Check that the dependent has the right policy
     Pao checkD = paoService.getPao(paoDid);
     checkForPolicies(checkD, xData2);
 
@@ -406,44 +397,106 @@ public class PaoUpdateTest extends LibraryTestBase {
 
     PolicyUpdateResult result =
         paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.DRY_RUN);
-    checkConflict(result, paoDid, paoS2id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+    checkConflict(result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     checkForPolicies(checkD, xData2);
     PolicyInput conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
     assertEquals(0, conflicted.getConflicts().size());
 
     // Conflict case - FAIL_ON_CONFLICT
+    // should have the same result as DRY_RUN, since there is a conflict
     result = paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
-    checkConflict(result, paoDid, paoS2id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+    checkConflict(result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     checkForPolicies(checkD, xData2);
     conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
     assertEquals(0, conflicted.getConflicts().size());
 
-    /*
-    TODO[PF-1927] The conflict scheme is not working the way it needs to.
-     Fixing it is outside the scope of this work, but I'll to PF-1927 next!
     // Conflict case - ENFORCE_CONFLICTS
     result = paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.ENFORCE_CONFLICTS);
-    checkConflict(result, paoDid, paoS2id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+    checkConflict(result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     checkForPolicies(checkD, xData2);
 
     conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
     assertEquals(1, conflicted.getConflicts().size());
     assertTrue(conflicted.getConflicts().contains(paoS1id));
-     */
+  }
+
+  @Test
+  void updatePropagateConflictTest_dependentsConflict() throws Exception {
+    // We build this graph A --> B(X-data1) --> C --> D
+    // Then we attempt to update A(X-data2) for DRY_RUN, FAIL_ON_CONFLICT, and ENFORCE_CONFLICTS
+    // We expect the conflict to propagate from B to C and D.
+    PolicyInput xData1 = makeDataInput(TEST_DATA_POLICY_X, DATA1);
+    PolicyInput xData2 = makeDataInput(TEST_DATA_POLICY_X, DATA2);
+    PolicyInputs conflictPolicy = makePolicyInputs(xData2);
+    PolicyInputs emptyPolicy = makePolicyInputs();
+
+    UUID paoAid = makePao();
+    UUID paoBid = makePao(xData1);
+    UUID paoCid = makePao();
+    UUID paoDid = makePao();
+
+    // Hook up the graph and test the policies end up where we expect them
+    paoService.linkSourcePao(paoBid, paoAid, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoDid, paoCid, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoCid, paoBid, PaoUpdateMode.FAIL_ON_CONFLICT);
+    checkForPolicies(paoService.getPao(paoDid), xData1);
+    checkForPolicies(paoService.getPao(paoCid), xData1);
+    checkForPolicies(paoService.getPao(paoBid), xData1);
+    checkForMissingPolicies(paoService.getPao(paoAid), xData1);
+
+    PolicyUpdateResult result =
+        paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.DRY_RUN);
+    logger.info("Result: {}", result);
+    assertEquals(3, result.conflicts().size()); // B, C, and D
+    checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
+    checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
+    checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+
+    result =
+        paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Result: {}", result);
+    assertEquals(3, result.conflicts().size()); // B, C, and D
+    checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
+    checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
+    checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+
+    result =
+        paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.ENFORCE_CONFLICTS);
+    logger.info("Result: {}", result);
+    assertEquals(3, result.conflicts().size()); // B, C, and D
+    checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
+    checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
+    checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+  }
+
+  private void checkConflictFind(
+      PolicyUpdateResult result,
+      UUID expectedPaoId,
+      UUID expectedConflictId,
+      PolicyName expectedPolicyName) {
+    PolicyConflict conflict = null;
+    for (var tryConflict : result.conflicts()) {
+      if (tryConflict.pao().getObjectId().equals(expectedPaoId)) {
+        conflict = tryConflict;
+      }
+    }
+    assertNotNull(conflict);
+    assertEquals(expectedConflictId, conflict.conflictPao().getObjectId());
+    assertEquals(expectedPolicyName, conflict.policyName());
   }
 
   private void checkConflict(
       PolicyUpdateResult result,
-      UUID expectedDependent,
-      UUID expectedSource,
+      UUID expectedPaoId,
+      UUID expectedConflictId,
       PolicyName expectedPolicyName) {
     assertEquals(1, result.conflicts().size());
     PolicyConflict conflict = result.conflicts().get(0);
-    assertEquals(expectedDependent, conflict.dependent().getObjectId());
-    assertEquals(expectedSource, conflict.source().getObjectId());
+    assertEquals(expectedPaoId, conflict.pao().getObjectId());
+    assertEquals(expectedConflictId, conflict.conflictPao().getObjectId());
     assertEquals(expectedPolicyName, conflict.policyName());
   }
 

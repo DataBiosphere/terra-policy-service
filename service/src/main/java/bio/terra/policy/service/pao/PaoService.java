@@ -85,29 +85,24 @@ public class PaoService {
     }
     logger.info("LinkSourcePao: dependent {} source {}", objectId, sourceObjectId);
 
-    // Build a copy of the Pao with the desired change
-    // We duplicate the target Pao, but we do not copy the conflict annotations.
-    // That way we can detect new conflicts and when conflicts are resolved.
-    // TODO[PF-1927]: This initial state and the conflict tracking have issues.
     Pao targetPao = paoDao.getPao(objectId);
-    Pao modifiedPao = targetPao.duplicateWithoutConflicts();
-    modifiedPao.getSourceObjectIds().add(sourceObjectId);
+    boolean newSource = targetPao.getSourceObjectIds().add(sourceObjectId);
 
-    // If nothing has actually changed, we are done
-    if (modifiedPao.getSourceObjectIds().equals(targetPao.getSourceObjectIds())) {
+    // We didn't actually change the source list, so we are done
+    if (!newSource) {
       return new PolicyUpdateResult(targetPao, new ArrayList<>());
     }
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
-    Walker walker = new Walker(paoDao, targetPao, modifiedPao);
-    List<PolicyConflict> conflicts = walker.walk();
+    Walker walker = new Walker(paoDao, targetPao, sourceObjectId);
+    List<PolicyConflict> conflicts = walker.getNewConflicts();
 
     // If the mode is FAIL_ON_CONFLICT and there are no conflicts, apply the changes
     if (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty()) {
       walker.applyChanges();
     }
 
-    return new PolicyUpdateResult(modifiedPao, conflicts);
+    return new PolicyUpdateResult(targetPao, conflicts);
   }
 
   /**
@@ -118,6 +113,11 @@ public class PaoService {
    * @param removeAttributes policy inputs to remove
    * @param updateMode how to handle applying the changes
    */
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
   public PolicyUpdateResult updatePao(
       UUID targetPaoId,
       PolicyInputs addAttributes,
@@ -131,7 +131,6 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
-    Pao modifiedPao = targetPao.duplicateWithoutConflicts();
     PolicyInputs newAttributes = new PolicyInputs();
 
     // We do the removes first, so we don't remove newly added things
@@ -147,6 +146,7 @@ public class PaoService {
       }
     }
 
+    // Now the adds
     for (PolicyInput addPolicy : addAttributes.getInputs().values()) {
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
       if (existingPolicy == null) {
@@ -167,17 +167,15 @@ public class PaoService {
     }
 
     // Set the attributes to the newly computed attributes
-    // Note: we have to leave the effective attributes set to the original
-    // value so the walker detects the change.
-    modifiedPao.setAttributes(newAttributes);
+    targetPao.setAttributes(newAttributes);
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
-    Walker walker = new Walker(paoDao, targetPao, modifiedPao);
-    List<PolicyConflict> conflicts = walker.walk();
+    Walker walker = new Walker(paoDao, targetPao, targetPao.getObjectId());
+    List<PolicyConflict> conflicts = walker.getNewConflicts();
 
     if (updateMode == PaoUpdateMode.DRY_RUN
         || updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && !conflicts.isEmpty()) {
-      return new PolicyUpdateResult(modifiedPao, conflicts);
+      return new PolicyUpdateResult(targetPao, conflicts);
     }
 
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS && !conflicts.isEmpty()) {
@@ -185,16 +183,16 @@ public class PaoService {
       // created any conflicts on the target Pao. We only allow conflicts on dependent
       // Paos.
       for (PolicyConflict conflict : conflicts) {
-        if (conflict.dependent().getObjectId().equals(targetPaoId)) {
+        if (conflict.pao().getObjectId().equals(targetPaoId)) {
           throw new DirectConflictException(
               String.format(
                   "Update of policy %s on %s creates a conflict",
-                  conflict.policyName().getKey(), conflict.dependent().toShortString()));
+                  conflict.policyName().getKey(), targetPao.toShortString()));
         }
       }
     }
 
     walker.applyChanges();
-    return new PolicyUpdateResult(modifiedPao, conflicts);
+    return new PolicyUpdateResult(targetPao, conflicts);
   }
 }

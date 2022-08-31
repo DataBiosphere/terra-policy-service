@@ -1,5 +1,6 @@
 package bio.terra.policy.db;
 
+import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -234,37 +235,50 @@ public class PaoDao {
    * @param change graph node that has the initial and newly computed Paos
    */
   private void updatePao(GraphNode change) {
-    Pao initialPao = change.getInitialPao();
-    Pao computedPao = change.getComputePao();
-    DbPao initialDbPao = getDbPao(initialPao.getObjectId());
+    // The graph node holds the changes we need to make to the PAO sources and attribute sets
+    Pao pao = change.getPao();
+    PolicyInputs attributes = change.getPolicyAttributes();
+    PolicyInputs effectiveAttributes = change.getEffectivePolicyAttributes();
 
-    if (!initialPao.getAttributes().equals(computedPao.getAttributes())) {
-      String attributeSetId = initialDbPao.attributeSetId();
+    // Get the dbPao and the attribute sets from the db for comparison
+    DbPao dbPao = getDbPao(pao.getObjectId());
+    Map<String, PolicyInputs> attributeSetMap =
+        getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
+    PolicyInputs dbAttributes = attributeSetMap.get(dbPao.attributeSetId());
+    PolicyInputs dbEffectiveAttributes = attributeSetMap.get(dbPao.effectiveSetId());
+
+    // Update attributes if changed
+    if (!attributes.equals(dbAttributes)) {
+      String attributeSetId = dbPao.attributeSetId();
       deleteAttributeSet(attributeSetId);
-      createAttributeSet(attributeSetId, computedPao.getAttributes());
+      createAttributeSet(attributeSetId, attributes);
     }
 
-    if (!initialPao.getEffectiveAttributes().equals(computedPao.getEffectiveAttributes())) {
-      String effectiveSetId = initialDbPao.effectiveSetId();
+    // Update effective attributes if changed
+    if (!effectiveAttributes.equals(dbEffectiveAttributes)) {
+      String effectiveSetId = dbPao.effectiveSetId();
       deleteAttributeSet(effectiveSetId);
-      createAttributeSet(effectiveSetId, computedPao.getEffectiveAttributes());
+      createAttributeSet(effectiveSetId, effectiveAttributes);
     }
 
-    if (!initialPao.getSourceObjectIds().equals(computedPao.getSourceObjectIds())) {
+    // Update sources if changed
+    Set<UUID> dbSources =
+        dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet());
+    if (!dbSources.equals(pao.getSourceObjectIds())) {
       final String sql =
           "UPDATE policy_object SET sources = string_to_array(:sources, ',') WHERE object_id = :object_id";
 
-      String sourcesSqlArray = makeCsvFromUuidSet(computedPao.getSourceObjectIds());
+      String sourcesSqlArray = makeCsvFromUuidSet(pao.getSourceObjectIds());
 
       MapSqlParameterSource params =
           new MapSqlParameterSource()
-              .addValue("object_id", initialPao.getObjectId().toString())
+              .addValue("object_id", pao.getObjectId().toString())
               .addValue("sources", sourcesSqlArray);
 
       tpsJdbcTemplate.update(sql, params);
       logger.info(
           "Update sources array for pao object id {}, sources {}",
-          initialPao.getObjectId().toString(),
+          pao.getObjectId().toString(),
           sourcesSqlArray);
     }
   }
@@ -357,7 +371,11 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    return tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
+    DbPao dbPao = tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
+    if (dbPao == null) {
+      throw new InternalTpsErrorException("Failed to get DbPao from object id");
+    }
+    return dbPao;
   }
 
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {

@@ -79,18 +79,6 @@ public class Pao {
     this.predecessorId = predecessorId;
   }
 
-  public Pao duplicateWithoutConflicts() {
-    return new Builder()
-        .setObjectId(objectId)
-        .setComponent(component)
-        .setObjectType(objectType)
-        .setAttributes(attributes.duplicateWithoutConflicts()) // there are never conflicts in here
-        .setEffectiveAttributes(effectiveAttributes.duplicateWithoutConflicts())
-        .setSourceObjectIds(new HashSet<>(sourceObjectIds))
-        .setPredecessorId(predecessorId)
-        .build();
-  }
-
   public String toShortString() {
     return String.format("%s:%s (%s)", component, objectType, objectId);
   }

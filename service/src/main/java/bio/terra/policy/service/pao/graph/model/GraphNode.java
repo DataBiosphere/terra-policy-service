@@ -1,68 +1,70 @@
 package bio.terra.policy.service.pao.graph.model;
 
+import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
 import java.util.List;
 
+/** The GraphNode represents one policy attribute object (PAO) in TPS. */
 public class GraphNode {
-  private Pao initialPao; // starting Pao - typically from the database
-  private Pao computePao; // Pao being computed in the graph walk
+  private final Pao pao; // Pao being computed in the graph walk
+  private final GraphAttributeSet objectAttributeSet;
+  private GraphAttributeSet effectiveAttributeSet;
   private List<GraphNode> sources;
   private List<GraphNode> dependents;
   private boolean modified; // true means something has been changed; false means no change
-  private boolean
-      newConflict; // true means we have computed a new conflict; false means no new conflict
 
-  public Pao getInitialPao() {
-    return initialPao;
+  public GraphNode(Pao pao, boolean isModified) {
+    this.pao = pao;
+    this.effectiveAttributeSet = new GraphAttributeSet(pao, pao.getEffectiveAttributes());
+    this.objectAttributeSet = new GraphAttributeSet(pao, pao.getAttributes());
+    this.modified = isModified;
   }
 
-  public GraphNode setInitialPao(Pao initialPao) {
-    this.initialPao = initialPao;
-    return this;
-  }
-
-  public Pao getComputePao() {
-    return computePao;
-  }
-
-  public GraphNode setComputePao(Pao computePao) {
-    this.computePao = computePao;
-    return this;
+  public Pao getPao() {
+    return pao;
   }
 
   public List<GraphNode> getSources() {
     return sources;
   }
 
-  public GraphNode setSources(List<GraphNode> sources) {
+  public void setSources(List<GraphNode> sources) {
     this.sources = sources;
-    return this;
   }
 
   public List<GraphNode> getDependents() {
     return dependents;
   }
 
-  public GraphNode setDependents(List<GraphNode> dependents) {
+  public void setDependents(List<GraphNode> dependents) {
     this.dependents = dependents;
-    return this;
   }
 
   public boolean isModified() {
     return modified;
   }
 
-  public GraphNode setModified(boolean modified) {
+  public void setModified(boolean modified) {
     this.modified = modified;
-    return this;
   }
 
-  public boolean isNewConflict() {
-    return newConflict;
+  public GraphAttributeSet getEffectiveAttributeSet() {
+    return effectiveAttributeSet;
   }
 
-  public GraphNode setNewConflict(boolean newConflict) {
-    this.newConflict = newConflict;
-    return this;
+  public void setEffectiveAttributeSet(GraphAttributeSet effectiveAttributeSet) {
+    this.effectiveAttributeSet = effectiveAttributeSet;
+  }
+
+  public GraphAttributeSet getObjectAttributeSet() {
+    return objectAttributeSet;
+  }
+
+  public PolicyInputs getPolicyAttributes() {
+    return objectAttributeSet.makeAttributeSet();
+  }
+
+  public PolicyInputs getEffectivePolicyAttributes() {
+    return effectiveAttributeSet.makeAttributeSet();
   }
 }
