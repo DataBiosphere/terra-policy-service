@@ -13,8 +13,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This code does the processing that turns a group of policy attributes from PAOs into a single,
- * effective attribute set. The expected usage is: 1. construct the evaluator 2. add the attributes
- * sets that are to be processed 3. call evaluate() to perform the evaluation.
+ * effective attribute set. The expected usage is:
+ *
+ * <ol>
+ *   <li>construct the evaluator
+ *   <li>add the attributes sets that are to be processed
+ *   <li>call evaluate() to perform the evaluation
+ * </ol>
  */
 public class AttributeEvaluator {
   private static final Logger logger = LoggerFactory.getLogger(AttributeEvaluator.class);
@@ -127,9 +132,9 @@ public class AttributeEvaluator {
   private void propagateConflict(GraphAttribute newAttribute, GraphAttribute attribute) {
     UUID id = attribute.getContainingPao().getObjectId();
     if (attribute.getPolicyInput().getConflicts().contains(id)) {
-      newAttribute.setReFoundConflict(id);
+      newAttribute.addReFoundConflict(id);
     } else {
-      newAttribute.setNewConflict(id);
+      newAttribute.addNewConflict(id);
     }
   }
 

@@ -55,11 +55,11 @@ public class GraphAttribute {
     return (containingPao.getObjectId().equals(changedPaoId));
   }
 
-  public void setNewConflict(UUID conflict) {
+  public void addNewConflict(UUID conflict) {
     newConflicts.add(conflict);
   }
 
-  public void setReFoundConflict(UUID conflict) {
+  public void addReFoundConflict(UUID conflict) {
     reFoundConflicts.add(conflict);
   }
 }

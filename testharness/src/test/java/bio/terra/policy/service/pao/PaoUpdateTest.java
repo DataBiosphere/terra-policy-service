@@ -454,6 +454,22 @@ public class PaoUpdateTest extends LibraryTestBase {
     checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
     checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
     checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+
+    result =
+        paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Result: {}", result);
+    assertEquals(3, result.conflicts().size()); // B, C, and D
+    checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
+    checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
+    checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+
+    result =
+        paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.ENFORCE_CONFLICTS);
+    logger.info("Result: {}", result);
+    assertEquals(3, result.conflicts().size()); // B, C, and D
+    checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
+    checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
+    checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
   }
 
   private void checkConflictFind(

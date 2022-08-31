@@ -1,5 +1,6 @@
 package bio.terra.policy.db;
 
+import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -234,12 +235,12 @@ public class PaoDao {
    * @param change graph node that has the initial and newly computed Paos
    */
   private void updatePao(GraphNode change) {
-    // Get the modified pao and attribute sets from the graph node
+    // The graph node holds the changes we need to make to the PAO sources and attribute sets
     Pao pao = change.getPao();
     PolicyInputs attributes = change.getPolicyAttributes();
     PolicyInputs effectiveAttributes = change.getEffectivePolicyAttributes();
 
-    // Get the dbPao and the attribute sets from the db
+    // Get the dbPao and the attribute sets from the db for comparison
     DbPao dbPao = getDbPao(pao.getObjectId());
     Map<String, PolicyInputs> attributeSetMap =
         getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
@@ -370,7 +371,11 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    return tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
+    DbPao dbPao = tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
+    if (dbPao == null) {
+      throw new InternalTpsErrorException("Failed to get DbPao from object id");
+    }
+    return dbPao;
   }
 
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {

@@ -25,7 +25,7 @@ public class Walker {
   private final List<PolicyConflict> newConflicts;
   /**
    * Constructing the Walker object performs the graph walk. That computes new effective policies
-   * for the objects. The modifiedPao
+   * for the objects.
    *
    * @param paoDao reference to the DAO so we can read and possibly update policies
    * @param pao with proposed modification
@@ -59,9 +59,9 @@ public class Walker {
   }
 
   /**
-   * Getter for returning conflicts from the walk
+   * Getter for returning new conflicts from the walk
    *
-   * @return list of policy conflicts
+   * @return list of any new policy conflicts
    */
   public List<PolicyConflict> getNewConflicts() {
     return newConflicts;
