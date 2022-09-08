@@ -2,6 +2,7 @@ package bio.terra.policy.service.pao;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -94,6 +95,9 @@ public class PaoServiceTest extends LibraryTestBase {
 
     assertThrows(
         DuplicateObjectException.class, () -> paoService.clonePao(objectId, destinationObjectId));
+    assertThrows(
+        InternalTpsErrorException.class,
+        () -> paoService.clonePao(UUID.randomUUID(), destinationObjectId));
 
     // Delete
     paoService.deletePao(objectId);

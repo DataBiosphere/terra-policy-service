@@ -371,11 +371,11 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    DbPao dbPao = tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
-    if (dbPao == null) {
+    List<DbPao> dbPao = tpsJdbcTemplate.query(sql, params, DB_PAO_ROW_MAPPER);
+    if (dbPao.isEmpty()) {
       throw new InternalTpsErrorException("Failed to get DbPao from object id");
     }
-    return dbPao;
+    return dbPao.get(0);
   }
 
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
