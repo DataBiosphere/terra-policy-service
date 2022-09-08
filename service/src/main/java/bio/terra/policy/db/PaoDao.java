@@ -158,7 +158,7 @@ public class PaoDao {
       Map<String, PolicyInputs> attributeSetMap =
           getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
       return Pao.fromDb(dbPao, attributeSetMap);
-    } catch (EmptyResultDataAccessException e) {
+    } catch (InternalTpsErrorException e) {
       throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
     }
   }
