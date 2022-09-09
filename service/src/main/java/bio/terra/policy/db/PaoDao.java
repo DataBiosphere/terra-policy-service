@@ -141,7 +141,7 @@ public class PaoDao {
       MapSqlParameterSource params =
           new MapSqlParameterSource().addValue("object_id", objectId.toString());
       tpsJdbcTemplate.update(sql, params);
-    } catch (EmptyResultDataAccessException e) {
+    } catch (PolicyObjectNotFoundException e) {
       // Delete throws no error on not found
     }
   }
@@ -153,14 +153,10 @@ public class PaoDao {
       readOnly = true,
       transactionManager = "tpsTransactionManager")
   public Pao getPao(UUID objectId) {
-    try {
-      DbPao dbPao = getDbPao(objectId);
-      Map<String, PolicyInputs> attributeSetMap =
-          getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
-      return Pao.fromDb(dbPao, attributeSetMap);
-    } catch (InternalTpsErrorException e) {
-      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
-    }
+    DbPao dbPao = getDbPao(objectId);
+    Map<String, PolicyInputs> attributeSetMap =
+        getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
+    return Pao.fromDb(dbPao, attributeSetMap);
   }
 
   // -- Graph Walk Methods --
@@ -373,7 +369,7 @@ public class PaoDao {
 
     List<DbPao> dbPao = tpsJdbcTemplate.query(sql, params, DB_PAO_ROW_MAPPER);
     if (dbPao.isEmpty()) {
-      throw new InternalTpsErrorException("Failed to get DbPao from object id");
+      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
     }
     return dbPao.get(0);
   }
