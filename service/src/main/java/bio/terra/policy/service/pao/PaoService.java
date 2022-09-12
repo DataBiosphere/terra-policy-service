@@ -124,6 +124,11 @@ public class PaoService {
    * @param updateMode DRY_RUN or FAIL_ON_CONFLICT
    * @return result of the merge - destination PAO and any policy conflicts
    */
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
   public PolicyUpdateResult mergeFromPao(
       UUID sourceObjectId, UUID destinationObjectId, PaoUpdateMode updateMode) {
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
