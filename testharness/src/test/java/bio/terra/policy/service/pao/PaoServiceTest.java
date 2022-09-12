@@ -94,6 +94,9 @@ public class PaoServiceTest extends LibraryTestBase {
 
     assertThrows(
         DuplicateObjectException.class, () -> paoService.clonePao(objectId, destinationObjectId));
+    assertThrows(
+        PolicyObjectNotFoundException.class,
+        () -> paoService.clonePao(UUID.randomUUID(), destinationObjectId));
 
     // Delete
     paoService.deletePao(objectId);

@@ -1,6 +1,5 @@
 package bio.terra.policy.db;
 
-import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -141,7 +139,7 @@ public class PaoDao {
       MapSqlParameterSource params =
           new MapSqlParameterSource().addValue("object_id", objectId.toString());
       tpsJdbcTemplate.update(sql, params);
-    } catch (EmptyResultDataAccessException e) {
+    } catch (PolicyObjectNotFoundException e) {
       // Delete throws no error on not found
     }
   }
@@ -153,14 +151,10 @@ public class PaoDao {
       readOnly = true,
       transactionManager = "tpsTransactionManager")
   public Pao getPao(UUID objectId) {
-    try {
-      DbPao dbPao = getDbPao(objectId);
-      Map<String, PolicyInputs> attributeSetMap =
-          getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
-      return Pao.fromDb(dbPao, attributeSetMap);
-    } catch (EmptyResultDataAccessException e) {
-      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
-    }
+    DbPao dbPao = getDbPao(objectId);
+    Map<String, PolicyInputs> attributeSetMap =
+        getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
+    return Pao.fromDb(dbPao, attributeSetMap);
   }
 
   // -- Graph Walk Methods --
@@ -371,11 +365,11 @@ public class PaoDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
 
-    DbPao dbPao = tpsJdbcTemplate.queryForObject(sql, params, DB_PAO_ROW_MAPPER);
-    if (dbPao == null) {
-      throw new InternalTpsErrorException("Failed to get DbPao from object id");
+    List<DbPao> dbPao = tpsJdbcTemplate.query(sql, params, DB_PAO_ROW_MAPPER);
+    if (dbPao.isEmpty()) {
+      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
     }
-    return dbPao;
+    return dbPao.get(0);
   }
 
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
