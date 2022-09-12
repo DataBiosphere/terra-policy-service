@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: remove predecessor
+      author: dd
+      changes:
+      - dropColumn:
+          tableName: policy_object
+          columnName: predecessor_id

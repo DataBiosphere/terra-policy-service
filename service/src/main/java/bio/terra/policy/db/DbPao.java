@@ -12,5 +12,4 @@ public record DbPao(
     PaoObjectType objectType,
     Set<String> sources,
     String attributeSetId,
-    String effectiveSetId,
-    UUID predecessorId) {}
+    String effectiveSetId) {}
