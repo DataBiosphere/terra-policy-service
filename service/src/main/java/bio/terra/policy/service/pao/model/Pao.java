@@ -16,7 +16,6 @@ public class Pao {
   private PolicyInputs attributes;
   private PolicyInputs effectiveAttributes;
   private Set<UUID> sourceObjectIds;
-  private UUID predecessorId;
 
   public Pao(
       UUID objectId,
@@ -24,15 +23,13 @@ public class Pao {
       PaoObjectType objectType,
       PolicyInputs attributes,
       PolicyInputs effectiveAttributes,
-      Set<UUID> sourceObjectIds,
-      UUID predecessorId) {
+      Set<UUID> sourceObjectIds) {
     this.objectId = objectId;
     this.component = component;
     this.objectType = objectType;
     this.attributes = attributes;
     this.effectiveAttributes = effectiveAttributes;
     this.sourceObjectIds = sourceObjectIds;
-    this.predecessorId = predecessorId;
   }
 
   public UUID getObjectId() {
@@ -71,14 +68,6 @@ public class Pao {
     this.sourceObjectIds = sourceObjectIds;
   }
 
-  public UUID getPredecessorId() {
-    return predecessorId;
-  }
-
-  public void setPredecessorId(UUID predecessorId) {
-    this.predecessorId = predecessorId;
-  }
-
   public String toShortString() {
     return String.format("%s:%s (%s)", component, objectType, objectId);
   }
@@ -92,7 +81,6 @@ public class Pao {
         .add("attributes=" + attributes)
         .add("effectiveAttributes=" + effectiveAttributes)
         .add("sourceObjectIds=" + sourceObjectIds)
-        .add("predecessorId=" + predecessorId)
         .toString();
   }
 
@@ -105,7 +93,6 @@ public class Pao {
             dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet()))
         .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
         .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
-        .setPredecessorId(dbPao.predecessorId())
         .build();
   }
 
@@ -116,7 +103,6 @@ public class Pao {
     private PolicyInputs attributes;
     private PolicyInputs effectiveAttributes;
     private Set<UUID> sourceObjectIds;
-    private UUID predecessorId;
 
     public Builder setObjectId(UUID objectId) {
       this.objectId = objectId;
@@ -148,23 +134,12 @@ public class Pao {
       return this;
     }
 
-    public Builder setPredecessorId(UUID predecessorId) {
-      this.predecessorId = predecessorId;
-      return this;
-    }
-
     public Pao build() {
       if (sourceObjectIds == null) {
         sourceObjectIds = new HashSet<>();
       }
       return new Pao(
-          objectId,
-          component,
-          objectType,
-          attributes,
-          effectiveAttributes,
-          sourceObjectIds,
-          predecessorId);
+          objectId, component, objectType, attributes, effectiveAttributes, sourceObjectIds);
     }
   }
 }

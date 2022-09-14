@@ -42,16 +42,13 @@ public class PaoDao {
       (rs, rowNum) -> {
         String[] sourcesArray = (String[]) rs.getArray("sources").getArray();
         Set<String> sources = new HashSet<>(Arrays.asList(sourcesArray));
-        var predecessorId = rs.getString("predecessor_id");
-        UUID predecessorUuid = predecessorId == null ? null : UUID.fromString(predecessorId);
         return new DbPao(
             UUID.fromString(rs.getString("object_id")),
             PaoComponent.fromDb(rs.getString("component")),
             PaoObjectType.fromDb(rs.getString("object_type")),
             sources,
             rs.getString("attribute_set_id"),
-            rs.getString("effective_set_id"),
-            predecessorUuid);
+            rs.getString("effective_set_id"));
       };
 
   private static final RowMapper<DbAttribute> DB_ATTRIBUTE_SET_ROW_MAPPER =
@@ -81,24 +78,6 @@ public class PaoDao {
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
       transactionManager = "tpsTransactionManager")
-  public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
-    DbPao sourcePao = getDbPao(sourceObjectId);
-
-    createDbPao(
-        destinationObjectId,
-        sourcePao.component().getDbComponent(),
-        sourcePao.objectType().getDbObjectType(),
-        String.join(",", sourcePao.sources()),
-        sourcePao.attributeSetId(),
-        sourcePao.effectiveSetId(),
-        sourcePao.objectId());
-  }
-
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
 
@@ -116,8 +95,7 @@ public class PaoDao {
         objectType.getDbObjectType(),
         "",
         attributeSetId,
-        effectiveSetId,
-        null);
+        effectiveSetId);
   }
 
   @Retryable(interceptor = "transactionRetryInterceptor")
@@ -320,14 +298,13 @@ public class PaoDao {
       String objectType,
       String sources,
       String attributeSetId,
-      String effectiveSetId,
-      UUID predecessorId) {
+      String effectiveSetId) {
     final String sql =
         """
         INSERT INTO policy_object
-          (object_id, component, object_type, sources, attribute_set_id, effective_set_id, predecessor_id)
+          (object_id, component, object_type, sources, attribute_set_id, effective_set_id)
         VALUES
-          (:object_id, :component, :object_type, string_to_array(:sources, ','), :attribute_set_id, :effective_set_id, :predecessor_id)
+          (:object_id, :component, :object_type, string_to_array(:sources, ','), :attribute_set_id, :effective_set_id)
         """;
 
     MapSqlParameterSource params =
@@ -337,8 +314,7 @@ public class PaoDao {
             .addValue("object_type", objectType)
             .addValue("sources", sources)
             .addValue("attribute_set_id", attributeSetId)
-            .addValue("effective_set_id", effectiveSetId)
-            .addValue("predecessor_id", predecessorId);
+            .addValue("effective_set_id", effectiveSetId);
 
     try {
       tpsJdbcTemplate.update(sql, params);
@@ -358,7 +334,7 @@ public class PaoDao {
   private DbPao getDbPao(UUID objectId) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, predecessor_id
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
         FROM policy_object WHERE object_id = :object_id
         """;
 
@@ -375,7 +351,7 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, predecessor_id
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;

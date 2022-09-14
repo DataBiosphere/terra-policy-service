@@ -2,6 +2,7 @@ package bio.terra.policy.service.pao;
 
 import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
+import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
@@ -37,10 +38,18 @@ public class PaoService {
   }
 
   public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
-    logger.info("Clone PAO id {} to {}", sourceObjectId, destinationObjectId);
-    paoDao.clonePao(sourceObjectId, destinationObjectId);
+    throw new PolicyNotImplementedException("Deprecated method. Here until we change the WSM call");
   }
 
+  /**
+   * Create a policy attribute object
+   *
+   * @param objectId UUID of the object - client-relevant
+   * @param component identity of the component, so we know what component owns UUID
+   * @param objectType type of object in the component, so the component knows where to look up the
+   *     UUID
+   * @param inputs policy attributes
+   */
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
     logger.info(
@@ -83,7 +92,8 @@ public class PaoService {
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
       throw new InternalTpsErrorException("ENFORCE_CONFLICTS is not allowed on listSourcePao");
     }
-    logger.info("LinkSourcePao: dependent {} source {}", objectId, sourceObjectId);
+    logger.info(
+        "LinkSourcePao: dependent {} source {} mode {}", objectId, sourceObjectId, updateMode);
 
     Pao targetPao = paoDao.getPao(objectId);
     boolean newSource = targetPao.getSourceObjectIds().add(sourceObjectId);
@@ -103,6 +113,54 @@ public class PaoService {
     }
 
     return new PolicyUpdateResult(targetPao, conflicts);
+  }
+
+  /**
+   * Merge policies from one PAO into another PAO. Sometimes, like a workspace clone, we want to
+   * take source policies and apply them to a destination.
+   *
+   * @param sourceObjectId source PAO of the policies
+   * @param destinationObjectId PAO we should merge them into
+   * @param updateMode DRY_RUN or FAIL_ON_CONFLICT
+   * @return result of the merge - destination PAO and any policy conflicts
+   */
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
+  public PolicyUpdateResult mergeFromPao(
+      UUID sourceObjectId, UUID destinationObjectId, PaoUpdateMode updateMode) {
+    if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
+      throw new InternalTpsErrorException("ENFORCE_CONFLICTS is not allowed on listSourcePao");
+    }
+    logger.info(
+        "Merge from PAO id {} to {} mode {}", sourceObjectId, destinationObjectId, updateMode);
+
+    // Step 0: get the paos. This will throw if they are not present
+    Pao sourcePao = paoDao.getPao(sourceObjectId);
+    Pao destinationPao = paoDao.getPao(destinationObjectId);
+
+    // Step 1: combine the source attributes and destination attributes;
+    //  stop here if there are conflicts
+    List<PolicyConflict> conflicts = mergeAttributes(sourcePao, destinationPao);
+    if (!conflicts.isEmpty()) {
+      return new PolicyUpdateResult(destinationPao, conflicts);
+    }
+
+    // Step 2: merge the sourceObject sources into the destination sources
+    destinationPao.getSourceObjectIds().addAll(sourcePao.getSourceObjectIds());
+
+    // Step 3: do the walk computing the new effective attributes for the destination
+    Walker walker = new Walker(paoDao, destinationPao, destinationObjectId);
+    conflicts = walker.getNewConflicts();
+
+    // If the mode is FAIL_ON_CONFLICT and there are no conflicts, apply the changes
+    if (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty()) {
+      walker.applyChanges();
+    }
+
+    return new PolicyUpdateResult(destinationPao, conflicts);
   }
 
   /**
@@ -194,5 +252,42 @@ public class PaoService {
 
     walker.applyChanges();
     return new PolicyUpdateResult(targetPao, conflicts);
+  }
+
+  // This does the first step of clone: merging the
+
+  /**
+   * This method does the first step of clone: merging the source attributes into the destination
+   * attributes. There are never conflicts on the attribute set of objects - only on the effective
+   * attributes. So this merge is much simpler than what we do in the general walking case.
+   *
+   * <p>We return any conflicts found in the process.
+   *
+   * @param sourcePao source of the clone
+   * @param destinationPao destination of the clone
+   * @return conflict list
+   */
+  private List<PolicyConflict> mergeAttributes(Pao sourcePao, Pao destinationPao) {
+    List<PolicyConflict> conflicts = new ArrayList<>();
+    PolicyInputs policyInputs = destinationPao.getAttributes();
+
+    for (PolicyInput input : sourcePao.getAttributes().getInputs().values()) {
+      PolicyInput destinationMatchedPolicy = policyInputs.lookupPolicy(input);
+      // If the policy does not exist in the destination, so we add it
+      if (destinationMatchedPolicy == null) {
+        policyInputs.addInput(input);
+      } else {
+        PolicyInput resultInput = PolicyMutator.combine(destinationMatchedPolicy, input);
+        if (resultInput == null) {
+          // Uh oh, we hit a conflict
+          conflicts.add(new PolicyConflict(destinationPao, sourcePao, input.getPolicyName()));
+        } else {
+          // Replace the policy with the combined policy
+          policyInputs.addInput(resultInput);
+        }
+      }
+    }
+
+    return conflicts;
   }
 }
