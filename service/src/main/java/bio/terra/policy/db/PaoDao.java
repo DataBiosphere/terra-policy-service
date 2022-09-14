@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -105,22 +107,34 @@ public class PaoDao {
       propagation = Propagation.REQUIRED,
       transactionManager = "tpsTransactionManager")
   public void deletePao(UUID objectId) {
-    // Lookup the policy object
-    DbPao dbPao = getDbPao(objectId);
     final Set<UUID> dependents = getDependentIds(objectId);
     final Set<UUID> successors = getSuccessorIds(objectId);
+    setPaoDeleted(objectId, true);
 
     if (dependents.isEmpty() && successors.isEmpty()) {
-      HashMap<UUID, DbPao> paosToRemove = new HashMap<>();
-      paosToRemove.put(objectId, dbPao);
-      walkRemovePao(dbPao, paosToRemove);
+      DbPao dbPao = getDbPao(objectId);
 
-      paosToRemove.forEach(
-          (id, pao) -> {
-            removeDbPao(pao);
+      // First Pass: Build a map of all PAOs in our subgraph and note if they are flagged for
+      // deletion.
+      HashMap<UUID, Boolean> removablePaoMap = new HashMap<>();
+      HashMap<UUID, DbPao> subgraphMap = new HashMap<>();
+      walkDeleteSubgraph(subgraphMap, removablePaoMap, dbPao);
+
+      // Second Pass: iterate through our graph, for each PAO: recursively check its dependents and
+      // verify it's
+      // still removable. If all dependents are flagged for deletion and exist in our known
+      // subgraph, then the PAO
+      // is still removable.
+      HashMap<UUID, Set<DbPao>> dependentMap = new HashMap<>();
+      walkDeleteDependents(subgraphMap, removablePaoMap, dependentMap, dbPao);
+
+      // Finally - remove nodes that are still removable
+      removablePaoMap.forEach(
+          (UUID id, Boolean toRemove) -> {
+            if (toRemove) {
+              removeDbPao(getDbPao(id));
+            }
           });
-    } else {
-      setPaoDeleted(dbPao.objectId(), true);
     }
   }
 
@@ -174,34 +188,55 @@ public class PaoDao {
     return paoList;
   }
 
-  /**
-   * Recursive function used by the delete PAO process. When a PAO is removed from the graph, we
-   * recursively inspect its sources to see if they now have no dependents. If they do not, then
-   * those PAOs can also be removed if they were previously flagged as deleted. And so on,
-   * recursively.
-   *
-   * @param pao the current PAO being evaluated.
-   * @param paosToRemove a set of PAO UUIDs for PAOs that should be removed from the graph after the
-   *     walk is performed.
-   */
-  private void walkRemovePao(DbPao pao, HashMap<UUID, DbPao> paosToRemove) {
-    if (!(pao.deleted() || paosToRemove.containsKey(pao.objectId()))) {
-      return;
+  /** */
+  private void walkDeleteSubgraph(
+      HashMap<UUID, DbPao> subgraphMap,
+      HashMap<UUID, Boolean> subgraphStatusMap,
+      DbPao currentPao) {
+    subgraphStatusMap.put(currentPao.objectId(), currentPao.deleted());
+    subgraphMap.put(currentPao.objectId(), currentPao);
+
+    for (var source : currentPao.sources()) {
+      walkDeleteSubgraph(subgraphMap, subgraphStatusMap, getDbPao(UUID.fromString(source)));
     }
+  }
 
-    paosToRemove.put(pao.objectId(), pao);
+  /** */
+  private void walkDeleteDependents(
+      HashMap<UUID, DbPao> subgraphMap,
+      HashMap<UUID, Boolean> subgraphStatusMap,
+      HashMap<UUID, Set<DbPao>> dependentMap,
+      DbPao pao) {
+    Set<DbPao> dependents = new HashSet<>();
 
-    // Walk each branch once to build up the list of PAOs to remove
-    // There are no cycles in the graph, so we can consider a branch at a time.
-    for (var source : pao.sources()) {
-      walkRemovePao(getDbPao(UUID.fromString(source)), paosToRemove);
-    }
+    if (pao == null) return;
 
-    // See if we will still have dependents, if so then this PAO cannot be removed.
-    for (var dependent : getDependentIds(pao.objectId())) {
-      if (!(paosToRemove.containsKey(dependent))) {
-        paosToRemove.remove(pao.objectId());
+    if (dependentMap.containsKey(pao.objectId())) {
+      dependents = dependentMap.get(pao.objectId());
+    } else {
+      Queue<UUID> queue = new LinkedList<>();
+      queue.addAll(getDependentIds(pao.objectId()));
+
+      while (!queue.isEmpty()) {
+        var depId = queue.poll();
+        var depPao = getDbPao(depId);
+        dependents.add(depPao);
+        queue.addAll(getDependentIds(depId));
       }
+
+      dependentMap.put(pao.objectId(), dependents);
+    }
+
+    for (var dependent : dependents) {
+      if (!subgraphMap.containsKey(dependent.objectId()) || !dependent.deleted()) {
+        subgraphStatusMap.put(pao.objectId(), false);
+        break;
+      }
+    }
+
+    for (var source : pao.sources()) {
+      walkDeleteDependents(
+          subgraphMap, subgraphStatusMap, dependentMap, subgraphMap.get(UUID.fromString(source)));
     }
   }
 

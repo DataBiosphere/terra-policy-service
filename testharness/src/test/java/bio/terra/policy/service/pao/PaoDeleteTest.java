@@ -10,6 +10,7 @@ import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.testutils.LibraryTestBase;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -202,6 +203,82 @@ public class PaoDeleteTest extends LibraryTestBase {
     assertNotNull(paoService.getPao(pao4Id));
     assertNotNull(paoService.getPao(pao6Id));
     assertNotNull(paoService.getPao(pao7Id));
+  }
+
+  /**
+   * A case for testing recursion where sources of sources might link back to an undeleted node.
+   * Here, all PAOs marked with a * were previously flagged as deleted.
+   *
+   * <pre>
+   *   delete->paoA#  paoB
+   *           |  \  /  |
+   *           |  paoC* |
+   *           |\  |    |
+   *           | paoD*  |
+   *           |    \   |
+   *           |     \  |
+   *            \    paoE*
+   *             \    |
+   *              paoF*
+   * </pre>
+   *
+   * The result should be that only PaoA is removed from the db. All others have a dependent B.
+   */
+  @Test
+  void deleteWithSkipLevelDependents() throws Exception {
+    var paoAId = UUID.randomUUID();
+    var paoBId = UUID.randomUUID();
+    var paoCId = UUID.randomUUID();
+    var paoDId = UUID.randomUUID();
+    var paoEId = UUID.randomUUID();
+    var paoFId = UUID.randomUUID();
+
+    createDefaultPao(paoAId);
+    createDefaultPao(paoBId);
+    createDefaultPao(paoCId);
+    createDefaultPao(paoDId);
+    createDefaultPao(paoEId);
+    createDefaultPao(paoFId);
+
+    paoService.linkSourcePao(paoAId, paoCId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoAId, paoDId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoAId, paoFId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoBId, paoCId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoBId, paoEId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoCId, paoDId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoDId, paoEId, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoEId, paoFId, PaoUpdateMode.FAIL_ON_CONFLICT);
+
+    // Mark C,D,E,F as deleted
+    paoService.deletePao(paoCId);
+    paoService.deletePao(paoDId);
+    paoService.deletePao(paoEId);
+    paoService.deletePao(paoFId);
+
+    // verify state of F
+    var paoF = paoService.getPao(paoFId);
+    assertTrue(paoF.getDeleted());
+
+    // call final delete to remove A
+    paoService.deletePao(paoAId);
+
+    // These PAOs should have been removed from the DB
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(paoAId));
+
+    // These PAOs should be marked as deleted but not removed from the db
+    var paos = new ArrayList<Pao>();
+    paos.add(paoService.getPao(paoCId));
+    paos.add(paoService.getPao(paoDId));
+    paos.add(paoService.getPao(paoEId));
+    paos.add(paoService.getPao(paoFId));
+
+    for (var pao : paos) {
+      assertNotNull(pao);
+      assertTrue(pao.getDeleted());
+    }
+
+    // These PAOs should still exist
+    assertNotNull(paoService.getPao(paoBId));
   }
 
   private void createDefaultPao(UUID objectId) {
