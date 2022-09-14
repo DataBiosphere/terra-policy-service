@@ -158,7 +158,13 @@ public class Pao {
         sourceObjectIds = new HashSet<>();
       }
       return new Pao(
-          objectId, component, objectType, attributes, effectiveAttributes, sourceObjectIds, deleted);
+          objectId,
+          component,
+          objectType,
+          attributes,
+          effectiveAttributes,
+          sourceObjectIds,
+          deleted);
     }
   }
 }

@@ -108,10 +108,9 @@ public class PaoDao {
       transactionManager = "tpsTransactionManager")
   public void deletePao(UUID objectId) {
     final Set<UUID> dependents = getDependentIds(objectId);
-    final Set<UUID> successors = getSuccessorIds(objectId);
     setPaoDeleted(objectId, true);
 
-    if (dependents.isEmpty() && successors.isEmpty()) {
+    if (dependents.isEmpty()) {
       DbPao dbPao = getDbPao(objectId);
 
       // First Pass: Build a map of all PAOs in our subgraph and note if they are flagged for
@@ -257,18 +256,6 @@ public class PaoDao {
             sql, params, (rs, rowNum) -> UUID.fromString(rs.getString("object_id"))));
   }
 
-  // Get a list of policies where the provided policy is a predecessor.
-  public Set<UUID> getSuccessorIds(UUID sourceId) {
-    final String sql = "SELECT object_id FROM policy_object WHERE predecessor_id=:source_id";
-
-    MapSqlParameterSource params =
-        new MapSqlParameterSource().addValue("source_id", sourceId.toString());
-
-    return new HashSet<>(
-        tpsJdbcTemplate.query(
-            sql, params, (rs, rowNum) -> UUID.fromString(rs.getString("object_id"))));
-  }
-
   /**
    * Update all of the changed Paos by processing the graph nodes. We use the graph nodes because
    * they hold the initial version of the Pao and the computed version of the Pao, so we can update
@@ -346,7 +333,7 @@ public class PaoDao {
       MapSqlParameterSource params =
           new MapSqlParameterSource().addValue("object_id", dbPao.objectId().toString());
       tpsJdbcTemplate.update(sql, params);
-    } catch (EmptyResultDataAccessException e) {
+    } catch (PolicyObjectNotFoundException e) {
       // Delete throws no error on not found
     }
   }
@@ -439,7 +426,7 @@ public class PaoDao {
   private DbPao getDbPao(UUID objectId) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
         FROM policy_object WHERE object_id = :object_id
         """;
 
@@ -456,7 +443,7 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;
