@@ -134,20 +134,22 @@ public class PaoDeleteTest extends LibraryTestBase {
    * Recursive test: deleting a Pao should visit all source Paos recursively and apply the delete
    * logic on them.
    *
+   * <p>For setup, we'll flag PAOs indicated with a ! as deleted before calling the final delete.
+   *
    * <pre>
-   *                    {targetPao#} <-- delete last
+   *                    {targetPao#} <-- delete here
    *                    /       \
-   * delete 2nd--> {pao2#}     {pao3}
+   *               {pao2#!}     {pao3}
    *                /   \
-   *            {pao4}   \    {pao6}
-   *                      \   /
-   *                    {pao5*}  <-- delete 1st
-   *                       |
-   *                    {pao7}
+   *            {pao4#!} \    {pao6}
+   *             /        \   /
+   *          {pao8#!}   {pao5*!}
+   *           /           |
+   *        {pao9}      {pao7}
    * </pre>
    *
-   * The result should be that the PAO marked with a * should be flagged as deleted. All PAOs marked
-   * with a # should be removed from the DB
+   * Expected result: pao5 (*) should be flagged as deleted but not removed from the db. paos 2, 4,
+   * 8 and target (#) should be removed from the db.
    */
   @Test
   void deleteRecursive() throws Exception {
@@ -158,6 +160,9 @@ public class PaoDeleteTest extends LibraryTestBase {
     var pao5Id = UUID.randomUUID();
     var pao6Id = UUID.randomUUID();
     var pao7Id = UUID.randomUUID();
+    var pao8Id = UUID.randomUUID();
+    var pao9Id = UUID.randomUUID();
+
     createDefaultPao(targetObjectId);
     createDefaultPao(pao2Id);
     createDefaultPao(pao3Id);
@@ -165,26 +170,30 @@ public class PaoDeleteTest extends LibraryTestBase {
     createDefaultPao(pao5Id);
     createDefaultPao(pao6Id);
     createDefaultPao(pao7Id);
+    createDefaultPao(pao8Id);
+    createDefaultPao(pao9Id);
 
     paoService.linkSourcePao(targetObjectId, pao2Id, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(targetObjectId, pao3Id, PaoUpdateMode.FAIL_ON_CONFLICT);
-
     paoService.linkSourcePao(pao2Id, pao4Id, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(pao2Id, pao5Id, PaoUpdateMode.FAIL_ON_CONFLICT);
-
     paoService.linkSourcePao(pao6Id, pao5Id, PaoUpdateMode.FAIL_ON_CONFLICT);
-
     paoService.linkSourcePao(pao5Id, pao7Id, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(pao4Id, pao8Id, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(pao8Id, pao9Id, PaoUpdateMode.FAIL_ON_CONFLICT);
 
-    // Call first delete to mark Pao5 deleted.
-    paoService.deletePao(pao5Id);
-    var pao = paoService.getPao(pao5Id);
-    assertTrue(pao.getDeleted());
+    // Mark PAOs 2, 4, 5, and 8 as deleted
+    ArrayList<UUID> toMarkDeleted = new ArrayList<>();
+    toMarkDeleted.add(pao2Id);
+    toMarkDeleted.add(pao4Id);
+    toMarkDeleted.add(pao5Id);
+    toMarkDeleted.add(pao8Id);
 
-    // call second delete to mark Pao2 deleted
-    paoService.deletePao(pao2Id);
-    pao = paoService.getPao(pao2Id);
-    assertTrue(pao.getDeleted());
+    for (UUID paoId : toMarkDeleted) {
+      paoService.deletePao(paoId);
+      var pao = paoService.getPao(paoId);
+      assertTrue(pao.getDeleted());
+    }
 
     // call final delete to remove targetPao
     paoService.deletePao(targetObjectId);
@@ -192,6 +201,8 @@ public class PaoDeleteTest extends LibraryTestBase {
     // These PAOs should have been removed from the DB
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(targetObjectId));
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(pao2Id));
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(pao4Id));
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(pao8Id));
 
     // This PAO should be marked as deleted but not removed from the db
     final var pao5 = paoService.getPao(pao5Id);
@@ -200,9 +211,9 @@ public class PaoDeleteTest extends LibraryTestBase {
 
     // These PAOs should still exist
     assertNotNull(paoService.getPao(pao3Id));
-    assertNotNull(paoService.getPao(pao4Id));
     assertNotNull(paoService.getPao(pao6Id));
     assertNotNull(paoService.getPao(pao7Id));
+    assertNotNull(paoService.getPao(pao9Id));
   }
 
   /**
@@ -211,15 +222,12 @@ public class PaoDeleteTest extends LibraryTestBase {
    *
    * <pre>
    *   delete->paoA#  paoB
-   *           |  \  /  |
-   *           |  paoC* |
-   *           |\  |    |
-   *           | paoD*  |
-   *           |    \   |
-   *           |     \  |
-   *            \    paoE*
-   *             \    |
-   *              paoF*
+   *             \  /  |
+   *             paoC* |
+   *              |    |
+   *            paoD*  |
+   *               \   |
+   *                paoE*
    * </pre>
    *
    * The result should be that only PaoA is removed from the db. All others have a dependent B.
@@ -231,33 +239,24 @@ public class PaoDeleteTest extends LibraryTestBase {
     var paoCId = UUID.randomUUID();
     var paoDId = UUID.randomUUID();
     var paoEId = UUID.randomUUID();
-    var paoFId = UUID.randomUUID();
 
     createDefaultPao(paoAId);
     createDefaultPao(paoBId);
     createDefaultPao(paoCId);
     createDefaultPao(paoDId);
     createDefaultPao(paoEId);
-    createDefaultPao(paoFId);
 
     paoService.linkSourcePao(paoAId, paoCId, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoAId, paoDId, PaoUpdateMode.FAIL_ON_CONFLICT);
-    paoService.linkSourcePao(paoAId, paoFId, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoBId, paoCId, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoBId, paoEId, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoCId, paoDId, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoDId, paoEId, PaoUpdateMode.FAIL_ON_CONFLICT);
-    paoService.linkSourcePao(paoEId, paoFId, PaoUpdateMode.FAIL_ON_CONFLICT);
 
-    // Mark C,D,E,F as deleted
+    // Mark C,D,E as deleted
     paoService.deletePao(paoCId);
     paoService.deletePao(paoDId);
     paoService.deletePao(paoEId);
-    paoService.deletePao(paoFId);
-
-    // verify state of F
-    var paoF = paoService.getPao(paoFId);
-    assertTrue(paoF.getDeleted());
 
     // call final delete to remove A
     paoService.deletePao(paoAId);
@@ -270,7 +269,6 @@ public class PaoDeleteTest extends LibraryTestBase {
     paos.add(paoService.getPao(paoCId));
     paos.add(paoService.getPao(paoDId));
     paos.add(paoService.getPao(paoEId));
-    paos.add(paoService.getPao(paoFId));
 
     for (var pao : paos) {
       assertNotNull(pao);

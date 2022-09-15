@@ -119,15 +119,14 @@ public class PaoDao {
       HashMap<UUID, DbPao> subgraphMap = new HashMap<>();
       walkDeleteSubgraph(subgraphMap, removablePaoMap, dbPao);
 
-      // Second Pass: iterate through our graph, for each PAO: recursively check its dependents and
-      // verify it's
-      // still removable. If all dependents are flagged for deletion and exist in our known
-      // subgraph, then the PAO
-      // is still removable.
+      // Second Pass: iterate through our graph, for each PAO:
+      // Recursively check its dependents and verify it's still removable.
+      // If all dependents are flagged for deletion and exist in our known subgraph,
+      // then the PAO is still removable.
       HashMap<UUID, Set<DbPao>> dependentMap = new HashMap<>();
       walkDeleteDependents(subgraphMap, removablePaoMap, dependentMap, dbPao);
 
-      // Finally - remove nodes that are still removable
+      // Finally - remove PAOs that are still removable
       removablePaoMap.forEach(
           (UUID id, Boolean toRemove) -> {
             if (toRemove) {
@@ -187,20 +186,37 @@ public class PaoDao {
     return paoList;
   }
 
-  /** */
+  /**
+   * Recursively build out a map of which PAOs are in the subgraph and note which PAOs have been
+   * flagged for deletion.
+   *
+   * @param subgraphMap a map of PAO id to dbPao that will be filled in during the recursive calls
+   * @param subgraphStatusMap map of PAO id to 'deleted' flag status that will be filled in during
+   *     recursive calls.
+   * @param pao the PAO currently being evaluated. On first call, this would be the root of the
+   *     subgraph.
+   */
   private void walkDeleteSubgraph(
-      HashMap<UUID, DbPao> subgraphMap,
-      HashMap<UUID, Boolean> subgraphStatusMap,
-      DbPao currentPao) {
-    subgraphStatusMap.put(currentPao.objectId(), currentPao.deleted());
-    subgraphMap.put(currentPao.objectId(), currentPao);
+      HashMap<UUID, DbPao> subgraphMap, HashMap<UUID, Boolean> subgraphStatusMap, DbPao pao) {
+    subgraphStatusMap.put(pao.objectId(), pao.deleted());
+    subgraphMap.put(pao.objectId(), pao);
 
-    for (var source : currentPao.sources()) {
+    for (var source : pao.sources()) {
       walkDeleteSubgraph(subgraphMap, subgraphStatusMap, getDbPao(UUID.fromString(source)));
     }
   }
 
-  /** */
+  /**
+   * Recursive call to check all dependents of a given PAO and update the PAOs removability.
+   *
+   * @param subgraphMap a map of PAO id to dbPao. This map gets checked for subgraph membership as
+   *     we recurse through dependents.
+   * @param subgraphStatusMap map of PAO id to 'deleted' flag status
+   * @param dependentMap a map of PAO id to all of that PAOs dependents. This serves as a cache and
+   *     is filled in during recursive calls.
+   * @param pao the PAO currently being evaluated. On first call, this would be the root of the
+   *     subgraph.
+   */
   private void walkDeleteDependents(
       HashMap<UUID, DbPao> subgraphMap,
       HashMap<UUID, Boolean> subgraphStatusMap,
@@ -211,8 +227,10 @@ public class PaoDao {
     if (pao == null) return;
 
     if (dependentMap.containsKey(pao.objectId())) {
+      // we have a cached answer for this PAO
       dependents = dependentMap.get(pao.objectId());
     } else {
+      // use a BFS to build a dependency list
       Queue<UUID> queue = new LinkedList<>();
       queue.addAll(getDependentIds(pao.objectId()));
 
@@ -228,12 +246,16 @@ public class PaoDao {
 
     for (var dependent : dependents) {
       if (!subgraphMap.containsKey(dependent.objectId()) || !dependent.deleted()) {
+        // if any dependent is not part of the subgraph or is not flagged for removal
+        // then the current PAO cannot be removed.
         subgraphStatusMap.put(pao.objectId(), false);
         break;
       }
     }
 
     for (var source : pao.sources()) {
+      // recursive step to continue checking all the current PAOs sources
+      // use the subgraphMap so lookup PAOs so that we don't keep querying the db
       walkDeleteDependents(
           subgraphMap, subgraphStatusMap, dependentMap, subgraphMap.get(UUID.fromString(source)));
     }
