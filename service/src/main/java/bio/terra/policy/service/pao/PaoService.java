@@ -5,7 +5,9 @@ import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.db.DbPao;
 import bio.terra.policy.db.PaoDao;
+import bio.terra.policy.service.pao.graph.DeleteWalker;
 import bio.terra.policy.service.pao.graph.Walker;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
@@ -16,6 +18,7 @@ import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +69,10 @@ public class PaoService {
 
   public void deletePao(UUID objectId) {
     logger.info("Delete PAO id {}", objectId);
-    paoDao.deletePao(objectId);
+    paoDao.markPaoDeleted(objectId);
+    DeleteWalker walker = new DeleteWalker(paoDao, objectId);
+    Set<DbPao> toRemove = walker.findRemovablePaos();
+    paoDao.deletePaos(toRemove);
   }
 
   public Pao getPao(UUID objectId) {
