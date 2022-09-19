@@ -30,15 +30,14 @@ public class DeleteWalker {
 
       // First Pass: Build a map of all PAOs in our subgraph and note if they are flagged for
       // deletion.
-      HashMap<UUID, DeleteGraphNode> subgraphMap = new HashMap<>();
-      walkDeleteSubgraph(subgraphMap, dbPao);
+      walkDeleteSubgraph(dbPao);
 
       // Second Pass: iterate through our graph, for each PAO:
       // Recursively check its dependents and verify it's still removable.
       // If all dependents are flagged for deletion and exist in our known subgraph,
       // then the PAO is still removable.
       HashMap<UUID, Set<DbPao>> dependentMap = new HashMap<>();
-      walkDeleteDependents(subgraphMap, dependentMap, dbPao);
+      walkDeleteDependents(dependentMap, dbPao);
 
       // Finally - remove PAOs that are still removable
       subgraphMap.forEach(
@@ -56,32 +55,26 @@ public class DeleteWalker {
    * Recursively build out a map of which PAOs are in the subgraph and note which PAOs have been
    * flagged for deletion.
    *
-   * @param subgraphMap a map of PAO id to dbPao that will be filled in during the recursive calls
    * @param pao the PAO currently being evaluated. On first call, this would be the root of the
    *     subgraph.
    */
-  private void walkDeleteSubgraph(HashMap<UUID, DeleteGraphNode> subgraphMap, DbPao pao) {
+  private void walkDeleteSubgraph(DbPao pao) {
     subgraphMap.put(pao.objectId(), new DeleteGraphNode(pao, pao.deleted()));
 
     for (var source : pao.sources()) {
-      walkDeleteSubgraph(subgraphMap, paoDao.getDbPao(UUID.fromString(source)));
+      walkDeleteSubgraph(paoDao.getDbPao(UUID.fromString(source)));
     }
   }
 
   /**
    * Recursive call to check all dependents of a given PAO and update the PAOs removability.
    *
-   * @param subgraphMap a map of PAO id to dbPao. This map gets checked for subgraph membership as
-   *     we recurse through dependents.
    * @param dependentMap a map of PAO id to all of that PAOs dependents. This serves as a cache and
    *     is filled in during recursive calls.
    * @param pao the PAO currently being evaluated. On first call, this would be the root of the
    *     subgraph.
    */
-  private void walkDeleteDependents(
-      HashMap<UUID, DeleteGraphNode> subgraphMap,
-      HashMap<UUID, Set<DbPao>> dependentMap,
-      DbPao pao) {
+  private void walkDeleteDependents(HashMap<UUID, Set<DbPao>> dependentMap, DbPao pao) {
     HashMap<UUID, DbPao> dependents = new HashMap<>();
 
     if (pao == null) return;
@@ -114,8 +107,7 @@ public class DeleteWalker {
     for (var source : pao.sources()) {
       // recursive step to continue checking all the current PAOs sources
       // use the subgraphMap so lookup PAOs so that we don't keep querying the db
-      walkDeleteDependents(
-          subgraphMap, dependentMap, subgraphMap.get(UUID.fromString(source)).getPao());
+      walkDeleteDependents(dependentMap, subgraphMap.get(UUID.fromString(source)).getPao());
     }
   }
 }
