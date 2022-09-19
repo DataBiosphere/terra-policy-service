@@ -16,6 +16,7 @@ public class Pao {
   private PolicyInputs attributes;
   private PolicyInputs effectiveAttributes;
   private Set<UUID> sourceObjectIds;
+  private boolean deleted;
 
   public Pao(
       UUID objectId,
@@ -23,13 +24,15 @@ public class Pao {
       PaoObjectType objectType,
       PolicyInputs attributes,
       PolicyInputs effectiveAttributes,
-      Set<UUID> sourceObjectIds) {
+      Set<UUID> sourceObjectIds,
+      boolean deleted) {
     this.objectId = objectId;
     this.component = component;
     this.objectType = objectType;
     this.attributes = attributes;
     this.effectiveAttributes = effectiveAttributes;
     this.sourceObjectIds = sourceObjectIds;
+    this.deleted = deleted;
   }
 
   public UUID getObjectId() {
@@ -68,6 +71,14 @@ public class Pao {
     this.sourceObjectIds = sourceObjectIds;
   }
 
+  public boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
+  }
+
   public String toShortString() {
     return String.format("%s:%s (%s)", component, objectType, objectId);
   }
@@ -81,6 +92,7 @@ public class Pao {
         .add("attributes=" + attributes)
         .add("effectiveAttributes=" + effectiveAttributes)
         .add("sourceObjectIds=" + sourceObjectIds)
+        .add("deleted=" + deleted)
         .toString();
   }
 
@@ -93,6 +105,7 @@ public class Pao {
             dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet()))
         .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
         .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
+        .setDeleted(dbPao.deleted())
         .build();
   }
 
@@ -103,6 +116,7 @@ public class Pao {
     private PolicyInputs attributes;
     private PolicyInputs effectiveAttributes;
     private Set<UUID> sourceObjectIds;
+    private boolean deleted;
 
     public Builder setObjectId(UUID objectId) {
       this.objectId = objectId;
@@ -124,6 +138,11 @@ public class Pao {
       return this;
     }
 
+    public Builder setDeleted(boolean deleted) {
+      this.deleted = deleted;
+      return this;
+    }
+
     public Builder setEffectiveAttributes(PolicyInputs effectiveAttributes) {
       this.effectiveAttributes = effectiveAttributes;
       return this;
@@ -139,7 +158,13 @@ public class Pao {
         sourceObjectIds = new HashSet<>();
       }
       return new Pao(
-          objectId, component, objectType, attributes, effectiveAttributes, sourceObjectIds);
+          objectId,
+          component,
+          objectType,
+          attributes,
+          effectiveAttributes,
+          sourceObjectIds,
+          deleted);
     }
   }
 }

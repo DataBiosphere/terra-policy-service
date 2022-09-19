@@ -12,6 +12,7 @@ import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,8 @@ public class PaoDao {
             PaoObjectType.fromDb(rs.getString("object_type")),
             sources,
             rs.getString("attribute_set_id"),
-            rs.getString("effective_set_id"));
+            rs.getString("effective_set_id"),
+            rs.getBoolean("deleted"));
       };
 
   private static final RowMapper<DbAttribute> DB_ATTRIBUTE_SET_ROW_MAPPER =
@@ -103,23 +105,20 @@ public class PaoDao {
       isolation = Isolation.SERIALIZABLE,
       propagation = Propagation.REQUIRED,
       transactionManager = "tpsTransactionManager")
-  public void deletePao(UUID objectId) {
-    try {
-      // Lookup the policy object
-      DbPao dbPao = getDbPao(objectId);
+  public void deletePaos(Collection<DbPao> paos) {
+    paos.forEach((DbPao pao) -> removeDbPao(pao));
+  }
 
-      // Delete associated attribute set(s)
-      deleteAttributeSet(dbPao.attributeSetId());
-      deleteAttributeSet(dbPao.effectiveSetId());
-
-      // Delete the policy object
-      final String sql = "DELETE FROM policy_object WHERE object_id = :object_id";
-      MapSqlParameterSource params =
-          new MapSqlParameterSource().addValue("object_id", objectId.toString());
-      tpsJdbcTemplate.update(sql, params);
-    } catch (PolicyObjectNotFoundException e) {
-      // Delete throws no error on not found
-    }
+  /**
+   * Set the 'deleted' field on the PAO to true.
+   *
+   * @param objectId The PAO to flag
+   */
+  public void markPaoDeleted(UUID objectId) {
+    final String sql = "UPDATE policy_object SET deleted=true WHERE object_id=:object_id";
+    MapSqlParameterSource params =
+        new MapSqlParameterSource().addValue("object_id", objectId.toString());
+    tpsJdbcTemplate.update(sql, params);
   }
 
   @Retryable(interceptor = "transactionRetryInterceptor")
@@ -255,6 +254,22 @@ public class PaoDao {
     }
   }
 
+  private void removeDbPao(DbPao dbPao) {
+    try {
+      // Delete associated attribute set(s)
+      deleteAttributeSet(dbPao.attributeSetId());
+      deleteAttributeSet(dbPao.effectiveSetId());
+
+      // Delete the policy object
+      final String sql = "DELETE FROM policy_object WHERE object_id=:object_id";
+      MapSqlParameterSource params =
+          new MapSqlParameterSource().addValue("object_id", dbPao.objectId().toString());
+      tpsJdbcTemplate.update(sql, params);
+    } catch (PolicyObjectNotFoundException e) {
+      // Delete throws no error on not found
+    }
+  }
+
   /**
    * The JdbcTemplate doesn't have a nice way to pass arrays into and out of Postgres. Since we use
    * UUIDs, we know there are no commas, so we can build the CSV and use the Postgres
@@ -331,10 +346,10 @@ public class PaoDao {
     tpsJdbcTemplate.update(sql, params);
   }
 
-  private DbPao getDbPao(UUID objectId) {
+  public DbPao getDbPao(UUID objectId) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
         FROM policy_object WHERE object_id = :object_id
         """;
 
@@ -351,7 +366,7 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;

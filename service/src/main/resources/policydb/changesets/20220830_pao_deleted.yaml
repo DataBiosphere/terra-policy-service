@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: pao_deleted
+      author: mikenev
+      changes:
+      - addColumn:
+          tableName: policy_object
+          columns:
+            - column:
+                name: deleted
+                type: boolean
+                remarks: Indicates the PAO has been deleted
