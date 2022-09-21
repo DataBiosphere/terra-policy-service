@@ -8,7 +8,7 @@ dependencies {
 	implementation 'org.webjars:webjars-locator-core'
 }
 
-def artifactGroup = "${group}.tps"
+def artifactGroup = "${group}.policy"
 
 generateSwaggerCode {
 	inputFile = file('../common/openapi.yml')

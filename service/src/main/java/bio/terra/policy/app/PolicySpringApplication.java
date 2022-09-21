@@ -26,8 +26,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     })
 @EnableRetry
 @EnableTransactionManagement
-public class Main {
+public class PolicySpringApplication {
   public static void main(String[] args) {
-    new SpringApplicationBuilder(Main.class).initializers(new LoggingInitializer()).run(args);
+    new SpringApplicationBuilder(PolicySpringApplication.class)
+        .initializers(new LoggingInitializer())
+        .run(args);
   }
 }
