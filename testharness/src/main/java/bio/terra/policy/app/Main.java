@@ -10,19 +10,19 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication(
     exclude = {
-        // We don't make use of DataSource in this application, so exclude it from scanning.
-        DataSourceAutoConfiguration.class,
+      // We don't make use of DataSource in this application, so exclude it from scanning.
+      DataSourceAutoConfiguration.class,
     })
 @ComponentScan(
     basePackages = {
-        // Scan for logging-related components & configs
-        "bio.terra.common.logging",
-        // Scan for Liquibase migration components & configs
-        "bio.terra.common.migrate",
-        // Transaction management and DB retry configuration
-        "bio.terra.common.retry.transaction",
-        // Scan all policy service packages
-        "bio.terra.policy",
+      // Scan for logging-related components & configs
+      "bio.terra.common.logging",
+      // Scan for Liquibase migration components & configs
+      "bio.terra.common.migrate",
+      // Transaction management and DB retry configuration
+      "bio.terra.common.retry.transaction",
+      // Scan all policy service packages
+      "bio.terra.policy",
     })
 @EnableRetry
 @EnableTransactionManagement

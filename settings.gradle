@@ -1,4 +1,4 @@
 rootProject.name = 'terra-policy-service'
-include('service', 'scripts', 'testharness')
+include('service', 'scripts', 'testharness', 'client')
 
 gradle.ext.releaseVersion = "0.2.9-SNAPSHOT"
