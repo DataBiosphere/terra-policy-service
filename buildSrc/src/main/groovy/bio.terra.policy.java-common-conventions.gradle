@@ -58,7 +58,7 @@ group = 'bio.terra'
 
 spotless {
     java {
-        targetExclude "${buildDir}/**"
+        target 'src/*/java/**/*.java'
         googleJavaFormat()
     }
 }
