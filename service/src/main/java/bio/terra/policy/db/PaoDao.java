@@ -172,13 +172,44 @@ public class PaoDao {
   }
 
   /**
-   * Given a source id, find all of the dependents and return their ids
+   * Given a source id, find the immediate dependents and return their ids
    *
    * @param sourceId source to hunt for
-   * @return Set of dependent UUIDs that reference that source
+   * @return Set of dependent UUIDs that reference that source id
    */
   public Set<UUID> getDependentIds(UUID sourceId) {
     final String sql = "SELECT object_id FROM policy_object WHERE :source_id = ANY(sources)";
+
+    MapSqlParameterSource params =
+        new MapSqlParameterSource().addValue("source_id", sourceId.toString());
+
+    return new HashSet<>(
+        tpsJdbcTemplate.query(
+            sql, params, (rs, rowNum) -> UUID.fromString(rs.getString("object_id"))));
+  }
+
+  /**
+   * Given a source id, RECURSIVELY find all of the dependents and return their ids. Consult the
+   * documentation on Postgres recursive queries in this document:
+   *
+   * <p>https://www.postgresql.org/docs/current/queries-with.html
+   *
+   * <p>And in this tutorial:
+   *
+   * <p>https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-recursive-query/
+   *
+   * @param sourceId source to hunt for
+   * @return Set of all dependent UUIDs
+   */
+  public Set<UUID> getAllDependentIds(UUID sourceId) {
+    final String sql =
+        """
+        WITH RECURSIVE dependents AS (
+          SELECT :source_id AS object_id
+          UNION
+          SELECT R.object_id FROM policy_object R INNER JOIN dependents D ON D.object_id = ANY(R.sources))
+        SELECT * FROM dependents;
+        """;
 
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("source_id", sourceId.toString());

@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.exception.DirectConflictException;
+import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -290,6 +291,11 @@ public class PaoUpdateTest extends LibraryTestBase {
         PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
         PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
         PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+
+    // Link None to A - should fail because it would create a cycle
+    assertThrows(
+        IllegalCycleException.class,
+        () -> paoService.linkSourcePao(paoAid, paoNone, PaoUpdateMode.FAIL_ON_CONFLICT));
   }
 
   @Test

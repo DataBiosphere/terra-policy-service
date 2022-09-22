@@ -1,6 +1,7 @@
 package bio.terra.policy.service.pao;
 
 import bio.terra.policy.common.exception.DirectConflictException;
+import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
@@ -107,6 +108,16 @@ public class PaoService {
     // We didn't actually change the source list, so we are done
     if (!newSource) {
       return new PolicyUpdateResult(targetPao, new ArrayList<>());
+    }
+
+    // Make sure adding this link to the target will not create a cycle;
+    // that is, source cannot be one of our descendants.
+    Set<UUID> allDescendents = paoDao.getAllDependentIds(objectId);
+    if (allDescendents.contains(sourceObjectId)) {
+      throw new IllegalCycleException(
+          String.format(
+              "Linking object %s to object %s would create a cycle, so is not allowed",
+              sourceObjectId, objectId));
     }
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
