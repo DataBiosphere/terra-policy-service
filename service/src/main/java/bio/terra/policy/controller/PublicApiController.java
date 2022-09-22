@@ -13,11 +13,11 @@ public class PublicApiController implements PublicApi {
   @Autowired
   public PublicApiController(VersionProperties versionProperties) {
     this.versionProperties = versionProperties;
-        new VersionProperties()
-            .build(versionProperties.getBuild())
-            .gitHash(versionProperties.getGitHash())
-            .github(versionProperties.getGithub())
-            .gitTag(versionProperties.getGitTag());
+    new VersionProperties()
+        .build(versionProperties.getBuild())
+        .gitHash(versionProperties.getGitHash())
+        .github(versionProperties.getGithub())
+        .gitTag(versionProperties.getGitTag());
   }
 
   @Override
@@ -30,10 +30,11 @@ public class PublicApiController implements PublicApi {
     // these copy shenanigans are because versionProperties comes from spring config
     // and is actually a proxy and using the instance directly in a http response includes all the
     // proxy fields that no one wants to see
-    return ResponseEntity.ok(new VersionProperties()
-        .build(versionProperties.getBuild())
-        .gitHash(versionProperties.getGitHash())
-        .github(versionProperties.getGithub())
-        .gitTag(versionProperties.getGitTag()));
+    return ResponseEntity.ok(
+        new VersionProperties()
+            .build(versionProperties.getBuild())
+            .gitHash(versionProperties.getGitHash())
+            .github(versionProperties.getGithub())
+            .gitTag(versionProperties.getGitTag()));
   }
 }
