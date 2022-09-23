@@ -9,7 +9,7 @@ dependencies {
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli'
 }
 
-def artifactGroup = "${group}.catalog"
+def artifactGroup = "${group}.policy"
 
 generateSwaggerCode {
     inputFile = file('../common/openapi.yml')

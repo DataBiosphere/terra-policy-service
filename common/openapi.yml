@@ -62,6 +62,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorReport'
+    SystemStatusResponse:
+      description: A JSON description of the subsystems and their statuses.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SystemStatus'
 
   schemas:
     ErrorReport:
@@ -84,6 +90,25 @@ components:
           type: string
         build:
           type: string
+
+    SystemStatus:
+      required: [ ok, systems ]
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: whether any system(s) need attention
+        systems:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              ok:
+                type: boolean
+              messages:
+                type: array
+                items:
+                  type: string
 
   securitySchemes:
     bearerAuth:

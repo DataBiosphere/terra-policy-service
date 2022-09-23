@@ -28,6 +28,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class PolicySpringApplication {
   public static void main(String[] args) {
+    // this system property is set so that there can be a policy-application.yml file instead of
+    // application.yml since policy is still deployed as a library. We don't want the
+    // application.yml in this library to conflict with any application.yml where it is imported.
+    // Once tps is no longer a library this can be changed to plain application.yml as expected.
+    System.setProperty("spring.config.name", "policy-application");
+
     new SpringApplicationBuilder(PolicySpringApplication.class)
         .initializers(new LoggingInitializer())
         .run(args);
