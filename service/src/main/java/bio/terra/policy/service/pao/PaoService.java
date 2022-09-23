@@ -107,7 +107,7 @@ public class PaoService {
 
     // We didn't actually change the source list, so we are done
     if (!newSource) {
-      return new PolicyUpdateResult(targetPao, new ArrayList<>());
+      return new PolicyUpdateResult(targetPao, new ArrayList<>(), true);
     }
 
     // Make sure adding this link to the target will not create a cycle;
@@ -125,11 +125,12 @@ public class PaoService {
     List<PolicyConflict> conflicts = walker.getNewConflicts();
 
     // If the mode is FAIL_ON_CONFLICT and there are no conflicts, apply the changes
-    if (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty()) {
+    boolean updateApplied = (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty());
+    if (updateApplied) {
       walker.applyChanges();
     }
 
-    return new PolicyUpdateResult(targetPao, conflicts);
+    return new PolicyUpdateResult(targetPao, conflicts, updateApplied);
   }
 
   /**
@@ -158,11 +159,16 @@ public class PaoService {
     Pao sourcePao = paoDao.getPao(sourceObjectId);
     Pao destinationPao = paoDao.getPao(destinationObjectId);
 
+    // If the source and destination are the same PAO, there is nothing to do
+    if (sourceObjectId.equals(destinationObjectId)) {
+      return new PolicyUpdateResult(destinationPao, new ArrayList<>(), true);
+    }
+
     // Step 1: combine the source attributes and destination attributes;
     //  stop here if there are conflicts
     List<PolicyConflict> conflicts = mergeAttributes(sourcePao, destinationPao);
     if (!conflicts.isEmpty()) {
-      return new PolicyUpdateResult(destinationPao, conflicts);
+      return new PolicyUpdateResult(destinationPao, conflicts, false);
     }
 
     // Step 2: merge the sourceObject sources into the destination sources
@@ -173,11 +179,36 @@ public class PaoService {
     conflicts = walker.getNewConflicts();
 
     // If the mode is FAIL_ON_CONFLICT and there are no conflicts, apply the changes
-    if (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty()) {
+    boolean updateApplied = (updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && conflicts.isEmpty());
+    if (updateApplied) {
       walker.applyChanges();
     }
 
-    return new PolicyUpdateResult(destinationPao, conflicts);
+    return new PolicyUpdateResult(destinationPao, conflicts, updateApplied);
+  }
+
+  /**
+   * Update the attributes of a Pao and propagate changes.
+   *
+   * @param targetPaoId the object to update
+   * @param replacementAttributes policy inputs to overwrite
+   * @param updateMode how to handle applying the changes
+   */
+  @Retryable(interceptor = "transactionRetryInterceptor")
+  @Transactional(
+      isolation = Isolation.SERIALIZABLE,
+      propagation = Propagation.REQUIRED,
+      transactionManager = "tpsTransactionManager")
+  public PolicyUpdateResult replacePao(
+      UUID targetPaoId, PolicyInputs replacementAttributes, PaoUpdateMode updateMode) {
+    logger.info(
+        "ReplacePao: target {} attributes {} updateMode {}",
+        targetPaoId,
+        replacementAttributes,
+        updateMode);
+
+    Pao targetPao = paoDao.getPao(targetPaoId);
+    return updateAttributesWorker(replacementAttributes, targetPao, updateMode);
   }
 
   /**
@@ -221,7 +252,7 @@ public class PaoService {
       }
     }
 
-    // Now the adds
+    // Now integrate the adds into the attribute set
     for (PolicyInput addPolicy : addAttributes.getInputs().values()) {
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
       if (existingPolicy == null) {
@@ -241,7 +272,14 @@ public class PaoService {
       }
     }
 
-    // Set the attributes to the newly computed attributes
+    return updateAttributesWorker(newAttributes, targetPao, updateMode);
+  }
+
+  // Common code to update new attributes to a targetPao
+  // Used by both updatePao and replacePao
+  private PolicyUpdateResult updateAttributesWorker(
+      PolicyInputs newAttributes, Pao targetPao, PaoUpdateMode updateMode) {
+    // Set the target PAO attributes to the newly computed attributes
     targetPao.setAttributes(newAttributes);
 
     // Evaluate the change, calculating new effective attribute sets and finding conflicts
@@ -250,7 +288,7 @@ public class PaoService {
 
     if (updateMode == PaoUpdateMode.DRY_RUN
         || updateMode == PaoUpdateMode.FAIL_ON_CONFLICT && !conflicts.isEmpty()) {
-      return new PolicyUpdateResult(targetPao, conflicts);
+      return new PolicyUpdateResult(targetPao, conflicts, false);
     }
 
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS && !conflicts.isEmpty()) {
@@ -258,7 +296,7 @@ public class PaoService {
       // created any conflicts on the target Pao. We only allow conflicts on dependent
       // Paos.
       for (PolicyConflict conflict : conflicts) {
-        if (conflict.pao().getObjectId().equals(targetPaoId)) {
+        if (conflict.pao().getObjectId().equals(targetPao.getObjectId())) {
           throw new DirectConflictException(
               String.format(
                   "Update of policy %s on %s creates a conflict",
@@ -268,10 +306,8 @@ public class PaoService {
     }
 
     walker.applyChanges();
-    return new PolicyUpdateResult(targetPao, conflicts);
+    return new PolicyUpdateResult(targetPao, conflicts, true);
   }
-
-  // This does the first step of clone: merging the
 
   /**
    * This method does the first step of clone: merging the source attributes into the destination
