@@ -30,6 +30,11 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * The PAO Service does all processing of the Policy Attribute Objects. Those are the the objects
+ * that represent policies on objects in other components of Terra. It manages the graph (DAG) of
+ * objects that depend on the policies of other objects.
+ */
 @Component
 public class PaoService {
   private static final Logger logger = LoggerFactory.getLogger(PaoService.class);
