@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: Terra Policy Service
+  version: 0.1.0
+paths:
+  /status:
+    get:
+      summary: Check status of the service.
+      tags: [ public ]
+      operationId: getStatus
+      security: [ ]
+      responses:
+        '200':
+          description: OK
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '503':
+          $ref: '#/components/responses/SystemStatusResponse'
+  /version:
+    get:
+      summary: Get version info of the deployed service.
+      tags: [ public ]
+      operationId: getVersion
+      security: [ ]
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionProperties'
+        '404':
+          description: "Version not configured"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+
+components:
+  responses:
+    # Error Responses
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    PermissionDenied:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    NotFound:
+      description: Not found (or unauthorized)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    SystemStatusResponse:
+      description: A JSON description of the subsystems and their statuses.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SystemStatus'
+
+  schemas:
+    ErrorReport:
+      type: object
+      required: [ message, statusCode ]
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: integer
+
+    VersionProperties:
+      type: object
+      properties:
+        gitTag:
+          type: string
+        gitHash:
+          type: string
+        github:
+          type: string
+        build:
+          type: string
+
+    SystemStatus:
+      required: [ ok, systems ]
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: whether any system(s) need attention
+        systems:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              ok:
+                type: boolean
+              messages:
+                type: array
+                items:
+                  type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+
+security:
+  - bearerAuth: [ ]

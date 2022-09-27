@@ -5,6 +5,7 @@ plugins {
 
     id 'com.diffplug.spotless'
     id 'com.github.spotbugs'
+    id 'org.hidetake.swagger.generator'
 }
 
 boolean isGithubAction = System.getenv().containsKey("GITHUB_ACTIONS")
@@ -47,6 +48,10 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     implementation 'bio.terra:terra-common-lib:0.0.66-SNAPSHOT'
+
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
+
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.35'
 }
 
 tasks.named('test') {
@@ -58,7 +63,7 @@ group = 'bio.terra'
 
 spotless {
     java {
-        targetExclude "${buildDir}/**"
+        target 'src/*/java/**/*.java'
         googleJavaFormat()
     }
 }
