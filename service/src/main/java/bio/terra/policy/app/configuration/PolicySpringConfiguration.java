@@ -1,6 +1,7 @@
-package bio.terra.policy.app;
+package bio.terra.policy.app.configuration;
 
-import bio.terra.policy.generated.model.VersionProperties;
+import bio.terra.policy.app.StartupInitializer;
+import bio.terra.policy.generated.model.ApiVersionProperties;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -11,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class PolicySpringConfiguration {
   @Bean
   @ConfigurationProperties("tps.version")
-  public VersionProperties getTpsVersion() {
-    return new VersionProperties();
+  public ApiVersionProperties getTpsVersion() {
+    return new ApiVersionProperties();
   }
 
   // This is a "magic bean": It supplies a method that Spring calls after the application is setup,

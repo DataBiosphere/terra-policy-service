@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import bio.terra.policy.app.controller.SwaggerController;
 import bio.terra.policy.testutils.BaseTest;
 import java.util.Set;
 import org.junit.jupiter.api.Test;

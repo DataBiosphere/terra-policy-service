@@ -1,4 +1,4 @@
-package bio.terra.policy.library.configuration;
+package bio.terra.policy.app.configuration;
 
 import bio.terra.common.db.BaseDatabaseProperties;
 import bio.terra.common.db.DataSourceInitializer;
@@ -9,11 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.TransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableConfigurationProperties
-@EnableTransactionManagement
 @ConfigurationProperties(prefix = "policy.policy-database")
 public class TpsDatabaseConfiguration extends BaseDatabaseProperties {
   // These properties control code in the StartupInitializer. We would not use these in production,
