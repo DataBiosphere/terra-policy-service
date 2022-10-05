@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import bio.terra.policy.common.model.PolicyInput;
-import bio.terra.policy.testutils.LibraryTestBase;
+import bio.terra.policy.testutils.TestBase;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-public class PolicyMutatorTest extends LibraryTestBase {
+public class PolicyMutatorTest extends TestBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String GROUP = "group";
