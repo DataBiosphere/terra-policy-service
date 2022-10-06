@@ -128,6 +128,15 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+
+
+
+
+
+
+
+
+
   notify-slack:
     needs: [ bump-check, build, tests-and-sonarqube ]
     runs-on: ubuntu-latest
