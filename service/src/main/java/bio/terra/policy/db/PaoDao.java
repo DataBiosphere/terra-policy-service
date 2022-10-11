@@ -1,5 +1,7 @@
 package bio.terra.policy.db;
 
+import bio.terra.common.db.ReadTransaction;
+import bio.terra.common.db.WriteTransaction;
 import bio.terra.policy.app.configuration.TpsDatabaseConfiguration;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
@@ -27,16 +29,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-/*
- * We cannot use the @WriteTransaction / @ReadTransaction short cuts because we need to
- * specify the transaction manager.
- */
 @Component
 public class PaoDao {
   private static final RowMapper<DbPao> DB_PAO_ROW_MAPPER =
@@ -75,11 +69,7 @@ public class PaoDao {
     this.tpsJdbcTemplate = new NamedParameterJdbcTemplate(tpsDatabaseConfiguration.getDataSource());
   }
 
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public void createPao(
       UUID objectId, PaoComponent component, PaoObjectType objectType, PolicyInputs inputs) {
 
@@ -100,11 +90,7 @@ public class PaoDao {
         effectiveSetId);
   }
 
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public void deletePaos(Collection<DbPao> paos) {
     paos.forEach((DbPao pao) -> removeDbPao(pao));
   }
@@ -121,12 +107,7 @@ public class PaoDao {
     tpsJdbcTemplate.update(sql, params);
   }
 
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      readOnly = true,
-      transactionManager = "tpsTransactionManager")
+  @ReadTransaction
   public Pao getPao(UUID objectId) {
     DbPao dbPao = getDbPao(objectId);
     Map<String, PolicyInputs> attributeSetMap =
@@ -136,10 +117,8 @@ public class PaoDao {
 
   // -- Graph Walk Methods --
   // These methods are intentionally without transaction annotations. They are used by the policy
-  // update
-  // process. That process may do multiple reads of the database followed by a big update. The
-  // transaction
-  // is managed outside of the DAO.
+  // update process. That process may do multiple reads of the database followed by a big update.
+  // The transaction is managed outside of the DAO.
 
   /**
    * Given a list of PAO ids, return PAOs

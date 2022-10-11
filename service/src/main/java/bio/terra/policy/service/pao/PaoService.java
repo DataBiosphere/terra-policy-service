@@ -1,5 +1,6 @@
 package bio.terra.policy.service.pao;
 
+import bio.terra.common.db.WriteTransaction;
 import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
@@ -24,11 +25,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The PAO Service does all processing of the Policy Attribute Objects. Those are the the objects
@@ -94,11 +91,7 @@ public class PaoService {
    * @param sourceObjectId id of the source object
    * @param updateMode link mode: fail on conflict or dry_run
    */
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public PolicyUpdateResult linkSourcePao(
       UUID objectId, UUID sourceObjectId, PaoUpdateMode updateMode) {
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
@@ -147,11 +140,7 @@ public class PaoService {
    * @param updateMode DRY_RUN or FAIL_ON_CONFLICT
    * @return result of the merge - destination PAO and any policy conflicts
    */
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public PolicyUpdateResult mergeFromPao(
       UUID sourceObjectId, UUID destinationObjectId, PaoUpdateMode updateMode) {
     if (updateMode == PaoUpdateMode.ENFORCE_CONFLICTS) {
@@ -199,11 +188,7 @@ public class PaoService {
    * @param replacementAttributes policy inputs to overwrite
    * @param updateMode how to handle applying the changes
    */
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public PolicyUpdateResult replacePao(
       UUID targetPaoId, PolicyInputs replacementAttributes, PaoUpdateMode updateMode) {
     logger.info(
@@ -224,11 +209,7 @@ public class PaoService {
    * @param removeAttributes policy inputs to remove
    * @param updateMode how to handle applying the changes
    */
-  @Retryable(interceptor = "transactionRetryInterceptor")
-  @Transactional(
-      isolation = Isolation.SERIALIZABLE,
-      propagation = Propagation.REQUIRED,
-      transactionManager = "tpsTransactionManager")
+  @WriteTransaction
   public PolicyUpdateResult updatePao(
       UUID targetPaoId,
       PolicyInputs addAttributes,
