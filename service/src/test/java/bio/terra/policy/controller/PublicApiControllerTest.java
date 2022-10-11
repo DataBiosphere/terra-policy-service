@@ -5,8 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import bio.terra.policy.generated.model.VersionProperties;
-import bio.terra.policy.testutils.BaseTest;
+import bio.terra.policy.app.controller.PublicApiController;
+import bio.terra.policy.generated.model.ApiVersionProperties;
+import bio.terra.policy.testutils.TestBase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = PublicApiController.class)
 @WebMvcTest
-class PublicApiControllerTest extends BaseTest {
+class PublicApiControllerTest extends TestBase {
 
   @Autowired private MockMvc mockMvc;
 
-  @MockBean private VersionProperties versionProperties;
+  @MockBean private ApiVersionProperties versionProperties;
 
   @Test
   void testStatus() throws Exception {

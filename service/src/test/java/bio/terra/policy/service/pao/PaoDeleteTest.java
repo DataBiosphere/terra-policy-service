@@ -1,6 +1,10 @@
 package bio.terra.policy.service.pao;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
@@ -9,14 +13,14 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
-import bio.terra.policy.testutils.LibraryTestBase;
+import bio.terra.policy.testutils.TestUnitBase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class PaoDeleteTest extends LibraryTestBase {
+public class PaoDeleteTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String REGION_CONSTRAINT = "region-constraint";

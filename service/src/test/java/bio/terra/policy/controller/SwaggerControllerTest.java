@@ -4,7 +4,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import bio.terra.policy.testutils.BaseTest;
+import bio.terra.policy.app.controller.SwaggerController;
+import bio.terra.policy.testutils.TestBase;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SwaggerController.class)
 @WebMvcTest
-class SwaggerControllerTest extends BaseTest {
+class SwaggerControllerTest extends TestBase {
 
   @Autowired private MockMvc mockMvc;
 

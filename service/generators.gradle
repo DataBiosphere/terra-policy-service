@@ -20,6 +20,7 @@ generateSwaggerCode {
 			dateLibrary      : 'java11',
 			interfaceOnly    : 'true',
 			useTags          : 'true',
+			modelNamePrefix  : 'Api',
 			springBootVersion: dependencyManagement.managedVersions['org.springframework.boot:spring-boot']
 	]
 }

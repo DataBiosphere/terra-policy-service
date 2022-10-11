@@ -1,12 +1,5 @@
 package bio.terra.policy.service.pao;
 
-import static bio.terra.policy.testutils.PaoTestUtil.DATA1;
-import static bio.terra.policy.testutils.PaoTestUtil.DATA2;
-import static bio.terra.policy.testutils.PaoTestUtil.TEST_DATA_POLICY_X;
-import static bio.terra.policy.testutils.PaoTestUtil.TEST_DATA_POLICY_Y;
-import static bio.terra.policy.testutils.PaoTestUtil.TEST_FLAG_POLICY_A;
-import static bio.terra.policy.testutils.PaoTestUtil.TEST_FLAG_POLICY_B;
-import static bio.terra.policy.testutils.PaoTestUtil.TEST_NAMESPACE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -24,15 +17,16 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
-import bio.terra.policy.testutils.LibraryTestBase;
 import bio.terra.policy.testutils.PaoTestUtil;
+import bio.terra.policy.testutils.TestUnitBase;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class PaoUpdateTest extends LibraryTestBase {
+public class PaoUpdateTest extends TestUnitBase {
   private static final Logger logger = LoggerFactory.getLogger(PaoUpdateTest.class);
 
   @Autowired private PaoService paoService;
@@ -42,17 +36,17 @@ public class PaoUpdateTest extends LibraryTestBase {
     // Flag policies refer to unknown policies that have no additional data.
     // They act like flags. If anyone sets the flag, it is set.
 
-    var flagPolicyA1 = PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A);
-    var flagPolicyA2 = PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A);
+    var flagPolicyA1 = PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A);
+    var flagPolicyA2 = PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A);
 
     // Combining two of the same flag should result in the A flag being set.
     PolicyInput flagResult = PolicyMutator.combine(flagPolicyA1, flagPolicyA2);
-    assertEquals(flagResult.getKey(), flagPolicyA1.getKey());
+    Assertions.assertEquals(flagResult.getKey(), flagPolicyA1.getKey());
     assertEquals(0, flagResult.getAdditionalData().size());
 
     // It is an error to combine policies with different names. This is an internal
     // error, because in the production code, combiner check should never happen.
-    var flagPolicyB = PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B);
+    var flagPolicyB = PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B);
     assertThrows(
         InternalTpsErrorException.class, () -> PolicyMutator.combine(flagPolicyA1, flagPolicyB));
   }
@@ -62,18 +56,18 @@ public class PaoUpdateTest extends LibraryTestBase {
     // The term "data policy" here refers to an unknown policy with additional data.
     // The rule in the PolicyUnknown implementation is that if the data is different
     // the policies conflict.
-    var data1Policy1 = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1);
-    var data1Policy2 = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1);
+    var data1Policy1 = PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1);
+    var data1Policy2 = PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1);
 
     // Combining identical data policies should result in a single data policy with the same
     // additional data
     PolicyInput dataResult = PolicyMutator.combine(data1Policy1, data1Policy2);
-    assertEquals(dataResult.getKey(), data1Policy1.getKey());
-    assertEquals(dataResult.getAdditionalData(), data1Policy1.getAdditionalData());
+    Assertions.assertEquals(dataResult.getKey(), data1Policy1.getKey());
+    Assertions.assertEquals(dataResult.getAdditionalData(), data1Policy1.getAdditionalData());
 
     // Combining the same policy name with different additional data should be a conflict.
     // The combiner reports conflicts by returning null.
-    var data2Policy = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA2);
+    var data2Policy = PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2);
     dataResult = PolicyMutator.combine(data1Policy1, data2Policy);
     assertNull(dataResult);
   }
@@ -84,26 +78,30 @@ public class PaoUpdateTest extends LibraryTestBase {
     UUID paoAid =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoAid: {}", paoAid);
 
     // PaoB - has flag B and data policy X, data1
     UUID paoBid =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoBid: {}", paoBid);
 
     // PaoC - has data policy Y, data 1
     UUID paoCid =
-        PaoTestUtil.makePao(paoService, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makePao(
+            paoService,
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
     logger.info("paoCid: {}", paoCid);
 
     // PaoD - has data policy Y, data2
     UUID paoDid =
-        PaoTestUtil.makePao(paoService, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA2));
+        PaoTestUtil.makePao(
+            paoService,
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA2));
     logger.info("paoDid: {}", paoDid);
 
     // PaoNone - has no policies
@@ -120,8 +118,8 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoAid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     // Link B to None - none should get flag A, flag B, data policy X, data1
     result = paoService.linkSourcePao(paoNone, paoBid, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -133,9 +131,9 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoBid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     // Link C to None - none should get flag A, flag B, data policy X, data1
     // and data policy Y data 1
@@ -149,17 +147,20 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link D to None - none should stay in previous state with data policy Y with a conflict
     result = paoService.linkSourcePao(paoNone, paoDid, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Link D to None result: {}", result);
     assertFalse(result.updateApplied());
     PaoTestUtil.checkConflict(
-        result, paoNone, paoDid, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_Y));
+        result,
+        paoNone,
+        paoDid,
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_Y));
 
     // Same comparison as with Link C to None
     resultPao = result.computedPao();
@@ -168,17 +169,20 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link C to D - D should stay the same with data policy Y in conflict
     result = paoService.linkSourcePao(paoDid, paoCid, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Link C to D result: {}", result);
     assertFalse(result.updateApplied());
     PaoTestUtil.checkConflict(
-        result, paoDid, paoCid, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_Y));
+        result,
+        paoDid,
+        paoCid,
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_Y));
 
     // In this case, the resultPao is showing the failed state: with the linked source in place.
     // NOTE: Is that the right thing? I think so: it provides the details of policies that would be
@@ -186,7 +190,8 @@ public class PaoUpdateTest extends LibraryTestBase {
     // The alternative would be to return the initialPao if the operation fails.
     resultPao = result.computedPao();
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
-    PaoTestUtil.checkForPolicies(resultPao, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA2));
+    PaoTestUtil.checkForPolicies(
+        resultPao, PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA2));
 
     // While we are here, make sure the invalid input case is caught.
     assertThrows(
@@ -200,26 +205,30 @@ public class PaoUpdateTest extends LibraryTestBase {
     UUID paoAid =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoAid: {}", paoAid);
 
     // PaoB - has flag B and data policy X, data1
     UUID paoBid =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoBid: {}", paoBid);
 
     // PaoC - has data policy Y, data 1
     UUID paoCid =
-        PaoTestUtil.makePao(paoService, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makePao(
+            paoService,
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
     logger.info("paoCid: {}", paoCid);
 
     // PaoD - has data policy Y, data2
     UUID paoDid =
-        PaoTestUtil.makePao(paoService, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA2));
+        PaoTestUtil.makePao(
+            paoService,
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA2));
     logger.info("paoDid: {}", paoDid);
 
     // PaoNone - has no policies
@@ -236,9 +245,9 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoAid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     // Link A to C
     result = paoService.linkSourcePao(paoCid, paoAid, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -249,9 +258,9 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoAid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link B to C
     result = paoService.linkSourcePao(paoCid, paoBid, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -263,10 +272,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoBid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link C to None
     // and data policy Y data 1
@@ -278,10 +287,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link D to None - none should stay in previous state with data policy Y with a conflict
     result = paoService.linkSourcePao(paoNone, paoDid, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -292,16 +301,18 @@ public class PaoUpdateTest extends LibraryTestBase {
     PolicyConflict conflict = result.conflicts().get(0);
     assertEquals(paoNone, conflict.pao().getObjectId());
     assertEquals(paoDid, conflict.conflictPao().getObjectId());
-    assertEquals(new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_Y), conflict.policyName());
+    assertEquals(
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_Y),
+        conflict.policyName());
     // PaoTestUtil.check that None remains unchanged
     resultPao = result.computedPao();
     assertTrue(resultPao.getSourceObjectIds().contains(paoCid));
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1),
-        PaoTestUtil.makeDataInput(TEST_DATA_POLICY_Y, DATA1));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1),
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_Y, PaoTestUtil.DATA1));
 
     // Link None to A - should fail because it would create a cycle
     assertThrows(
@@ -316,16 +327,17 @@ public class PaoUpdateTest extends LibraryTestBase {
     UUID paoId =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoId: {}", paoId);
 
     PolicyInputs removes =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makePolicyInputs(
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     PolicyInputs adds =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
+            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
 
     PolicyUpdateResult result =
         paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -335,10 +347,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B));
     PaoTestUtil.checkForMissingPolicies(
-        resultPao, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        resultPao, PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     // Repeating the operation should get the same result.
     result = paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -348,23 +360,24 @@ public class PaoUpdateTest extends LibraryTestBase {
     resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_B));
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
+        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B));
     PaoTestUtil.checkForMissingPolicies(
-        resultPao, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        resultPao, PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     // Go from zero to one policy
     UUID paoNone = PaoTestUtil.makePao(paoService);
     logger.info("paoNone: {}", paoNone);
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
     PolicyInputs oneFlag =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
     result = paoService.updatePao(paoNone, oneFlag, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Update 3 removes {} adds {} result {}", removes, adds, result);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
     resultPao = result.computedPao();
-    PaoTestUtil.checkForPolicies(resultPao, PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+    PaoTestUtil.checkForPolicies(
+        resultPao, PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
 
     // Go from one to zero policy
     result = paoService.updatePao(paoNone, empty, oneFlag, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -376,10 +389,13 @@ public class PaoUpdateTest extends LibraryTestBase {
 
     // Try to add a conflicting policy
     UUID paoConflict =
-        PaoTestUtil.makePao(paoService, PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makePao(
+            paoService,
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
     logger.info("paoConflict: {}", paoConflict);
     PolicyInputs conflictPolicy =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA2));
+        PaoTestUtil.makePolicyInputs(
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2));
 
     assertThrows(
         DirectConflictException.class,
@@ -402,18 +418,18 @@ public class PaoUpdateTest extends LibraryTestBase {
 
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
     PolicyInputs oneFlag =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
     // Add the flag policy
     PolicyUpdateResult result =
         paoService.updatePao(paoSid, oneFlag, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
     PaoTestUtil.checkForPolicies(
-        result.computedPao(), PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+        result.computedPao(), PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
 
     // Double check that the policy got saved properly
     Pao checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, PaoTestUtil.makeFlagInput(TEST_FLAG_POLICY_A));
+    PaoTestUtil.checkForPolicies(checkD, PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
 
     // Remove the flag policy
     result = paoService.updatePao(paoSid, empty, oneFlag, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -431,7 +447,8 @@ public class PaoUpdateTest extends LibraryTestBase {
     // Two sources and a dependent
     // Start S1 empty, S2 policy X data2; link both to D
     // add S1 policy X data1; conflict - try with DRY_RUN, FAIL_ON_CONFLICT, ENFORCE_CONFLICT
-    PolicyInput xData2 = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA2);
+    PolicyInput xData2 =
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2);
 
     UUID paoS1id = PaoTestUtil.makePao(paoService);
     logger.info("paoS1id: {}", paoS1id);
@@ -449,13 +466,17 @@ public class PaoUpdateTest extends LibraryTestBase {
     // Conflict case - DRY_RUN
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
     PolicyInputs conflictPolicy =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1));
+        PaoTestUtil.makePolicyInputs(
+            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
 
     PolicyUpdateResult result =
         paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.DRY_RUN);
     assertFalse(result.updateApplied());
     PaoTestUtil.checkConflict(
-        result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+        result,
+        paoDid,
+        paoS1id,
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     PaoTestUtil.checkForPolicies(checkD, xData2);
     PolicyInput conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
@@ -466,7 +487,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     result = paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
     assertFalse(result.updateApplied());
     PaoTestUtil.checkConflict(
-        result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+        result,
+        paoDid,
+        paoS1id,
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     PaoTestUtil.checkForPolicies(checkD, xData2);
     conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
@@ -476,7 +500,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     result = paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.ENFORCE_CONFLICTS);
     assertTrue(result.updateApplied());
     PaoTestUtil.checkConflict(
-        result, paoDid, paoS1id, new PolicyName(TEST_NAMESPACE, TEST_DATA_POLICY_X));
+        result,
+        paoDid,
+        paoS1id,
+        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
     checkD = paoService.getPao(paoDid);
     PaoTestUtil.checkForPolicies(checkD, xData2);
 
@@ -490,8 +517,10 @@ public class PaoUpdateTest extends LibraryTestBase {
     // We build this graph A --> B(X-data1) --> C --> D
     // Then we attempt to update A(X-data2) for DRY_RUN, FAIL_ON_CONFLICT, and ENFORCE_CONFLICTS
     // We expect the conflict to propagate from B to C and D.
-    PolicyInput xData1 = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA1);
-    PolicyInput xData2 = PaoTestUtil.makeDataInput(TEST_DATA_POLICY_X, DATA2);
+    PolicyInput xData1 =
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1);
+    PolicyInput xData2 =
+        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2);
     PolicyInputs conflictPolicy = PaoTestUtil.makePolicyInputs(xData2);
     PolicyInputs emptyPolicy = PaoTestUtil.makePolicyInputs();
 

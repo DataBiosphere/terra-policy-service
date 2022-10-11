@@ -1,11 +1,11 @@
 package bio.terra.policy.db;
 
+import bio.terra.policy.app.configuration.TpsDatabaseConfiguration;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
 import bio.terra.policy.db.exception.DuplicateObjectException;
-import bio.terra.policy.library.configuration.TpsDatabaseConfiguration;
 import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;

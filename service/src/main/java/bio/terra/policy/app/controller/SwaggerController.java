@@ -1,4 +1,4 @@
-package bio.terra.policy.controller;
+package bio.terra.policy.app.controller;
 
 import java.io.BufferedReader;
 import java.io.IOException;

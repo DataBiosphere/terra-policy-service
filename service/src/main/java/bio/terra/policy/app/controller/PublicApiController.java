@@ -1,19 +1,19 @@
-package bio.terra.policy.controller;
+package bio.terra.policy.app.controller;
 
 import bio.terra.policy.generated.api.PublicApi;
-import bio.terra.policy.generated.model.VersionProperties;
+import bio.terra.policy.generated.model.ApiVersionProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 @Controller
 public class PublicApiController implements PublicApi {
-  private final VersionProperties versionProperties;
+  private final ApiVersionProperties versionProperties;
 
   @Autowired
-  public PublicApiController(VersionProperties versionProperties) {
+  public PublicApiController(ApiVersionProperties versionProperties) {
     this.versionProperties = versionProperties;
-    new VersionProperties()
+    new ApiVersionProperties()
         .build(versionProperties.getBuild())
         .gitHash(versionProperties.getGitHash())
         .github(versionProperties.getGithub())
@@ -26,12 +26,12 @@ public class PublicApiController implements PublicApi {
   }
 
   @Override
-  public ResponseEntity<VersionProperties> getVersion() {
+  public ResponseEntity<ApiVersionProperties> getVersion() {
     // these copy shenanigans are because versionProperties comes from spring config
     // and is actually a proxy and using the instance directly in a http response includes all the
     // proxy fields that no one wants to see
     return ResponseEntity.ok(
-        new VersionProperties()
+        new ApiVersionProperties()
             .build(versionProperties.getBuild())
             .gitHash(versionProperties.getGitHash())
             .github(versionProperties.getGithub())
