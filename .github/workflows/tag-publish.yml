@@ -45,8 +45,7 @@ on:
 
 env:
   SERVICE_NAME: ${{ github.event.repository.name }}
-  GOOGLE_PROJECT: terra-kernel-k8s
-  GKE_CLUSTER: terra-kernel-k8s
+  GOOGLE_PROJECT: broad-dsp-gcr-public
 
 jobs:
   bump-check:
