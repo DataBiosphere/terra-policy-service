@@ -78,8 +78,8 @@ jobs:
           SEMVER_PART=${{ github.event.inputs.bump }}
           CHECKOUT_BRANCH=${{ github.event.inputs.branch }}
         fi
-        echo "name=semver-part::$SEMVER_PART" >> $GITHUB_OUTPUT
-        echo "name=checkout-branch::$CHECKOUT_BRANCH" >> $GITHUB_OUTPUT
+        echo "semver-part=$SEMVER_PART" >> $GITHUB_OUTPUT
+        echo "checkout-branch=$CHECKOUT_BRANCH" >> $GITHUB_OUTPUT
 
     - name: Checkout current code
       uses: actions/checkout@v3
@@ -142,7 +142,7 @@ jobs:
 
     - name: Construct docker image name and tag
       id: image-name
-      run: echo "name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
+      run: echo "name=gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
 
     - name: Build image locally with jib
       run: |

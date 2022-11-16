@@ -69,7 +69,7 @@ jobs:
         run: |
           GITHUB_REPO=$(basename ${{ github.repository }})
           GIT_SHORT_HASH=$(git rev-parse --short HEAD)
-          echo "name=name::${GITHUB_REPO}:${GIT_SHORT_HASH}" >> $GITHUB_OUTPUT
+          echo "name=${GITHUB_REPO}:${GIT_SHORT_HASH}" >> $GITHUB_OUTPUT
 
       - name: Build image locally with jib
         run: |
