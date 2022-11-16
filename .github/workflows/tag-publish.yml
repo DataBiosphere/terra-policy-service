@@ -168,7 +168,6 @@ jobs:
       with:
             # Channel is for platform-foundation-alerts
         channel-id: 'C01B0NLTYQ5'
-        slack-message: "Tag-Publish failed: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+        slack-message: "Tag-Publish failed for tag: ${{ steps.tag.outputs.tag }} eventUrl: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACKBOT_TOKEN }}
-
