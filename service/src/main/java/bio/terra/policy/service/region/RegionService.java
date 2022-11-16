@@ -46,6 +46,11 @@ public class RegionService {
     ConstructRegionMapsRecursively(this.ontology);
   }
 
+  public Boolean regionContainsDatacenter(String regionName, String datacenterId) {
+    return regionDatacenterMap.containsKey(regionName)
+        && regionDatacenterMap.get(regionName).contains(datacenterId);
+  }
+
   public Region getRegion(String name) {
     return regionNameMap.containsKey(name) ? regionNameMap.get(name) : null;
   }

@@ -1,8 +1,10 @@
 package bio.terra.policy.service.region;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
@@ -42,5 +44,20 @@ public class RegionServiceTest extends TestUnitBase {
     String searchName = "invalid";
     Datacenter result = regionService.getDatacenter(searchName);
     assertNull(result);
+  }
+
+  @Test
+  void regionContainsDatacenterFromItself() {
+    assertTrue(regionService.regionContainsDatacenter("europe", "gcp.europe-west1"));
+  }
+
+  @Test
+  void regionContainsDatacenterFromSubRegion() {
+    assertTrue(regionService.regionContainsDatacenter("usa", "azure.centralus"));
+  }
+
+  @Test
+  void regionContainsDatacenterNegative() {
+    assertFalse(regionService.regionContainsDatacenter("usa", "gcp.europe-west1"));
   }
 }
