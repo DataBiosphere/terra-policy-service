@@ -23,7 +23,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -69,7 +69,7 @@ jobs:
         run: |
           GITHUB_REPO=$(basename ${{ github.repository }})
           GIT_SHORT_HASH=$(git rev-parse --short HEAD)
-          echo ::set-output name=name::${GITHUB_REPO}:${GIT_SHORT_HASH}
+          echo "name=name::${GITHUB_REPO}:${GIT_SHORT_HASH}" >> $GITHUB_OUTPUT
 
       - name: Build image locally with jib
         run: |
@@ -101,7 +101,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         # Needed by sonar to get the git history for the branch the PR will be merged into.
         with:
           fetch-depth: 0
@@ -127,15 +127,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
-
-
-
-
-
 
   notify-slack:
     needs: [ bump-check, build, tests-and-sonarqube ]
