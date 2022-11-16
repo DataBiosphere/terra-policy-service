@@ -1,0 +1,120 @@
+---
+name: global
+description: Global Region
+regions:
+  - name: europe
+    description: Europe
+    regions:
+      - name: uk
+        description: United Kingdom
+        datacenters:
+          - gcp.europe-west2
+          - azure.uksouth
+      - name: finland
+        description: Finland
+        datacenters:
+          - gcp.europe-north1
+      - name: germany
+        description: Germany
+        datacenters:
+          - gcp.europe-west3
+          - azure.germanywestcentral
+      - name: multiregion-eu
+        description: Multi-Region EU
+        datacenters:
+          - gcp.eu
+    datacenters:
+      - gcp.europe-west1
+      - gcp.europe-southwest1
+      - gcp.europe-west8
+      - gcp.europe-west4
+      - gcp.europe-central2
+      - gcp.europe-west6
+      - azure.swedencentral
+      - azure.northeurope
+      - azure.westeurope
+      - azure.norwayeast
+      - azure.francecentral
+      - azure.switzerlandnorth
+  - name: americas
+    description: North and South America
+    regions:
+      - name: usa
+        description: United States of America
+        regions:
+          - name: usa-central
+            description: Central US
+            datacenters:
+              - gcp.us-central1
+              - azure.centralus
+              - azure.northcentralus
+              - azure.southcentralus
+          - name: usa-east
+            description: Eastern US
+            datacenters:
+              - gcp.us-east1
+              - gcp.us-east4
+              - azure.eastus2
+          - name: usa-west
+            description: Western US
+            datacenters:
+              - gcp.us-west1
+              - gcp.us-west2
+              - gcp.us-west3
+              - gcp.us-west4
+              - azure.westus2
+              - azure.westus3
+          - name: multiregion-us
+            description: Multi-region US
+            datacenters:
+              - gcp.us
+      - name: canada
+        description: Canada
+        datacenters:
+          - gcp.northamerica-northeast1
+          - gcp.northamerica-northeast2
+          - azure.canadacentral
+          - azure.canadaeast
+      - name: brazil
+        description: Brazil
+        datacenters:
+          - gcp.southamerica-east1
+          - azure.brazilsouth
+      - name: chile
+        description: Chile
+        datacenters:
+          - gcp.gcp.southamerica-west1
+  - name: asiapacific
+    description: Asia and Pacific
+    regions:
+      - name: japan
+        description: Japan
+        datacenters:
+          - gcp.asia-northeast1
+          - gcp.asia-northeast2
+          - azure.japaneast
+          - azure.japanwest
+    datacenters:
+      - gcp.asia-south2
+      - gcp.asia-east2
+      - gcp.asia-southeast2
+      - gcp.australia-southeast2
+      - gcp.asia-south1
+      - gcp.asia-northeast3
+      - gcp.asia-southeast1
+      - gcp.australia-southeast1
+      - gcp.asia-east1
+      - azure.eastasia
+      - azure.southeastasia
+      - azure.centralindia
+      - azure.southindia
+      - azure.koreacentral
+      - azure.australiaeast
+  - name: specific-datacenter
+    description: Container for each individual datacenter
+    regions:
+    # TODO: Add all the others here.
+      - name: gcp.europe-west3
+        description: Europe West 3
+        datacenters:
+          - gcp.europe-west3
