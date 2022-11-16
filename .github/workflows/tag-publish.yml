@@ -19,6 +19,7 @@ name: Bump, Tag, Publish, and Deploy
 # - GCR_PUBLISH_EMAIL - email for publishing the docker to GCR
 # - GCR_PUBLISH_KEY_B64   - key for publishing the docker to GCR
 # - BROADBOT_TOKEN - the broadbot token, so we can avoid two reviewer rule on GHA operations
+# - SLACKBOT_TOKEN - the app token for posting to slack
 on:
   push:
     branches:
@@ -53,7 +54,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
@@ -76,11 +77,11 @@ jobs:
           SEMVER_PART=${{ github.event.inputs.bump }}
           CHECKOUT_BRANCH=${{ github.event.inputs.branch }}
         fi
-        echo ::set-output name=semver-part::$SEMVER_PART
-        echo ::set-output name=checkout-branch::$CHECKOUT_BRANCH
+        echo "semver-part=$SEMVER_PART" >> $GITHUB_OUTPUT
+        echo "checkout-branch=$CHECKOUT_BRANCH" >> $GITHUB_OUTPUT
 
     - name: Checkout current code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ steps.controls.outputs.checkout-branch }}
         token: ${{ secrets.BROADBOT_TOKEN }}
@@ -99,13 +100,13 @@ jobs:
         VERSION_SUFFIX: SNAPSHOT
 
     - name: Set up AdoptOpenJDK
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: 17
 
     - name: Cache Gradle packages
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.gradle/caches
@@ -116,13 +117,12 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-# TODO: PF-2072 Publish client to artifactory
-#    - name: Publish to Artifactory
-#      run: ./gradlew :client:artifactoryPublish --scan
-#      env:
-#        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-#        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-#        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
+    - name: Publish to Artifactory
+      run: ./gradlew :client:artifactoryPublish --scan
+      env:
+        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
 
     - name: Make release
       uses: ncipollo/release-action@v1
@@ -141,7 +141,7 @@ jobs:
 
     - name: Construct docker image name and tag
       id: image-name
-      run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}
+      run: echo "name=gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
 
     - name: Build image locally with jib
       run: |
@@ -161,14 +161,12 @@ jobs:
         client-payload: '{"service": "tps", "version": "${{ steps.tag.outputs.tag }}", "dev_only": false}'
 
     - name: Notify slack on failure
-      uses: broadinstitute/action-slack@v3.8.0
+      id: slack
       if: failure()
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      uses: slackapi/slack-github-action@v1.23.0
       with:
-        channel: '#platform-foundation-alerts'
-        status: failure
-        author_name: Publish to dev
-        fields: job
-        text: 'Publish failed :sadpanda:'
-        username: 'Terra Policy Service Action'
+            # Channel is for platform-foundation-alerts
+        channel-id: 'C01B0NLTYQ5'
+        slack-message: "Tag-Publish failed for tag: ${{ steps.tag.outputs.tag }} eventUrl: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACKBOT_TOKEN }}
