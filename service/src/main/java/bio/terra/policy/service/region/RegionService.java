@@ -1,12 +1,17 @@
 package bio.terra.policy.service.region;
 
+import bio.terra.policy.common.model.PolicyInput;
+import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.Nullable;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +71,23 @@ public class RegionService {
     return datacenterNameMap.get(id);
   }
 
+  public Boolean paoContainsDatacenter(Pao pao, String datacenter) {
+    List<String> regionNames = extractPolicyRegions(pao);
+
+    if (regionNames.isEmpty()) {
+      // pao doesn't have a region policy
+      return true;
+    }
+
+    for (String regionName : regionNames) {
+      if (regionContainsDatacenter(regionName, datacenter)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private void constructRegionMapsRecursively(Region current) {
     if (current == null) return;
 
@@ -91,5 +113,23 @@ public class RegionService {
     }
 
     regionDatacenterMap.put(current.getName(), currentDatacenters);
+  }
+
+  private List<String> extractPolicyRegions(Pao pao) {
+    List<String> result = new ArrayList<>();
+    PolicyInputs effectiveAttributes = pao.getEffectiveAttributes();
+
+    if (effectiveAttributes != null && effectiveAttributes.getInputs() != null) {
+      Map<String, PolicyInput> inputs = effectiveAttributes.getInputs();
+
+      for (var key : inputs.keySet()) {
+        if (key.equals("terra:region-constraint")) {
+          PolicyInput input = inputs.get(key);
+          result.addAll(input.getData("region"));
+        }
+      }
+    }
+
+    return result;
   }
 }

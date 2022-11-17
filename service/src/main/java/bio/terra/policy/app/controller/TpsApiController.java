@@ -10,6 +10,7 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
+import bio.terra.policy.service.region.RegionService;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,12 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class TpsApiController implements TpsApi {
   private final PaoService paoService;
+  private final RegionService regionService;
 
   @Autowired
-  public TpsApiController(PaoService paoService) {
+  public TpsApiController(PaoService paoService, RegionService regionService) {
     this.paoService = paoService;
+    this.regionService = regionService;
   }
 
   // -- Policy Queries --
@@ -43,6 +46,14 @@ public class TpsApiController implements TpsApi {
   @Override
   public ResponseEntity<Void> deletePao(UUID objectId) {
     paoService.deletePao(objectId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsPaoGetResult> evaluateRegionDatacenter(
+      UUID objectId, String datacenter) {
+    Pao pao = paoService.getPao(objectId);
+    regionService.paoContainsDatacenter(pao, datacenter);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
