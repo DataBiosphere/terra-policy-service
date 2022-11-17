@@ -71,16 +71,17 @@ public class RegionService {
     return datacenterNameMap.get(id);
   }
 
-  public Boolean paoContainsDatacenter(Pao pao, String datacenter) {
+  public Boolean paoAllowsDatacenter(Pao pao, String datacenter, String platform) {
     List<String> regionNames = extractPolicyRegions(pao);
+    String tpsDatacenter = platform + "." + datacenter;
 
     if (regionNames.isEmpty()) {
-      // pao doesn't have a region policy
+      // pao doesn't have a region constraint
       return true;
     }
 
     for (String regionName : regionNames) {
-      if (regionContainsDatacenter(regionName, datacenter)) {
+      if (regionContainsDatacenter(regionName, tpsDatacenter)) {
         return true;
       }
     }

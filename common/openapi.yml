@@ -262,6 +262,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/TpsObjectId'
       - $ref: '#/components/parameters/Datacenter'
+      - $ref: '#/components/parameters/Platform'
     get:
       summary: Evaluate whether a datacenter is available inside of a region constraint
       operationId: evaluateRegionDatacenter
@@ -290,8 +291,18 @@ components:
       name: datacenter
       in: query
       description: The TPS id of a datacenter
+      required: true
       schema:
         type: string
+
+    Platform:
+      name: platform
+      in: query
+      description: The cloud platform (gcp, azure)
+      required: true
+      schema:
+        type: string
+        enum: ["gcp", "azure", "aws"]
 
     TpsObjectId:
       name: objectId

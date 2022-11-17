@@ -51,9 +51,9 @@ public class TpsApiController implements TpsApi {
 
   @Override
   public ResponseEntity<ApiTpsPaoGetResult> evaluateRegionDatacenter(
-      UUID objectId, String datacenter) {
+      UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
-    regionService.paoContainsDatacenter(pao, datacenter);
+    regionService.paoAllowsDatacenter(pao, datacenter, platform);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

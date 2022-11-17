@@ -1,5 +1,6 @@
 package bio.terra.policy.service.region;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.model.PolicyInput;
@@ -24,11 +25,32 @@ public class DatacenterEvaluateTest extends TestUnitBase {
   @Autowired private RegionService regionService;
 
   @Test
-  void policyContainsDatacenter() {
+  void policyAllowsDatacenter() {
     UUID paoId = UUID.randomUUID();
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
-    assertTrue(regionService.paoContainsDatacenter(pao, "gcp.us-central1"));
+
+    assertTrue(regionService.paoAllowsDatacenter(pao, "us-central1", "gcp"));
+  }
+
+  @Test
+  void policyDeniesDatacenter() {
+    UUID paoId = UUID.randomUUID();
+    createRegionConstrainedPao(paoId, US_REGION);
+    Pao pao = paoService.getPao(paoId);
+
+    assertFalse(regionService.paoAllowsDatacenter(pao, "europe-west3", "gcp"));
+  }
+
+  @Test
+  void policyWithoutConstraintAllowsDatacenter() {
+    UUID paoId = UUID.randomUUID();
+    paoService.createPao(paoId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
+    Pao pao = paoService.getPao(paoId);
+
+    assertTrue(regionService.paoAllowsDatacenter(pao, "europe-west3", "gcp"));
+    assertTrue(regionService.paoAllowsDatacenter(pao, "us-central1", "gcp"));
+    assertTrue(regionService.paoAllowsDatacenter(pao, "southcentralus", "azure"));
   }
 
   private void createRegionConstrainedPao(UUID objectId, String region) {
