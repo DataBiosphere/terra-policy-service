@@ -53,7 +53,7 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsPaoGetResult> evaluateRegionDatacenter(
       UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
-    regionService.paoAllowsDatacenter(pao, datacenter, platform);
+    regionService.isDatacenterAllowedByPao(pao, datacenter, platform);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

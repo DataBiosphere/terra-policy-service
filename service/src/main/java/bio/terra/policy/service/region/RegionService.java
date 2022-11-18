@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +29,19 @@ public class RegionService {
 
   @Autowired
   public RegionService() {
+    logger.info("Loading regions from regions.yml resource.");
     Yaml regionYaml = new Yaml(new Constructor(Region.class));
     InputStream inputStream =
         this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
     Region rootRegion = regionYaml.load(inputStream);
 
-    /**
+    /*
      * Snakeyaml can easily transform into java classes like Regions above. However, it can't
      * naturally load into Java Collections. Datacenters.yml represents an array or List of
      * Datacenters. Since we want to work with that data type, we first create an object of that
      * type to indicate to snakeyaml how to load the file.
      */
+    logger.info("Loading datacenters from datacenters.yml resource.");
     Datacenter[] type = new Datacenter[0];
     Yaml datacenterYaml = new Yaml(new Constructor(type.getClass()));
     inputStream = this.getClass().getClassLoader().getResourceAsStream("static/datacenters.yml");
@@ -47,7 +49,7 @@ public class RegionService {
 
     this.regionDatacenterMap = new HashMap<>();
     this.regionNameMap = new HashMap<>();
-    this.datacenterNameMap = new HashMap();
+    this.datacenterNameMap = new HashMap<>();
 
     for (Datacenter datacenter : datacenters) {
       this.datacenterNameMap.put(datacenter.getId(), datacenter);
@@ -71,7 +73,7 @@ public class RegionService {
     return datacenterNameMap.get(id);
   }
 
-  public Boolean paoAllowsDatacenter(Pao pao, String datacenter, String platform) {
+  public boolean isDatacenterAllowedByPao(Pao pao, String datacenter, String platform) {
     List<String> regionNames = extractPolicyRegions(pao);
     String tpsDatacenter = platform + "." + datacenter;
 

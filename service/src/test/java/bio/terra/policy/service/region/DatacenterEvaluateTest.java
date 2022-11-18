@@ -30,7 +30,7 @@ public class DatacenterEvaluateTest extends TestUnitBase {
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.paoAllowsDatacenter(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isDatacenterAllowedByPao(pao, "us-central1", "gcp"));
   }
 
   @Test
@@ -39,7 +39,7 @@ public class DatacenterEvaluateTest extends TestUnitBase {
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertFalse(regionService.paoAllowsDatacenter(pao, "europe-west3", "gcp"));
+    assertFalse(regionService.isDatacenterAllowedByPao(pao, "europe-west3", "gcp"));
   }
 
   @Test
@@ -48,9 +48,9 @@ public class DatacenterEvaluateTest extends TestUnitBase {
     paoService.createPao(paoId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.paoAllowsDatacenter(pao, "europe-west3", "gcp"));
-    assertTrue(regionService.paoAllowsDatacenter(pao, "us-central1", "gcp"));
-    assertTrue(regionService.paoAllowsDatacenter(pao, "southcentralus", "azure"));
+    assertTrue(regionService.isDatacenterAllowedByPao(pao, "europe-west3", "gcp"));
+    assertTrue(regionService.isDatacenterAllowedByPao(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isDatacenterAllowedByPao(pao, "southcentralus", "azure"));
   }
 
   private void createRegionConstrainedPao(UUID objectId, String region) {
