@@ -34,7 +34,7 @@ public class PolicyInput {
       String namespace, String name, Map<String, String> additionalData) {
     // Convert the map to a multimap
     Multimap<String, String> mm = ArrayListMultimap.create();
-    additionalData.entrySet().forEach(e -> mm.put(e.getKey(), e.getValue()));
+    additionalData.forEach(mm::put);
     return new PolicyInput(new PolicyName(namespace, name), mm, new HashSet<>());
   }
 
