@@ -18,7 +18,7 @@ java {
 
 publishing {
     publications {
-        catalogClientLibrary(MavenPublication) {
+        policyClientLibrary(MavenPublication) {
             artifactId = "terra-policy-client"
             from components.java
             versionMapping {
