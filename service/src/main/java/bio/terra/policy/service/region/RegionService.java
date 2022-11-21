@@ -21,6 +21,9 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 @Component
 public class RegionService {
+  private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
+  private static final String TERRA_REGION_ATTRIBUTE_NAME = "region";
+
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
   private final HashMap<String, HashSet<String>> regionDatacenterMap;
@@ -126,9 +129,9 @@ public class RegionService {
       Map<String, PolicyInput> inputs = effectiveAttributes.getInputs();
 
       for (var key : inputs.keySet()) {
-        if (key.equals("terra:region-constraint")) {
+        if (key.equals(TERRA_REGION_CONSTRAINT)) {
           PolicyInput input = inputs.get(key);
-          result.addAll(input.getData("region"));
+          result.addAll(input.getData(TERRA_REGION_ATTRIBUTE_NAME));
         }
       }
     }

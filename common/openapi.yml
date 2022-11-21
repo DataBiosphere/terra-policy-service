@@ -302,7 +302,7 @@ components:
       required: true
       schema:
         type: string
-        enum: ["gcp", "azure", "aws"]
+        enum: ["gcp", "azure"]
 
     TpsObjectId:
       name: objectId
