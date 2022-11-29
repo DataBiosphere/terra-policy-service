@@ -2,6 +2,7 @@ package bio.terra.policy.app.controller;
 
 import bio.terra.policy.generated.api.TpsApi;
 import bio.terra.policy.generated.model.ApiErrorReport;
+import bio.terra.policy.generated.model.ApiTpsDatacenterList;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
 import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
@@ -64,6 +65,15 @@ public class TpsApiController implements TpsApi {
       error.setStatusCode(HttpStatus.CONFLICT.value());
       return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsDatacenterList> listValidDatacenters(UUID objectId, String platform) {
+    Pao pao = paoService.getPao(objectId);
+    HashSet<String> datacenters = regionService.getPaoDatacenters(pao, platform);
+    var response = new ApiTpsDatacenterList();
+    response.addAll(datacenters);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @Override

@@ -285,6 +285,32 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/policy/v1alpha1/region/{objectId}/list-valid:
+    parameters:
+    - $ref: '#/components/parameters/TpsObjectId'
+    - $ref: '#/components/parameters/Platform'
+    get:
+      summary: Retrieve a list of data centers allowed by the policy.
+      operationId: listValidDatacenters
+      tags: [Tps]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsDatacenterList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   parameters:
     Datacenter:
@@ -398,6 +424,13 @@ components:
       type: string
       description: Enum representing a policy-bearing Terra component.
       enum: [ 'WSM' ]
+
+    TpsDatacenterList:
+      type: array
+      description: List of data centers
+      items:
+        uniqueItems: true
+        type: string
 
     TpsObjectId:
       description: |
