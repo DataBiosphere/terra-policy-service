@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DatacenterEvaluateTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String REGION_CONSTRAINT = "region-constraint";
-  private static final String REGION = "region";
+  private static final String REGION = "region-name";
   private static final String US_REGION = "usa";
 
   @Autowired private PaoService paoService;

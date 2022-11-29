@@ -57,7 +57,7 @@ public class TpsApiController implements TpsApi {
       UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
     if (regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
-      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(new ApiErrorReport(), HttpStatus.NO_CONTENT);
     } else {
       HashSet<String> availableDatacenters = regionService.getPaoDatacenters(pao, platform);
       var error = new ApiErrorReport();

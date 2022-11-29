@@ -53,6 +53,7 @@ dependencies {
     // Spotbugs dependencies
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
     spotbugs "com.github.spotbugs:spotbugs:${spotbugs.toolVersion.get()}"
+    spotbugs "org.slf4j:slf4j-simple:1.7.35"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testImplementation('org.springframework.boot:spring-boot-starter-test:2.7.0') {
