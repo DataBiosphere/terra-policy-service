@@ -22,7 +22,8 @@ import org.yaml.snakeyaml.constructor.Constructor;
 @Component
 public class RegionService {
   private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
-  private static final String TERRA_REGION_ATTRIBUTE_NAME = "region";
+  private static final String TERRA_REGION_ATTRIBUTE_NAME = "region-name";
+  private static final String ANY_DATACENTER_INDICATOR = "*";
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
@@ -69,6 +70,25 @@ public class RegionService {
   @Nullable
   public Region getRegion(String name) {
     return regionNameMap.get(name);
+  }
+
+  public HashSet<String> getPaoDatacenters(Pao pao, String platform) {
+    List<String> regionNames = extractPolicyRegions(pao);
+    HashSet<String> result = new HashSet<>();
+
+    if (regionNames.isEmpty()) {
+      result.add(ANY_DATACENTER_INDICATOR);
+      return result;
+    }
+
+    for (String regionName : regionNames) {
+      var datacenters = regionDatacenterMap.get(regionName);
+      if (datacenters != null) {
+        result.addAll(regionDatacenterMap.get(regionName));
+      }
+    }
+
+    return result;
   }
 
   @Nullable

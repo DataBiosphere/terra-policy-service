@@ -55,7 +55,7 @@ paths:
               $ref: '#/components/schemas/TpsPaoCreateRequest'
       responses:
         '204':
-          description: Policy attribue created successfully
+          description: Policy attribute created successfully
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -265,23 +265,23 @@ paths:
       - $ref: '#/components/parameters/Platform'
     get:
       summary: Evaluate whether a datacenter is available inside of a region constraint
-      operationId: evaluateRegionDatacenter
+      operationId: validateDatacenterAllowed
       tags: [Tps]
       responses:
-        '200':
-          description: Constraint evaluated successfully
+        '204':
+          description: Datacenter evaluated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TpsPaoGetResult'
-        '204':
-          description: Datacenter evaluated successfully
+                $ref: '#/components/schemas/ErrorReport'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
           $ref: '#/components/responses/PermissionDenied'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -316,6 +316,12 @@ components:
     # Error Responses
     BadRequest:
       description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    Conflict:
+      description: Conflict
       content:
         application/json:
           schema:

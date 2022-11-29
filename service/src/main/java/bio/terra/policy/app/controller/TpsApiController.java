@@ -1,6 +1,7 @@
 package bio.terra.policy.app.controller;
 
 import bio.terra.policy.generated.api.TpsApi;
+import bio.terra.policy.generated.model.ApiErrorReport;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
 import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
@@ -11,6 +12,7 @@ import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.service.region.RegionService;
+import java.util.HashSet;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,11 +52,18 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
-  public ResponseEntity<ApiTpsPaoGetResult> evaluateRegionDatacenter(
+  public ResponseEntity<ApiErrorReport> validateDatacenterAllowed(
       UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
-    regionService.isDatacenterAllowedByPao(pao, datacenter, platform);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    if (regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
+      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    } else {
+      HashSet<String> availableDatacenters = regionService.getPaoDatacenters(pao, platform);
+      var error = new ApiErrorReport();
+      error.setMessage(String.join(",", availableDatacenters));
+      error.setStatusCode(HttpStatus.CONFLICT.value());
+      return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
   }
 
   @Override
