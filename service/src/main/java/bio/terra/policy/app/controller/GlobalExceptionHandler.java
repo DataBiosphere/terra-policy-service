@@ -3,6 +3,7 @@ package bio.terra.policy.app.controller;
 import bio.terra.common.exception.ErrorReportException;
 import bio.terra.policy.generated.model.ApiErrorReport;
 import java.util.List;
+import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-// This module provides a top-level exception handler for controllers.
-// All exceptions that rise through the controllers are caught in this handler.
-// It converts the exceptions into standard ApiErrorReport responses.
-
+/** This module provides a top-level exception handler for controllers.
+ * All exceptions that rise through the controllers are caught in this handler.
+ * It converts the exceptions into standard ApiErrorReport responses.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -61,7 +62,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiErrorReport> retryBackoffExceptionHandler(
       BackOffInterruptedException ex) {
     String errorMessage =
-        "Unexpected interrupt while retrying database logic. This may succeed on a retry. "
+        "Unexpected interrupt while retrying internal logic. This may succeed on a retry. "
             + ex.getMessage();
     ApiErrorReport errorReport =
         new ApiErrorReport()
@@ -73,20 +74,21 @@ public class GlobalExceptionHandler {
   // -- catchall - log so we can understand what we have missed in the handlers above
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiErrorReport> catchallHandler(Exception ex) {
-    logger.error("Exception caught by catchall hander", ex);
+    logger.error("Exception caught by catchall handler", ex);
     return buildApiErrorReport(ex, HttpStatus.INTERNAL_SERVER_ERROR, null);
   }
 
   private ResponseEntity<ApiErrorReport> buildApiErrorReport(
-      @NotNull Throwable ex, HttpStatus statusCode, List<String> causes) {
+      Throwable ex, HttpStatus statusCode, List<String> causes) {
     StringBuilder combinedCauseString = new StringBuilder();
     for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
-      combinedCauseString.append("cause: ").append(cause.toString()).append(", ");
+      combinedCauseString.append("cause: ").append(cause).append(", ");
     }
-    logger.error("Global exception handler: " + combinedCauseString.toString(), ex);
+    logger.error("Global exception handler: " + combinedCauseString, ex);
+    String message = Optional.ofNullable(ex).map(Throwable::getMessage).orElse("no message present");
 
     ApiErrorReport errorReport =
-        new ApiErrorReport().message(ex.getMessage()).statusCode(statusCode.value()).causes(causes);
+        new ApiErrorReport().message(message).statusCode(statusCode.value()).causes(causes);
     return new ResponseEntity<>(errorReport, statusCode);
   }
 }
