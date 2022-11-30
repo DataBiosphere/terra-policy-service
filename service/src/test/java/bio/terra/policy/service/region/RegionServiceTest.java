@@ -73,21 +73,22 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getPaoDatacentersFromSelf() {
-    var target = "gcp.europe-west3";
+    var targetDatacenter = "europe-west3";
+    var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
 
-    var pao = createPao(target);
-    var datacenters = regionService.getPaoDatacenters(pao, GCP_PLATFORM);
+    var pao = createPao(targetRegion);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
 
-    assertTrue(datacenters.contains(target));
+    assertTrue(datacenters.contains(targetDatacenter));
   }
 
   @Test
   void getPaoDatacentersFromChild() {
     var region = "usa";
-    var childDatacenter = "gcp.us-central1";
+    var childDatacenter = "us-central1";
 
     var pao = createPao(region);
-    var datacenters = regionService.getPaoDatacenters(pao, GCP_PLATFORM);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
     assertTrue(datacenters.contains(childDatacenter));
@@ -96,13 +97,13 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void getPaoDatacentersNegative() {
     var region = "usa";
-    var childDatacenter = "gcp.europe-west3";
+    var childDatacenterCode = "europe-west3";
 
     var pao = createPao(region);
-    var datacenters = regionService.getPaoDatacenters(pao, GCP_PLATFORM);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
-    assertFalse(datacenters.contains(childDatacenter));
+    assertFalse(datacenters.contains(childDatacenterCode));
   }
 
   @Test
@@ -112,12 +113,12 @@ public class RegionServiceTest extends TestUnitBase {
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     var pao = paoService.getPao(objectId);
 
-    var datacenters = regionService.getPaoDatacenters(pao, GCP_PLATFORM);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
 
     // Pao should be allowed all datacenters
     assertTrue(datacenters.size() > 10);
-    assertTrue(datacenters.contains("gcp.us-east1"));
-    assertTrue(datacenters.contains("gcp.europe-west3"));
+    assertTrue(datacenters.contains("us-east1"));
+    assertTrue(datacenters.contains("europe-west3"));
   }
 
   private Pao createPao(String region) {

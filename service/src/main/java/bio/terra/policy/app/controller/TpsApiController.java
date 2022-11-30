@@ -60,7 +60,7 @@ public class TpsApiController implements TpsApi {
       throw new ConflictException(
           String.format(
               "Data center '%s' is not allowed per the effective region constraint.", datacenter),
-          regionService.getPaoDatacenters(pao, platform).stream().toList());
+          regionService.getPaoDatacenterCodes(pao, platform).stream().toList());
     }
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -69,7 +69,7 @@ public class TpsApiController implements TpsApi {
   @Override
   public ResponseEntity<ApiTpsDatacenterList> listValidDatacenters(UUID objectId, String platform) {
     Pao pao = paoService.getPao(objectId);
-    HashSet<String> datacenters = regionService.getPaoDatacenters(pao, platform);
+    HashSet<String> datacenters = regionService.getPaoDatacenterCodes(pao, platform);
     var response = new ApiTpsDatacenterList();
     response.addAll(datacenters);
     return new ResponseEntity<>(response, HttpStatus.OK);

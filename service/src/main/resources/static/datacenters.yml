@@ -34,6 +34,8 @@
   description: Las Vegas
   code: us-west4
 
+
+
 # GCP Asia Pacific
 - id: gcp.asia-south2
   description: Delhi
@@ -49,8 +51,8 @@
   code: australia-southeast2
 - id: gcp.asia-south1
   description: Mumbai
-  code: asia-south2
-- id: gcp.northeast2
+  code: asia-south1
+- id: gcp.asia-northeast2
   description: Osaka
   code: asia-northeast2
 - id: gcp.asia-northeast3
@@ -93,7 +95,7 @@
   code: europe-west4
 - id: gcp.europe-west9
   description: Paris
-  code: europe-west4
+  code: europe-west9
 - id: gcp.europe-central2
   description: Warsaw
   code: europe-central2

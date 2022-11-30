@@ -72,18 +72,31 @@ public class RegionService {
     return regionNameMap.get(name);
   }
 
-  public HashSet<String> getPaoDatacenters(Pao pao, String platform) {
+  /**
+   * Read through the PAO and its region constraints to determine which data centers should be
+   * available.
+   *
+   * @param pao The PAO to scan.
+   * @param platform The platform for the PAO - IE: gcp | azure
+   * @return the set of datacenter codes allowed by the PAO. Codes do not include the platform
+   *     prefix.
+   */
+  public HashSet<String> getPaoDatacenterCodes(Pao pao, String platform) {
     List<String> regionNames = extractPolicyRegions(pao);
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
-      return regionDatacenterMap.get(GLOBAL_REGION);
+      regionNames.add(GLOBAL_REGION);
     }
 
     for (String regionName : regionNames) {
-      var datacenters = regionDatacenterMap.get(regionName);
-      if (datacenters != null) {
-        result.addAll(regionDatacenterMap.get(regionName));
+      HashSet<String> datacenterIds = regionDatacenterMap.get(regionName);
+      if (datacenterIds != null) {
+        for (String datacenterId : datacenterIds) {
+          if (datacenterId.startsWith(platform)) {
+            result.add(datacenterNameMap.get(datacenterId).getCode());
+          }
+        }
       }
     }
 
@@ -97,13 +110,13 @@ public class RegionService {
 
   public boolean isDatacenterAllowedByPao(Pao pao, String datacenter, String platform) {
     List<String> regionNames = extractPolicyRegions(pao);
-    String tpsDatacenter = platform + "." + datacenter;
 
     if (regionNames.isEmpty()) {
       // pao doesn't have a region constraint
       return true;
     }
 
+    String tpsDatacenter = String.format("%s.%s", platform, datacenter);
     for (String regionName : regionNames) {
       if (regionContainsDatacenter(regionName, tpsDatacenter)) {
         return true;
