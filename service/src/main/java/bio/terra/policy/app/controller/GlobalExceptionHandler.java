@@ -4,7 +4,6 @@ import bio.terra.common.exception.ErrorReportException;
 import bio.terra.policy.generated.model.ApiErrorReport;
 import java.util.List;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,9 +17,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-/** This module provides a top-level exception handler for controllers.
- * All exceptions that rise through the controllers are caught in this handler.
- * It converts the exceptions into standard ApiErrorReport responses.
+/**
+ * This module provides a top-level exception handler for controllers. All exceptions that rise
+ * through the controllers are caught in this handler. It converts the exceptions into standard
+ * ApiErrorReport responses.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -85,7 +85,8 @@ public class GlobalExceptionHandler {
       combinedCauseString.append("cause: ").append(cause).append(", ");
     }
     logger.error("Global exception handler: " + combinedCauseString, ex);
-    String message = Optional.ofNullable(ex).map(Throwable::getMessage).orElse("no message present");
+    String message =
+        Optional.ofNullable(ex).map(Throwable::getMessage).orElse("no message present");
 
     ApiErrorReport errorReport =
         new ApiErrorReport().message(message).statusCode(statusCode.value()).causes(causes);
