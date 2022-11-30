@@ -1,7 +1,7 @@
 package bio.terra.policy.app.controller;
 
+import bio.terra.common.exception.ConflictException;
 import bio.terra.policy.generated.api.TpsApi;
-import bio.terra.policy.generated.model.ApiErrorReport;
 import bio.terra.policy.generated.model.ApiTpsDatacenterList;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
@@ -53,18 +53,17 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
-  public ResponseEntity<ApiErrorReport> validateDatacenterAllowed(
+  public ResponseEntity<Void> validateDatacenterAllowed(
       UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
-    if (regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
-      return new ResponseEntity<>(new ApiErrorReport(), HttpStatus.NO_CONTENT);
-    } else {
-      HashSet<String> availableDatacenters = regionService.getPaoDatacenters(pao, platform);
-      var error = new ApiErrorReport();
-      error.setMessage(String.join(",", availableDatacenters));
-      error.setStatusCode(HttpStatus.CONFLICT.value());
-      return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    if (!regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
+      throw new ConflictException(
+          String.format(
+              "Data center '%s' is not allowed per the effective region constraint.", datacenter),
+          regionService.getPaoDatacenters(pao, platform).stream().toList());
     }
+
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override

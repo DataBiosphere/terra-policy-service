@@ -23,7 +23,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class RegionService {
   private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
   private static final String TERRA_REGION_ATTRIBUTE_NAME = "region-name";
-  private static final String ANY_DATACENTER_INDICATOR = "*";
+  private static final String GLOBAL_REGION = "global";
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
@@ -77,8 +77,7 @@ public class RegionService {
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
-      result.add(ANY_DATACENTER_INDICATOR);
-      return result;
+      return regionDatacenterMap.get(GLOBAL_REGION);
     }
 
     for (String regionName : regionNames) {

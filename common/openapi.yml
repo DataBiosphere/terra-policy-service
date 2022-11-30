@@ -270,10 +270,6 @@ paths:
       responses:
         '204':
           description: Datacenter evaluated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorReport'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':

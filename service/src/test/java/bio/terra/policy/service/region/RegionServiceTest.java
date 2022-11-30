@@ -115,8 +115,9 @@ public class RegionServiceTest extends TestUnitBase {
     var datacenters = regionService.getPaoDatacenters(pao, GCP_PLATFORM);
 
     // Pao should be allowed all datacenters
-    assertTrue(datacenters.size() == 1);
-    assertTrue(datacenters.contains("*"));
+    assertTrue(datacenters.size() > 10);
+    assertTrue(datacenters.contains("gcp.us-east1"));
+    assertTrue(datacenters.contains("gcp.europe-west3"));
   }
 
   private Pao createPao(String region) {
