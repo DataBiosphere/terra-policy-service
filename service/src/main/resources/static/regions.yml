@@ -22,7 +22,7 @@ regions:
       - name: multiregion-eu
         description: Multi-Region EU
         datacenters:
-          - gcp.eu
+          - gcp.EU
     datacenters:
       - gcp.europe-west1
       - gcp.europe-southwest1
@@ -67,7 +67,7 @@ regions:
           - name: multiregion-us
             description: Multi-region US
             datacenters:
-              - gcp.us
+              - gcp.US
       - name: canada
         description: Canada
         datacenters:
@@ -83,7 +83,7 @@ regions:
       - name: chile
         description: Chile
         datacenters:
-          - gcp.gcp.southamerica-west1
+          - gcp.southamerica-west1
   - name: asiapacific
     description: Asia and Pacific
     regions:

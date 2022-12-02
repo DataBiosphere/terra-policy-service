@@ -55,7 +55,7 @@ paths:
               $ref: '#/components/schemas/TpsPaoCreateRequest'
       responses:
         '204':
-          description: Policy attribue created successfully
+          description: Policy attribute created successfully
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -258,8 +258,74 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/policy/v1alpha1/region/{objectId}/evaluate:
+    parameters:
+      - $ref: '#/components/parameters/TpsObjectId'
+      - $ref: '#/components/parameters/Datacenter'
+      - $ref: '#/components/parameters/Platform'
+    get:
+      summary: Evaluate whether a datacenter is available inside of a region constraint
+      operationId: validateDatacenterAllowed
+      tags: [Tps]
+      responses:
+        '204':
+          description: Datacenter evaluated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/policy/v1alpha1/region/{objectId}/list-valid:
+    parameters:
+    - $ref: '#/components/parameters/TpsObjectId'
+    - $ref: '#/components/parameters/Platform'
+    get:
+      summary: Retrieve a list of data centers allowed by the policy.
+      operationId: listValidDatacenters
+      tags: [Tps]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsDatacenterList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   parameters:
+    Datacenter:
+      name: datacenter
+      in: query
+      description: The TPS id of a datacenter
+      required: true
+      schema:
+        type: string
+
+    Platform:
+      name: platform
+      in: query
+      description: The cloud platform (gcp, azure)
+      required: true
+      schema:
+        type: string
+        enum: ["gcp", "azure"]
+
     TpsObjectId:
       name: objectId
       in: path
@@ -272,6 +338,12 @@ components:
     # Error Responses
     BadRequest:
       description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    Conflict:
+      description: Conflict
       content:
         application/json:
           schema:
@@ -352,6 +424,13 @@ components:
       type: string
       description: Enum representing a policy-bearing Terra component.
       enum: [ 'WSM' ]
+
+    TpsDatacenterList:
+      type: array
+      description: List of data centers
+      items:
+        uniqueItems: true
+        type: string
 
     TpsObjectId:
       description: |

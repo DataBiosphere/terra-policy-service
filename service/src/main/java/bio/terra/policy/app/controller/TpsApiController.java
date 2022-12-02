@@ -1,6 +1,8 @@
 package bio.terra.policy.app.controller;
 
+import bio.terra.common.exception.ConflictException;
 import bio.terra.policy.generated.api.TpsApi;
+import bio.terra.policy.generated.model.ApiTpsDatacenterList;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
 import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
@@ -10,6 +12,8 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
+import bio.terra.policy.service.region.RegionService;
+import java.util.HashSet;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +24,12 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class TpsApiController implements TpsApi {
   private final PaoService paoService;
+  private final RegionService regionService;
 
   @Autowired
-  public TpsApiController(PaoService paoService) {
+  public TpsApiController(PaoService paoService, RegionService regionService) {
     this.paoService = paoService;
+    this.regionService = regionService;
   }
 
   // -- Policy Queries --
@@ -44,6 +50,29 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<Void> deletePao(UUID objectId) {
     paoService.deletePao(objectId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<Void> validateDatacenterAllowed(
+      UUID objectId, String datacenter, String platform) {
+    Pao pao = paoService.getPao(objectId);
+    if (!regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
+      throw new ConflictException(
+          String.format(
+              "Data center '%s' is not allowed per the effective region constraint.", datacenter),
+          regionService.getPaoDatacenterCodes(pao, platform).stream().toList());
+    }
+
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsDatacenterList> listValidDatacenters(UUID objectId, String platform) {
+    Pao pao = paoService.getPao(objectId);
+    HashSet<String> datacenters = regionService.getPaoDatacenterCodes(pao, platform);
+    var response = new ApiTpsDatacenterList();
+    response.addAll(datacenters);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @Override

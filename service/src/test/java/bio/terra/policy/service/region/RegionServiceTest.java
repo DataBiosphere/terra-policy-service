@@ -6,15 +6,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.model.PolicyInput;
+import bio.terra.policy.common.model.PolicyInputs;
+import bio.terra.policy.service.pao.PaoService;
+import bio.terra.policy.service.pao.model.Pao;
+import bio.terra.policy.service.pao.model.PaoComponent;
+import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
 import bio.terra.policy.testutils.TestUnitBase;
+import java.util.Collections;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class RegionServiceTest extends TestUnitBase {
+  private static final String GCP_PLATFORM = "gcp";
 
   @Autowired private RegionService regionService;
+  @Autowired private PaoService paoService;
 
   @Test
   void getRegion() {
@@ -59,5 +69,70 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void regionContainsDatacenterNegative() {
     assertFalse(regionService.regionContainsDatacenter("usa", "gcp.europe-west1"));
+  }
+
+  @Test
+  void getPaoDatacentersFromSelf() {
+    var targetDatacenter = "europe-west3";
+    var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
+
+    var pao = createPao(targetRegion);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+
+    assertTrue(datacenters.contains(targetDatacenter));
+  }
+
+  @Test
+  void getPaoDatacentersFromChild() {
+    var region = "usa";
+    var childDatacenter = "us-central1";
+
+    var pao = createPao(region);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+
+    assertTrue(datacenters.size() > 1);
+    assertTrue(datacenters.contains(childDatacenter));
+  }
+
+  @Test
+  void getPaoDatacentersNegative() {
+    var region = "usa";
+    var childDatacenterCode = "europe-west3";
+
+    var pao = createPao(region);
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+
+    assertTrue(datacenters.size() > 1);
+    assertFalse(datacenters.contains(childDatacenterCode));
+  }
+
+  @Test
+  void getPaoDatacentersAllowAll() {
+    // Create a PAO without a region constraint
+    var objectId = UUID.randomUUID();
+    paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
+    var pao = paoService.getPao(objectId);
+
+    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+
+    // Pao should be allowed all datacenters
+    assertTrue(datacenters.size() > 10);
+    assertTrue(datacenters.contains("us-east1"));
+    assertTrue(datacenters.contains("europe-west3"));
+  }
+
+  private Pao createPao(String region) {
+    var objectId = UUID.randomUUID();
+
+    var regionPolicy =
+        PolicyInput.createFromMap(
+            "terra", "region-constraint", Collections.singletonMap("region-name", region));
+
+    var inputs = new PolicyInputs();
+    inputs.addInput(regionPolicy);
+
+    // Create a PAO
+    paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, inputs);
+    return paoService.getPao(objectId);
   }
 }
