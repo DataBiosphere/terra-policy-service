@@ -35,6 +35,10 @@ public class PolicyInputs {
     return inputs.get(input.getKey());
   }
 
+  public @Nullable PolicyInput lookupPolicy(PolicyName name) {
+    return inputs.get(name.getKey());
+  }
+
   public Map<String, PolicyInput> getInputs() {
     return inputs;
   }
