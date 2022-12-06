@@ -128,7 +128,6 @@ public class RegionService {
     return false;
   }
 
-  @Nullable
   public boolean isSubregion(String parentRegionName, String subregionName) {
     HashSet<String> subregions = regionSubregionMap.get(parentRegionName);
     return (subregions == null) ? false : subregions.contains(subregionName);

@@ -73,10 +73,6 @@ public class PolicyRegionConstraint implements PolicyBase {
       }
     }
 
-    // TODO: do we do a cleanup process to combine result regions?
-    // IE: if result regions contains "americas" and "usa", do we combine that under just
-    // "americas"?
-
     if (resultSet.size() > 0) {
       newData.putAll(DATA_KEY, resultSet);
       return new PolicyInput(POLICY_NAME, newData);

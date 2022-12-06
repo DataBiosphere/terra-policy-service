@@ -7,13 +7,18 @@ regions:
     regions:
       - name: uk
         description: United Kingdom
-        datacenters:
-          - gcp.europe-west2
-          - azure.uksouth
+        regions:
+          - name: gcp.europe-west2
+            description: Europe West 2
+            datacenters:
+              - gcp.europe-west2
       - name: finland
         description: Finland
-        datacenters:
-          - gcp.europe-north1
+        regions:
+        - name: gcp.europe-north1
+          description: Europe North 1
+          datacenters:
+            - gcp.europe-north1
       - name: germany
         description: Germany
         regions:
@@ -21,8 +26,6 @@ regions:
             description: Europe West 3
             datacenters:
               - gcp.europe-west3
-        datacenters:
-          - azure.germanywestcentral
       - name: multiregion-eu
         description: Multi-Region EU
         datacenters:
@@ -34,12 +37,6 @@ regions:
       - gcp.europe-west4
       - gcp.europe-central2
       - gcp.europe-west6
-      - azure.swedencentral
-      - azure.northeurope
-      - azure.westeurope
-      - azure.norwayeast
-      - azure.francecentral
-      - azure.switzerlandnorth
   - name: americas
     description: North and South America
     regions:
@@ -70,8 +67,6 @@ regions:
               - gcp.us-west2
               - gcp.us-west3
               - gcp.us-west4
-              - azure.westus2
-              - azure.westus3
           - name: multiregion-us
             description: Multi-region US
             datacenters:
@@ -81,13 +76,10 @@ regions:
         datacenters:
           - gcp.northamerica-northeast1
           - gcp.northamerica-northeast2
-          - azure.canadacentral
-          - azure.canadaeast
       - name: brazil
         description: Brazil
         datacenters:
           - gcp.southamerica-east1
-          - azure.brazilsouth
       - name: chile
         description: Chile
         datacenters:
@@ -100,8 +92,6 @@ regions:
         datacenters:
           - gcp.asia-northeast1
           - gcp.asia-northeast2
-          - azure.japaneast
-          - azure.japanwest
         regions:
           - name: gcp.asia-east1
             description: Asia East 1
@@ -116,9 +106,3 @@ regions:
       - gcp.asia-northeast3
       - gcp.asia-southeast1
       - gcp.australia-southeast1
-      - azure.eastasia
-      - azure.southeastasia
-      - azure.centralindia
-      - azure.southindia
-      - azure.koreacentral
-      - azure.australiaeast
