@@ -4,7 +4,8 @@ import bio.terra.policy.common.model.PolicyName;
 import java.util.Optional;
 
 public enum KnownPolicy {
-  GROUP_CONSTRAINT(new PolicyGroupConstraint());
+  GROUP_CONSTRAINT(new PolicyGroupConstraint()),
+  REGION_CONSTRAINT(new PolicyRegionConstraint());
 
   private final PolicyBase policy;
 

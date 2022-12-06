@@ -16,8 +16,12 @@ regions:
           - gcp.europe-north1
       - name: germany
         description: Germany
+        regions:
+          - name: gcp.europe-west3
+            description: Europe West 3
+            datacenters:
+              - gcp.europe-west3
         datacenters:
-          - gcp.europe-west3
           - azure.germanywestcentral
       - name: multiregion-eu
         description: Multi-Region EU
@@ -44,8 +48,12 @@ regions:
         regions:
           - name: usa-central
             description: Central US
+            regions:
+              - name: gcp.us-central1
+                description: US Central 1
+                datacenters:
+                  - gcp.us-central1
             datacenters:
-              - gcp.us-central1
               - azure.centralus
               - azure.northcentralus
               - azure.southcentralus
@@ -94,6 +102,11 @@ regions:
           - gcp.asia-northeast2
           - azure.japaneast
           - azure.japanwest
+        regions:
+          - name: gcp.asia-east1
+            description: Asia East 1
+            datacenters:
+              - gcp.asia-east1
     datacenters:
       - gcp.asia-south2
       - gcp.asia-east2
@@ -103,18 +116,9 @@ regions:
       - gcp.asia-northeast3
       - gcp.asia-southeast1
       - gcp.australia-southeast1
-      - gcp.asia-east1
       - azure.eastasia
       - azure.southeastasia
       - azure.centralindia
       - azure.southindia
       - azure.koreacentral
       - azure.australiaeast
-  - name: specific-datacenter
-    description: Container for each individual datacenter
-    regions:
-    # TODO: Add all the others here.
-      - name: gcp.europe-west3
-        description: Europe West 3
-        datacenters:
-          - gcp.europe-west3
