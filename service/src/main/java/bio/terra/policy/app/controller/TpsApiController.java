@@ -11,9 +11,9 @@ import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoSourceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
-import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplainSource;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
+import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.graph.model.ExplainGraph;
 import bio.terra.policy.service.pao.graph.model.ExplainGraphNode;
@@ -77,7 +77,7 @@ public class TpsApiController implements TpsApi {
                         .component(ep.getComponent().toApi())
                         .objectType(ep.getObjectType().toApi())
                         .objectId(ep.getObjectId())
-                        .isDeleted(ep.getDeleted()))
+                        .deleted(ep.getDeleted()))
             .toList();
 
     // Convert the explanations to API form
@@ -119,7 +119,7 @@ public class TpsApiController implements TpsApi {
 
   @Override
   public ResponseEntity<ApiTpsDatacenterList> listValidByPolicyInput(
-    String platform, ApiTpsPolicyInputs policyInputs) {
+      String platform, ApiTpsPolicyInputs policyInputs) {
     PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);
     HashSet<String> datacenters = regionService.getPolicyInputDataCenterCodes(inputs, platform);
     ApiTpsDatacenterList response = new ApiTpsDatacenterList();
@@ -131,7 +131,7 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsDatacenterList> listValidDatacenters(UUID objectId, String platform) {
     Pao pao = paoService.getPao(objectId);
     HashSet<String> datacenters =
-      regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform);
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform);
     ApiTpsDatacenterList response = new ApiTpsDatacenterList();
     response.addAll(datacenters);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -176,16 +176,16 @@ public class TpsApiController implements TpsApi {
 
   @Override
   public ResponseEntity<Void> validateDatacenterAllowed(
-    UUID objectId, String datacenter, String platform) {
+      UUID objectId, String datacenter, String platform) {
     Pao pao = paoService.getPao(objectId);
     if (!regionService.isDatacenterAllowedByPao(pao, datacenter, platform)) {
       throw new ConflictException(
-        String.format(
-          "Data center '%s' is not allowed per the effective region constraint.", datacenter),
-        regionService
-          .getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform)
-          .stream()
-          .toList());
+          String.format(
+              "Data center '%s' is not allowed per the effective region constraint.", datacenter),
+          regionService
+              .getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform)
+              .stream()
+              .toList());
     }
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);

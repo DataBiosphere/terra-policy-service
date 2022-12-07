@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import bio.terra.policy.generated.model.ApiTpsComponent;
 import bio.terra.policy.generated.model.ApiTpsObjectType;
-import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
 import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoSourceRequest;
@@ -47,6 +46,7 @@ public class TpsBasicControllerTest extends TestUnitBase {
 
   @Autowired private ObjectMapper objectMapper;
   @Autowired private MockMvc mockMvc;
+  @Autowired private MvcUtils mvcUtils;
 
   @Test
   public void basicPaoTest() throws Exception {
@@ -65,10 +65,10 @@ public class TpsBasicControllerTest extends TestUnitBase {
     var inputs = new ApiTpsPolicyInputs().addInputsItem(groupPolicy).addInputsItem(regionPolicy);
 
     // Create a PAO
-    UUID paoIdA = createPao(inputs);
+    UUID paoIdA = mvcUtils.createPao(inputs);
 
     // Create another PAO with no policies
-    UUID paoIdB = createPao(new ApiTpsPolicyInputs());
+    UUID paoIdB = mvcUtils.createPao(new ApiTpsPolicyInputs());
 
     // Get a PAO
     MvcResult result =
@@ -159,28 +159,6 @@ public class TpsBasicControllerTest extends TestUnitBase {
         fail();
       }
     }
-  }
-
-  private UUID createPao(ApiTpsPolicyInputs inputs) throws Exception {
-    UUID objectId = UUID.randomUUID();
-    var apiRequest =
-        new ApiTpsPaoCreateRequest()
-            .component(ApiTpsComponent.WSM)
-            .objectType(ApiTpsObjectType.WORKSPACE)
-            .objectId(objectId)
-            .attributes(inputs);
-
-    String json = objectMapper.writeValueAsString(apiRequest);
-
-    MvcResult result =
-        mockMvc
-            .perform(addAuth(addJsonContentType(post("/api/policy/v1alpha1/pao").content(json))))
-            .andReturn();
-    MockHttpServletResponse response = result.getResponse();
-    HttpStatus status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.NO_CONTENT, status);
-
-    return objectId;
   }
 
   private ApiTpsPaoUpdateResult connectPao(UUID targetId, UUID sourceId, String operation)

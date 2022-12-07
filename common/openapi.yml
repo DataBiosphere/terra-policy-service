@@ -569,7 +569,7 @@ components:
           $ref: '#/components/schemas/TpsComponent'
         objectType:
           $ref: '#/components/schemas/TpsObjectType'
-        isDeleted:
+        deleted:
           description: Policy source has been deleted. Policies from the source still apply.
           type: boolean
 
