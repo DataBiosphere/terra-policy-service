@@ -77,7 +77,8 @@ public class RegionServiceTest extends TestUnitBase {
     var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
 
     var pao = createPao(targetRegion);
-    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+    var datacenters =
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.contains(targetDatacenter));
   }
@@ -88,7 +89,8 @@ public class RegionServiceTest extends TestUnitBase {
     var childDatacenter = "us-central1";
 
     var pao = createPao(region);
-    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+    var datacenters =
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
     assertTrue(datacenters.contains(childDatacenter));
@@ -100,7 +102,8 @@ public class RegionServiceTest extends TestUnitBase {
     var childDatacenterCode = "europe-west3";
 
     var pao = createPao(region);
-    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+    var datacenters =
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
     assertFalse(datacenters.contains(childDatacenterCode));
@@ -113,7 +116,8 @@ public class RegionServiceTest extends TestUnitBase {
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     var pao = paoService.getPao(objectId);
 
-    var datacenters = regionService.getPaoDatacenterCodes(pao, GCP_PLATFORM);
+    var datacenters =
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     // Pao should be allowed all datacenters
     assertTrue(datacenters.size() > 10);
