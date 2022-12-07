@@ -27,8 +27,14 @@ public class RegionService {
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
+  // Map from a region name to a list of the names of all data centers contained in that region and
+  // its subregions.
   private final HashMap<String, HashSet<String>> regionDatacenterMap;
+  // Map from region name to a list of the names of all subregions contained in that region.
+  private final HashMap<String, HashSet<String>> regionSubregionMap;
+  // Object map from the region name to the region object.
   private final HashMap<String, Region> regionNameMap;
+  // Object map from the data center name to the data center object.
   private final HashMap<String, Datacenter> datacenterNameMap;
 
   @Autowired
@@ -51,6 +57,7 @@ public class RegionService {
     inputStream = this.getClass().getClassLoader().getResourceAsStream("static/datacenters.yml");
     Datacenter[] datacenters = datacenterYaml.load(inputStream);
 
+    this.regionSubregionMap = new HashMap<>();
     this.regionDatacenterMap = new HashMap<>();
     this.regionNameMap = new HashMap<>();
     this.datacenterNameMap = new HashMap<>();
@@ -126,13 +133,19 @@ public class RegionService {
     return false;
   }
 
+  public boolean isSubregion(String parentRegionName, String subregionName) {
+    HashSet<String> subregions = regionSubregionMap.get(parentRegionName);
+    return (subregions == null) ? false : subregions.contains(subregionName);
+  }
+
   private void constructRegionMapsRecursively(Region current) {
     if (current == null) return;
 
     regionNameMap.put(current.getName(), current);
     HashSet<String> currentDatacenters = new HashSet<>();
-    String[] datacenters = current.getDatacenters();
+    HashSet<String> currentSubregions = new HashSet<>();
 
+    String[] datacenters = current.getDatacenters();
     // If there are no datacenters defined on the region in the regions.yml file,
     // snakeyaml will set the value to null rather than populating it with an empty array.
     if (datacenters != null) {
@@ -140,17 +153,19 @@ public class RegionService {
     }
 
     Region[] subregions = current.getRegions();
-
     // Similarly, if there are no subregions defined in the .yml file, then this
     // field will be null rather than an empty array.
     if (subregions != null) {
       for (Region subregion : current.getRegions()) {
         constructRegionMapsRecursively(subregion);
         currentDatacenters.addAll(regionDatacenterMap.get(subregion.getName()));
+        currentSubregions.add(subregion.getName());
+        currentSubregions.addAll(regionSubregionMap.get(subregion.getName()));
       }
     }
 
     regionDatacenterMap.put(current.getName(), currentDatacenters);
+    regionSubregionMap.put(current.getName(), currentSubregions);
   }
 
   private List<String> extractPolicyRegions(Pao pao) {

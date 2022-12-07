@@ -135,4 +135,39 @@ public class RegionServiceTest extends TestUnitBase {
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, inputs);
     return paoService.getPao(objectId);
   }
+
+  void isSubregionNegative() {
+    // 'japan' is not a subregion of 'usa'
+    assertFalse(regionService.isSubregion("usa", "japan"));
+  }
+
+  @Test
+  void isSubregionUnknownParent() {
+    // 'unknown' is not in the ontology, it's an invalid parent
+    assertFalse(regionService.isSubregion("unknown", "global"));
+  }
+
+  @Test
+  void isSubregionUnknownChild() {
+    // 'unknown' is not in the ontology, it's an invalid child
+    assertFalse(regionService.isSubregion("global", "unknown"));
+  }
+
+  @Test
+  void isSubregionSelf() {
+    // "global" should not be a subregion of itself
+    assertFalse(regionService.isSubregion("global", "global"));
+  }
+
+  @Test
+  void isSubregionChild() {
+    // "europe" is a child of "global"
+    assertTrue(regionService.isSubregion("global", "europe"));
+  }
+
+  @Test
+  void isSubregionGrandchild() {
+    // "finland" is a grandchild of "global"
+    assertTrue(regionService.isSubregion("global", "finland"));
+  }
 }
