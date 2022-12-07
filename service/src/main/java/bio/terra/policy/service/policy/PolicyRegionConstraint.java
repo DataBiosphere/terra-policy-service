@@ -22,15 +22,15 @@ public class PolicyRegionConstraint implements PolicyBase {
   }
 
   /**
-   * Combine Regions. There are multiple possibilities here: 1. There is no overlap between source
-   * and dependent, result is a conflict. 2. The regions are equal, in which case either can be
-   * selected. 3. One of the regions is a subregion of the other, in which case we select the
-   * subregion. 4. The regions are not subregions, but have intersecting data centers. In this case,
-   * we need to make a new set of inputs containing just the intersection.
+   * Combine Regions. There are multiple possibilities here:
    *
-   * @param dependent policy input
-   * @param source policy input
-   * @return policy input
+   * <pre>
+   * 1. There is no overlap between source and dependent, result is a conflict.
+   * 2. The regions are equal, in which case either can be selected.
+   * 3. One of the regions is a subregion of the other, in which case we select the subregion.
+   * 4. The regions are not subregions, but have intersecting data centers. In this case,
+   *    we need to make a new set of inputs containing just the intersection. (TODO)
+   * </pre>
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {

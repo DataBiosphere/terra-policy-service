@@ -27,9 +27,14 @@ public class RegionService {
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
+  // Map from a region name to a list of the names of all data centers contained in that region and
+  // its subregions.
   private final HashMap<String, HashSet<String>> regionDatacenterMap;
+  // Map from region name to a list of the names of all subregions contained in that region.
   private final HashMap<String, HashSet<String>> regionSubregionMap;
+  // Object map from the region name to the region object.
   private final HashMap<String, Region> regionNameMap;
+  // Object map from the data center name to the data center object.
   private final HashMap<String, Datacenter> datacenterNameMap;
 
   @Autowired
