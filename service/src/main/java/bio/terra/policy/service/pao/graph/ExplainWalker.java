@@ -25,13 +25,16 @@ import javax.annotation.Nullable;
  * dependent policies and in the sources list for its specific contributions. Other contributions
  *
  * <p>If we have this:
+ *
  * <pre>
  * WS: set: D; effective: A, B, C, D; sources: [DC1, DC2]
  * DC1: set: A; effective: A; sources: []
  * DC2: set: B; effective: B, C; sources: [DC3]
  * DC3: set: C; effective: C; sources: []
  * </pre>
+ *
  * <p>The explain graph will look like:
+ *
  * <pre>
  *   ExplainGraph:
  *     explainPaos: [WS-pao, DC1-pao, DC2-pao, DC3-pao]
@@ -61,14 +64,17 @@ import javax.annotation.Nullable;
  *                 policyInput: [C]
  *                 sources: []
  * </pre>
- * <p> You might ask, why do some PAOs appear twice?
- * <p> The concept is that the ExplainGraphNode policyInput is what is contributed to the next
- * layer up. So for DC2, you see that it contributes [B, C] up to WS. But DC2 sources are
- * itself, contributing B, and DC3 contributing C.
  *
- * Essentially, the "contributes" is the effective policy and the "source is me" is the set policy
- * on the object. Notice that the leaf nodes do not contain themselves as sources. That is only
- * done when there are other contributing sources. Otherwise, the graph would be infinitely deep!
+ * <p>You might ask, why do some PAOs appear twice?
+ *
+ * <p>The concept is that the ExplainGraphNode policyInput is what is contributed to the next layer
+ * up. So for DC2, you see that it contributes [B, C] up to WS. But DC2 sources are itself,
+ * contributing B, and DC3 contributing C.
+ *
+ * <p>Essentially, the "contributes" is the effective policy and the "source is me" is the set
+ * policy on the object. Notice that the leaf nodes do not contain themselves as sources. That is
+ * only done when there are other contributing sources. Otherwise, the graph would be infinitely
+ * deep!
  */
 public class ExplainWalker {
   private final PaoDao paoDao;
