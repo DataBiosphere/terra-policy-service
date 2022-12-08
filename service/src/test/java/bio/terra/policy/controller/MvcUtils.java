@@ -5,13 +5,18 @@ import static bio.terra.policy.testutils.MockMvcUtils.addJsonContentType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import bio.terra.policy.generated.model.ApiTpsComponent;
 import bio.terra.policy.generated.model.ApiTpsObjectType;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoExplainResult;
+import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
+import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoSourceRequest;
+import bio.terra.policy.generated.model.ApiTpsPaoUpdateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
@@ -101,12 +106,67 @@ public class MvcUtils {
     return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoExplainResult.class);
   }
 
+  public ApiTpsPaoGetResult getPao(UUID objectId) throws Exception {
+    MvcResult result =
+        mockMvc
+            .perform(addAuth(addJsonContentType(get("/api/policy/v1alpha1/pao/" + objectId))))
+            .andReturn();
+    MockHttpServletResponse response = result.getResponse();
+    HttpStatus status = HttpStatus.valueOf(response.getStatus());
+    assertEquals(HttpStatus.OK, status);
+    var apiPao = objectMapper.readValue(response.getContentAsString(), ApiTpsPaoGetResult.class);
+    assertEquals(objectId, apiPao.getObjectId());
+    assertEquals(ApiTpsComponent.WSM, apiPao.getComponent());
+    assertEquals(ApiTpsObjectType.WORKSPACE, apiPao.getObjectType());
+    return apiPao;
+  }
+
   public ApiTpsPaoUpdateResult linkPao(UUID dependentId, UUID sourceId) throws Exception {
     return connectPao(dependentId, sourceId, "link", ApiTpsUpdateMode.FAIL_ON_CONFLICT);
   }
 
   public ApiTpsPaoUpdateResult mergePao(UUID dependentId, UUID sourceId) throws Exception {
     return connectPao(dependentId, sourceId, "merge", ApiTpsUpdateMode.FAIL_ON_CONFLICT);
+  }
+
+  public ApiTpsPaoUpdateResult replacePao(UUID objectId, ApiTpsPolicyInputs inputs)
+      throws Exception {
+    var replaceRequest =
+        new ApiTpsPaoReplaceRequest()
+            .updateMode(ApiTpsUpdateMode.FAIL_ON_CONFLICT)
+            .newAttributes(inputs);
+    var replaceJson = objectMapper.writeValueAsString(replaceRequest);
+    MvcResult result =
+        mockMvc
+            .perform(
+                addAuth(
+                    addJsonContentType(
+                        put("/api/policy/v1alpha1/pao/" + objectId).content(replaceJson))))
+            .andReturn();
+    MockHttpServletResponse response = result.getResponse();
+    HttpStatus status = HttpStatus.valueOf(response.getStatus());
+    assertEquals(HttpStatus.OK, status);
+    return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
+  }
+
+  public ApiTpsPaoUpdateResult updatePao(UUID objectId, ApiTpsPolicyInputs inputs)
+      throws Exception {
+    var updateRequest =
+        new ApiTpsPaoUpdateRequest()
+            .updateMode(ApiTpsUpdateMode.FAIL_ON_CONFLICT)
+            .addAttributes(inputs);
+    var updateJson = objectMapper.writeValueAsString(updateRequest);
+    MvcResult result =
+        mockMvc
+            .perform(
+                addAuth(
+                    addJsonContentType(
+                        patch("/api/policy/v1alpha1/pao/" + objectId).content(updateJson))))
+            .andReturn();
+    MockHttpServletResponse response = result.getResponse();
+    HttpStatus status = HttpStatus.valueOf(response.getStatus());
+    assertEquals(HttpStatus.OK, status);
+    return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
   }
 
   private ApiTpsPaoUpdateResult connectPao(
@@ -122,7 +182,6 @@ public class MvcUtils {
     MockHttpServletResponse response = result.getResponse();
     HttpStatus status = HttpStatus.valueOf(response.getStatus());
     assertEquals(HttpStatus.OK, status);
-
     return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
   }
 }

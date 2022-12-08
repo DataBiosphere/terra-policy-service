@@ -1,39 +1,17 @@
 package bio.terra.policy.controller;
 
-import static bio.terra.policy.testutils.MockMvcUtils.addAuth;
-import static bio.terra.policy.testutils.MockMvcUtils.addJsonContentType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
-import bio.terra.policy.generated.model.ApiTpsComponent;
-import bio.terra.policy.generated.model.ApiTpsObjectType;
-import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
-import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
-import bio.terra.policy.generated.model.ApiTpsPaoSourceRequest;
-import bio.terra.policy.generated.model.ApiTpsPaoUpdateRequest;
-import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
-import bio.terra.policy.generated.model.ApiTpsUpdateMode;
 import bio.terra.policy.testutils.TestUnitBase;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 public class TpsBasicControllerTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
@@ -43,8 +21,6 @@ public class TpsBasicControllerTest extends TestUnitBase {
   private static final String DDGROUP = "ddgroup";
   private static final String US_REGION = "US";
 
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private MockMvc mockMvc;
   @Autowired private MvcUtils mvcUtils;
 
   @Test
@@ -70,72 +46,28 @@ public class TpsBasicControllerTest extends TestUnitBase {
     UUID paoIdB = mvcUtils.createPao(new ApiTpsPolicyInputs());
 
     // Get a PAO
-    MvcResult result =
-        mockMvc
-            .perform(addAuth(addJsonContentType(get("/api/policy/v1alpha1/pao/" + paoIdA))))
-            .andReturn();
-    MockHttpServletResponse response = result.getResponse();
-    HttpStatus status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.OK, status);
-
-    var apiPao = objectMapper.readValue(response.getContentAsString(), ApiTpsPaoGetResult.class);
-    assertEquals(paoIdA, apiPao.getObjectId());
-    assertEquals(ApiTpsComponent.WSM, apiPao.getComponent());
-    assertEquals(ApiTpsObjectType.WORKSPACE, apiPao.getObjectType());
+    var apiPao = mvcUtils.getPao(paoIdA);
     checkAttributeSet(apiPao.getAttributes());
     checkAttributeSet(apiPao.getEffectiveAttributes());
 
     // Merge a PAO
-    var updateResult = connectPao(paoIdB, paoIdA, "merge");
+    var updateResult = mvcUtils.mergePao(paoIdB, paoIdA);
     assertTrue(updateResult.isUpdateApplied());
     assertEquals(0, updateResult.getConflicts().size());
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes());
 
     // Link a PAO
-    updateResult = connectPao(paoIdB, paoIdA, "link");
+    updateResult = mvcUtils.linkPao(paoIdB, paoIdA);
     assertTrue(updateResult.isUpdateApplied());
     assertEquals(0, updateResult.getConflicts().size());
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes());
 
     // Update a PAO
-    var updateRequest =
-        new ApiTpsPaoUpdateRequest()
-            .updateMode(ApiTpsUpdateMode.FAIL_ON_CONFLICT)
-            .addAttributes(inputs);
-    var updateJson = objectMapper.writeValueAsString(updateRequest);
-
-    result =
-        mockMvc
-            .perform(
-                addAuth(
-                    addJsonContentType(
-                        patch("/api/policy/v1alpha1/pao/" + paoIdB).content(updateJson))))
-            .andReturn();
-    response = result.getResponse();
-    status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.OK, status);
-    updateResult =
-        objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
+    updateResult = mvcUtils.updatePao(paoIdB, inputs);
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes());
 
     // Replace a PAO
-    var replaceRequest =
-        new ApiTpsPaoReplaceRequest()
-            .updateMode(ApiTpsUpdateMode.FAIL_ON_CONFLICT)
-            .newAttributes(inputs);
-    var replaceJson = objectMapper.writeValueAsString(replaceRequest);
-    result =
-        mockMvc
-            .perform(
-                addAuth(
-                    addJsonContentType(
-                        put("/api/policy/v1alpha1/pao/" + paoIdB).content(replaceJson))))
-            .andReturn();
-    response = result.getResponse();
-    status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.OK, status);
-    updateResult =
-        objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
+    updateResult = mvcUtils.replacePao(paoIdB, inputs);
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes());
 
     // Delete a PAO
@@ -158,23 +90,5 @@ public class TpsBasicControllerTest extends TestUnitBase {
         fail();
       }
     }
-  }
-
-  private ApiTpsPaoUpdateResult connectPao(UUID targetId, UUID sourceId, String operation)
-      throws Exception {
-    var connectRequest =
-        new ApiTpsPaoSourceRequest()
-            .sourceObjectId(sourceId)
-            .updateMode(ApiTpsUpdateMode.FAIL_ON_CONFLICT);
-    String connectJson = objectMapper.writeValueAsString(connectRequest);
-    String url = String.format("/api/policy/v1alpha1/pao/%s/%s", targetId, operation);
-
-    MvcResult result =
-        mockMvc.perform(addAuth(addJsonContentType(post(url).content(connectJson)))).andReturn();
-    MockHttpServletResponse response = result.getResponse();
-    HttpStatus status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.OK, status);
-
-    return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
   }
 }

@@ -17,18 +17,13 @@ import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
 import bio.terra.policy.testutils.TestUnitBase;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
-import org.springframework.test.web.servlet.MockMvc;
 
-@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 public class TpsExplainControllerTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
@@ -70,8 +65,6 @@ public class TpsExplainControllerTest extends TestUnitBase {
           .name(GROUP_CONSTRAINT)
           .addAdditionalDataItem(MC_POLICY_PAIR);
 
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private MockMvc mockMvc;
   @Autowired private MvcUtils mvcUtils;
 
   /* TODO: PF-2321 Add tests for:
