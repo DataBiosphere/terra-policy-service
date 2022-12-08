@@ -306,6 +306,34 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/ServerError'
+  /api/policy/v1alpha1/region/list-valid:
+    parameters:
+    - $ref: '#/components/parameters/Platform'
+    post:
+      summary: Retrieve the list of datacenters allowed for the policy inputs
+      operationId: listValidByPolicyInput
+      tags: [Tps]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TpsPolicyInputs'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsDatacenterList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   parameters:

@@ -79,17 +79,8 @@ public class RegionService {
     return regionNameMap.get(name);
   }
 
-  /**
-   * Read through the PAO and its region constraints to determine which data centers should be
-   * available.
-   *
-   * @param pao The PAO to scan.
-   * @param platform The platform for the PAO - IE: gcp | azure
-   * @return the set of datacenter codes allowed by the PAO. Codes do not include the platform
-   *     prefix.
-   */
-  public HashSet<String> getPaoDatacenterCodes(Pao pao, String platform) {
-    List<String> regionNames = extractPolicyRegions(pao);
+  public HashSet<String> getPolicyInputDataCenterCodes(PolicyInputs inputs, String platform) {
+    List<String> regionNames = extractPolicyInputRegions(inputs);
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
@@ -116,7 +107,7 @@ public class RegionService {
   }
 
   public boolean isDatacenterAllowedByPao(Pao pao, String datacenter, String platform) {
-    List<String> regionNames = extractPolicyRegions(pao);
+    List<String> regionNames = extractPolicyInputRegions(pao.getEffectiveAttributes());
 
     if (regionNames.isEmpty()) {
       // pao doesn't have a region constraint
@@ -168,12 +159,11 @@ public class RegionService {
     regionSubregionMap.put(current.getName(), currentSubregions);
   }
 
-  private List<String> extractPolicyRegions(Pao pao) {
+  private List<String> extractPolicyInputRegions(PolicyInputs policyInputs) {
     List<String> result = new ArrayList<>();
-    PolicyInputs effectiveAttributes = pao.getEffectiveAttributes();
 
-    if (effectiveAttributes != null && effectiveAttributes.getInputs() != null) {
-      Map<String, PolicyInput> inputs = effectiveAttributes.getInputs();
+    if (policyInputs != null && policyInputs.getInputs() != null) {
+      Map<String, PolicyInput> inputs = policyInputs.getInputs();
 
       for (var key : inputs.keySet()) {
         if (key.equals(TERRA_REGION_CONSTRAINT)) {

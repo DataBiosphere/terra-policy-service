@@ -1,6 +1,7 @@
 package bio.terra.policy.app.controller;
 
 import bio.terra.common.exception.ConflictException;
+import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.generated.api.TpsApi;
 import bio.terra.policy.generated.model.ApiTpsDatacenterList;
 import bio.terra.policy.generated.model.ApiTpsPaoCreateRequest;
@@ -9,6 +10,7 @@ import bio.terra.policy.generated.model.ApiTpsPaoReplaceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoSourceRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateRequest;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
+import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
@@ -60,7 +62,10 @@ public class TpsApiController implements TpsApi {
       throw new ConflictException(
           String.format(
               "Data center '%s' is not allowed per the effective region constraint.", datacenter),
-          regionService.getPaoDatacenterCodes(pao, platform).stream().toList());
+          regionService
+              .getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform)
+              .stream()
+              .toList());
     }
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -69,8 +74,19 @@ public class TpsApiController implements TpsApi {
   @Override
   public ResponseEntity<ApiTpsDatacenterList> listValidDatacenters(UUID objectId, String platform) {
     Pao pao = paoService.getPao(objectId);
-    HashSet<String> datacenters = regionService.getPaoDatacenterCodes(pao, platform);
-    var response = new ApiTpsDatacenterList();
+    HashSet<String> datacenters =
+        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), platform);
+    ApiTpsDatacenterList response = new ApiTpsDatacenterList();
+    response.addAll(datacenters);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsDatacenterList> listValidByPolicyInput(
+      String platform, ApiTpsPolicyInputs policyInputs) {
+    PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);
+    HashSet<String> datacenters = regionService.getPolicyInputDataCenterCodes(inputs, platform);
+    ApiTpsDatacenterList response = new ApiTpsDatacenterList();
     response.addAll(datacenters);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
