@@ -24,22 +24,51 @@ import javax.annotation.Nullable;
  * recurse. A given PAO may be represented twice: as an ExplainGraphNode for its contributions to
  * dependent policies and in the sources list for its specific contributions. Other contributions
  *
- * <p>If we have this: WS: set: D; effective: A, B, C, D; sources: [DC1, DC2] DC1: set: A;
- * effective: A; sources: [] DC2: set: B; effective: B, C; sources: [DC3] DC3: set: C; effective: C;
- * sources: []
+ * <p>If we have this:
+ * <pre>
+ * WS: set: D; effective: A, B, C, D; sources: [DC1, DC2]
+ * DC1: set: A; effective: A; sources: []
+ * DC2: set: B; effective: B, C; sources: [DC3]
+ * DC3: set: C; effective: C; sources: []
+ * </pre>
+ * <p>The explain graph will look like:
+ * <pre>
+ *   ExplainGraph:
+ *     explainPaos: [WS-pao, DC1-pao, DC2-pao, DC3-pao]
+ *     explainGraph: [
+ *       ExplainGraphNode:
+ *         objectId: WS-id
+ *         policyInput: [A, B, C, D]
+ *         sources: [
+ *           ExplainGraphNode:
+ *             objectId: WS-id
+ *             policyInput: [D]
+ *             sources: []
+ *           ExplainGraphNode:
+ *             objectId: DC1-id
+ *             policyInput: [A]
+ *             sources: []
+ *           ExplainGraphNode:
+ *             objectId: DC2-id
+ *             policyInput: [B, C]
+ *             sources: [
+ *               ExplainGraphNode:
+ *                 objectId: DC2-id
+ *                 policyInput: [B]
+ *                 sources: []
+ *               ExplainGraphNode:
+ *                 objectId: DC3-id
+ *                 policyInput: [C]
+ *                 sources: []
+ * </pre>
+ * <p> You might ask, why do some PAOs appear twice?
+ * <p> The concept is that the ExplainGraphNode policyInput is what is contributed to the next
+ * layer up. So for DC2, you see that it contributes [B, C] up to WS. But DC2 sources are
+ * itself, contributing B, and DC3 contributing C.
  *
- * <p>The explin graph will look like:
- *
- * <p>ExplainOnePolicy PolicyName: group-contraint ExplainGraphNode:
- *
- * <p>ExplainGraphNode: objectId: WS-id attributes: A, B, C, D sources - set of ExplainGraphNodes:
- * ExplainGraphNode: objectId: WS-id attributes: D sources: [] (empty list) ExplainGraphNode:
- * objectId: DC1-id attributes: A sources: [] ExplainGraphNode: objectId: DC2-id attributes: B, C
- * sources: ExplainGraphNode: objectId: DC2-id attributes: B sources: [] ExplainGraphNode: objectId:
- * DC3-id attributes: C sources: []
- *
- * <p>Notice that the leaf nodes do not contain themselves as sources. That is only done when there
- * are other contributing sources.
+ * Essentially, the "contributes" is the effective policy and the "source is me" is the set policy
+ * on the object. Notice that the leaf nodes do not contain themselves as sources. That is only
+ * done when there are other contributing sources. Otherwise, the graph would be infinitely deep!
  */
 public class ExplainWalker {
   private final PaoDao paoDao;
