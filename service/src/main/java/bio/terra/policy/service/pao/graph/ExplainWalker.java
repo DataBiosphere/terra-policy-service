@@ -98,7 +98,7 @@ public class ExplainWalker {
     ExplainGraphNode node = new ExplainGraphNode(objectId, input);
 
     // If we have a depth constraint and we are at it, do not recurse further
-    if (depth != 0 && depth >= currentDepth) {
+    if (depth != 0 && depth <= currentDepth) {
       return node;
     }
 

@@ -5,7 +5,6 @@ import static bio.terra.policy.testutils.MockMvcUtils.addJsonContentType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -140,8 +139,8 @@ public class TpsBasicControllerTest extends TestUnitBase {
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes());
 
     // Delete a PAO
-    deletePao(paoIdA);
-    deletePao(paoIdB);
+    mvcUtils.deletePao(paoIdA);
+    mvcUtils.deletePao(paoIdB);
   }
 
   private void checkAttributeSet(ApiTpsPolicyInputs attributeSet) {
@@ -177,15 +176,5 @@ public class TpsBasicControllerTest extends TestUnitBase {
     assertEquals(HttpStatus.OK, status);
 
     return objectMapper.readValue(response.getContentAsString(), ApiTpsPaoUpdateResult.class);
-  }
-
-  private void deletePao(UUID objectId) throws Exception {
-    MvcResult result =
-        mockMvc
-            .perform(addAuth(addJsonContentType(delete("/api/policy/v1alpha1/pao/" + objectId))))
-            .andReturn();
-    MockHttpServletResponse response = result.getResponse();
-    HttpStatus status = HttpStatus.valueOf(response.getStatus());
-    assertEquals(HttpStatus.NO_CONTENT, status);
   }
 }

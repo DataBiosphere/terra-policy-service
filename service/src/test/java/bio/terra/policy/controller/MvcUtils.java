@@ -3,6 +3,7 @@ package bio.terra.policy.controller;
 import static bio.terra.policy.testutils.MockMvcUtils.addAuth;
 import static bio.terra.policy.testutils.MockMvcUtils.addJsonContentType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -65,6 +66,16 @@ public class MvcUtils {
    */
   public UUID createPao(ApiTpsPolicyInput input) throws Exception {
     return createPao(new ApiTpsPolicyInputs().addInputsItem(input));
+  }
+
+  public void deletePao(UUID objectId) throws Exception {
+    MvcResult result =
+        mockMvc
+            .perform(addAuth(addJsonContentType(delete("/api/policy/v1alpha1/pao/" + objectId))))
+            .andReturn();
+    MockHttpServletResponse response = result.getResponse();
+    HttpStatus status = HttpStatus.valueOf(response.getStatus());
+    assertEquals(HttpStatus.NO_CONTENT, status);
   }
 
   /**

@@ -74,17 +74,9 @@ public class TpsExplainControllerTest extends TestUnitBase {
   @Autowired private MockMvc mockMvc;
   @Autowired private MvcUtils mvcUtils;
 
-  /*
-  Test cases:
-  - policy on pao and on pao source
-  - policy on pao and on pao source
-  - complex graph
-    - make sure it works!
-    - depth cases 0, 1, 2
-    - isDeleted
-  - ones to do later:
-    - group and region policies
-    - region conflict state
+  /* TODO: PF-2321 Add tests for:
+   *  - group and region policies
+   *  - region conflict state
    */
 
   @Test
@@ -93,7 +85,7 @@ public class TpsExplainControllerTest extends TestUnitBase {
     ApiTpsPaoExplainResult explainResult = mvcUtils.explainPao(emptyPao, 0);
     assertEquals(0, explainResult.getDepth());
     assertEquals(emptyPao, explainResult.getObjectId());
-    assertEquals(1, explainResult.getExplainObjects().size());
+    checkExplainSources(explainResult, 1, emptyPao);
     assertTrue(explainResult.getExplanation().isEmpty());
   }
 
@@ -103,14 +95,9 @@ public class TpsExplainControllerTest extends TestUnitBase {
     ApiTpsPaoExplainResult explainResult = mvcUtils.explainPao(onePao, 0);
     assertEquals(0, explainResult.getDepth());
     assertEquals(onePao, explainResult.getObjectId());
-    assertEquals(1, explainResult.getExplainObjects().size());
-    ApiTpsPolicyExplainSource explainSource = explainResult.getExplainObjects().get(0);
-    assertEquals(ApiTpsComponent.WSM, explainSource.getComponent());
-    assertEquals(ApiTpsObjectType.WORKSPACE, explainSource.getObjectType());
-    assertEquals(onePao, explainSource.getObjectId());
-    assertFalse(explainSource.isDeleted());
-    assertEquals(1, explainResult.getExplanation().size());
-    ApiTpsPolicyExplanation explanation = explainResult.getExplanation().get(0);
+    checkExplainSources(explainResult, 1, onePao);
+
+    ApiTpsPolicyExplanation explanation = getOnlyExplanation(explainResult);
     assertEquals(onePao, explanation.getObjectId());
     assertEquals(DD_POLICY_INPUT, explanation.getPolicyInput());
     assertTrue(explanation.getPolicyExplanations().isEmpty());
@@ -128,15 +115,9 @@ public class TpsExplainControllerTest extends TestUnitBase {
     ApiTpsPaoExplainResult explainResult = mvcUtils.explainPao(topPao, 0);
     assertEquals(0, explainResult.getDepth());
     assertEquals(topPao, explainResult.getObjectId());
-    assertEquals(2, explainResult.getExplainObjects().size());
-    Map<UUID, ApiTpsPolicyExplainSource> explainSourceMap =
-        makeExplainSourceMap(explainResult.getExplainObjects());
-    assertNotNull(explainSourceMap.get(topPao));
-    assertNotNull(explainSourceMap.get(basePao));
+    checkExplainSources(explainResult, 2, topPao, basePao);
 
-    // One policy type (group) so should only have one explanation
-    assertEquals(1, explainResult.getExplanation().size());
-    ApiTpsPolicyExplanation explanation = explainResult.getExplanation().get(0);
+    ApiTpsPolicyExplanation explanation = getOnlyExplanation(explainResult);
     assertEquals(topPao, explanation.getObjectId());
     assertEquals(MN_POLICY_INPUT, explanation.getPolicyInput()); // essentially the effective policy
 
@@ -162,15 +143,9 @@ public class TpsExplainControllerTest extends TestUnitBase {
     ApiTpsPaoExplainResult explainResult = mvcUtils.explainPao(topPao, 0);
     assertEquals(0, explainResult.getDepth());
     assertEquals(topPao, explainResult.getObjectId());
-    assertEquals(2, explainResult.getExplainObjects().size());
-    Map<UUID, ApiTpsPolicyExplainSource> explainSourceMap =
-        makeExplainSourceMap(explainResult.getExplainObjects());
-    assertNotNull(explainSourceMap.get(topPao));
-    assertNotNull(explainSourceMap.get(basePao));
+    checkExplainSources(explainResult, 2, topPao, basePao);
 
-    // One policy type (group) so should only have one explanation
-    assertEquals(1, explainResult.getExplanation().size());
-    ApiTpsPolicyExplanation explanation = explainResult.getExplanation().get(0);
+    ApiTpsPolicyExplanation explanation = getOnlyExplanation(explainResult);
     assertEquals(topPao, explanation.getObjectId());
     // Effective policy should be the merge of the two
     assertThat(
@@ -188,6 +163,224 @@ public class TpsExplainControllerTest extends TestUnitBase {
         fail("Invalid object id");
       }
       assertEquals(0, exp.getPolicyExplanations().size());
+    }
+  }
+
+  /*
+  topPao: set: none, eff: DD, MN, YU, MC
+    - onePao: set: DD, eff: DD
+    - twoPao: set: MN, eff MN, YU, MC
+      - threePao: set: YU, eff: YU, MC
+    -+- fourPao: set: MC, eff: MC (linked to both two pao and three pao)
+
+    We delete twoPao and should see the delete flag show up in the sources.
+   */
+  @Test
+  public void explainComplexPolicy() throws Exception {
+    UUID topPao = mvcUtils.createEmptyPao();
+    UUID onePao = mvcUtils.createPao(DD_POLICY_INPUT);
+    UUID twoPao = mvcUtils.createPao(MN_POLICY_INPUT);
+    UUID threePao = mvcUtils.createPao(YU_POLICY_INPUT);
+    UUID fourPao = mvcUtils.createPao(MC_POLICY_INPUT);
+
+    // Connect top to one and two
+    ApiTpsPaoUpdateResult linkResult = mvcUtils.linkPao(topPao, onePao);
+    assertTrue(linkResult.isUpdateApplied());
+    linkResult = mvcUtils.linkPao(topPao, twoPao);
+    assertTrue(linkResult.isUpdateApplied());
+
+    // Connect two to three and four
+    linkResult = mvcUtils.linkPao(twoPao, threePao);
+    assertTrue(linkResult.isUpdateApplied());
+    linkResult = mvcUtils.linkPao(twoPao, fourPao);
+    assertTrue(linkResult.isUpdateApplied());
+
+    // Connect three to four
+    linkResult = mvcUtils.linkPao(threePao, fourPao);
+    assertTrue(linkResult.isUpdateApplied());
+
+    // -- check depth 1 --
+    ApiTpsPaoExplainResult explainResult = mvcUtils.explainPao(topPao, 1);
+    checkExplainSources(explainResult, 3, topPao, onePao, twoPao);
+
+    ApiTpsPolicyExplanation explanation = getOnlyExplanation(explainResult);
+    checkTop(explanation, topPao);
+
+    // There should be two explanation under top and nothing under them
+    assertEquals(2, explanation.getPolicyExplanations().size());
+    for (ApiTpsPolicyExplanation exp : explanation.getPolicyExplanations()) {
+      if (!checkOne(exp, onePao)) {
+        if (!checkTwo(exp, twoPao)) {
+          fail("invalid object id");
+        }
+      }
+      assertEquals(0, exp.getPolicyExplanations().size());
+    }
+
+    // -- check depth 2 --
+    explainResult = mvcUtils.explainPao(topPao, 2);
+    checkExplainSources(explainResult, 5, topPao, onePao, twoPao, threePao, fourPao);
+    explanation = getOnlyExplanation(explainResult);
+    checkTop(explanation, topPao);
+
+    // There should be two explanation under top
+    assertEquals(2, explanation.getPolicyExplanations().size());
+    for (ApiTpsPolicyExplanation exp : explanation.getPolicyExplanations()) {
+      if (checkOne(exp, onePao)) {
+        assertEquals(0, exp.getPolicyExplanations().size());
+      } else if (checkTwo(exp, twoPao)) {
+        // There should be three explanations under two: its own setting and effective
+        // policies of three and four
+        assertEquals(3, exp.getPolicyExplanations().size());
+        for (ApiTpsPolicyExplanation expTwo : exp.getPolicyExplanations()) {
+          if (!checkTwoSet(expTwo, twoPao)) {
+            if (!checkThree(expTwo, threePao)) {
+              if (!checkFour(expTwo, fourPao)) {
+                fail("invalid object id");
+              }
+            }
+          }
+          assertEquals(0, expTwo.getPolicyExplanations().size());
+        }
+      }
+    }
+
+    // -- check depth 3 --
+    explainResult = mvcUtils.explainPao(topPao, 3);
+    checkExplainSources(explainResult, 5, topPao, onePao, twoPao, threePao, fourPao);
+    explanation = getOnlyExplanation(explainResult);
+    checkTop(explanation, topPao);
+
+    // There should be two explanation under top
+    assertEquals(2, explanation.getPolicyExplanations().size());
+    for (ApiTpsPolicyExplanation exp : explanation.getPolicyExplanations()) {
+      if (checkOne(exp, onePao)) {
+        assertEquals(0, exp.getPolicyExplanations().size());
+      } else if (checkTwo(exp, twoPao)) {
+        // There should be three explanations under twoPao: its own setting and effective
+        // policies of three and four
+        assertEquals(3, exp.getPolicyExplanations().size());
+        for (ApiTpsPolicyExplanation expTwo : exp.getPolicyExplanations()) {
+          if (!checkTwoSet(expTwo, twoPao)) {
+            if (!checkFour(expTwo, fourPao)) {
+              if (!checkThree(expTwo, threePao)) {
+                fail("invalid object id");
+              } else {
+                // There should be two explanations under three: its own setting and effective of
+                // four
+                assertEquals(2, expTwo.getPolicyExplanations().size());
+                for (ApiTpsPolicyExplanation expThree : expTwo.getPolicyExplanations()) {
+                  if (!checkThreeSet(expThree, threePao)) {
+                    if (!checkFour(expThree, fourPao)) {
+                      fail("invalid object id");
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // -- delete test --
+    mvcUtils.deletePao(twoPao);
+    explainResult = mvcUtils.explainPao(topPao, 1);
+    List<ApiTpsPolicyExplainSource> sources = explainResult.getExplainObjects();
+    assertEquals(3, sources.size());
+    for (ApiTpsPolicyExplainSource source : sources) {
+      if (source.getObjectId().equals(topPao)) {
+        assertFalse(source.isDeleted());
+      } else if (source.getObjectId().equals(onePao)) {
+        assertFalse(source.isDeleted());
+      } else if (source.getObjectId().equals(twoPao)) {
+        assertTrue(source.isDeleted());
+      } else {
+        fail("invalid source");
+      }
+    }
+  }
+
+  // For the complex test, make checkers for each node to simplify the logic
+  private void checkTop(ApiTpsPolicyExplanation exp, UUID objectId) {
+    assertEquals(objectId, exp.getObjectId());
+    checkPolicyInput(exp.getPolicyInput().getAdditionalData(), DDGROUP, MNGROUP, YUGROUP, MCGROUP);
+  }
+
+  private boolean checkOne(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      assertEquals(DD_POLICY_INPUT, exp.getPolicyInput());
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkTwo(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      checkPolicyInput(exp.getPolicyInput().getAdditionalData(), MNGROUP, YUGROUP, MCGROUP);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkTwoSet(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      assertEquals(MN_POLICY_INPUT, exp.getPolicyInput());
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkThree(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      checkPolicyInput(exp.getPolicyInput().getAdditionalData(), YUGROUP, MCGROUP);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkThreeSet(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      assertEquals(YU_POLICY_INPUT, exp.getPolicyInput());
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkFour(ApiTpsPolicyExplanation exp, UUID objectId) {
+    if (exp.getObjectId().equals(objectId)) {
+      assertEquals(MC_POLICY_INPUT, exp.getPolicyInput());
+      return true;
+    }
+    return false;
+  }
+
+  // Small DRY for the case where we have one policy type (e.g., group) so should only have one
+  // explanation
+  private ApiTpsPolicyExplanation getOnlyExplanation(ApiTpsPaoExplainResult explainResult) {
+    assertEquals(1, explainResult.getExplanation().size());
+    return explainResult.getExplanation().get(0);
+  }
+
+  private void checkPolicyInput(List<ApiTpsPolicyPair> policyPairs, String... expectedGroups) {
+    List<String> actualGroups = policyPairs.stream().map(ApiTpsPolicyPair::getValue).toList();
+    assertThat(actualGroups, containsInAnyOrder(expectedGroups));
+  }
+
+  private void checkExplainSources(
+      ApiTpsPaoExplainResult explainResult, int expectedCount, UUID... expectedSources) {
+    assertEquals(expectedCount, explainResult.getExplainObjects().size());
+    if (expectedCount > 0) {
+      Map<UUID, ApiTpsPolicyExplainSource> explainSourceMap =
+          makeExplainSourceMap(explainResult.getExplainObjects());
+      for (UUID expectedSource : expectedSources) {
+        ApiTpsPolicyExplainSource explainSource = explainSourceMap.get(expectedSource);
+        assertNotNull(explainSource);
+        assertEquals(ApiTpsComponent.WSM, explainSource.getComponent());
+        assertEquals(ApiTpsObjectType.WORKSPACE, explainSource.getObjectType());
+        assertEquals(expectedSource, explainSource.getObjectId());
+        assertFalse(explainSource.isDeleted());
+      }
     }
   }
 
