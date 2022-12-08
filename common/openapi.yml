@@ -35,9 +35,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 
 
-  # Specific policy queries will go here
-  #/api/policies/v1alpha1/:
-
   ## Policy Attribute Object Interface (PAO) ##
   /api/policy/v1alpha1/pao:
     post:
@@ -180,6 +177,31 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/ServerError'
+
+  /api/policy/v1alpha1/pao/{objectId}/explain:
+    parameters:
+      - $ref: '#/components/parameters/TpsObjectId'
+      - $ref: '#/components/parameters/TpsDepth'
+    get:
+      summary: Get an explanation of the source of policies
+      operationId: explainPao
+      tags: [Tps]
+      responses:
+        '200':
+          description: Policy explanation produced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsPaoExplainResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 
   /api/policy/v1alpha1/pao/{objectId}/link:
     parameters:
@@ -362,6 +384,15 @@ components:
       schema:
         $ref: '#/components/schemas/TpsObjectId'
 
+    TpsDepth:
+      name: depth
+      in: query
+      description: |
+        The number of levels of policy sources to traverse. Defaults to 1. 0 means return all levels.
+      required: false
+      schema:
+        $ref: '#/components/schemas/TpsDepth'
+
   responses:
     # Error Responses
     BadRequest:
@@ -460,6 +491,12 @@ components:
         uniqueItems: true
         type: string
 
+    TpsDepth:
+      type: integer
+      description: Explain source depth.
+      minimum: 0
+      default: 1
+
     TpsObjectId:
       description: |
         The Terra object associated with this PAO; for example, a workspace UUID associated 
@@ -485,6 +522,56 @@ components:
           $ref: '#/components/schemas/TpsObjectType'
         attributes:
           $ref: '#/components/schemas/TpsPolicyInputs'
+
+    TpsPaoExplainResult:
+      type: object
+      required: [depth, objectId, component, objectType]
+      properties:
+        depth:
+          $ref: '#/components/schemas/TpsDepth'
+        objectId:
+          $ref: '#/components/schemas/TpsObjectId'
+        explainObjects:
+          description: List of TpsPolicySource objects referenced in the explanation
+          type: array
+          items:
+            $ref: '#/components/schemas/TpsPolicyExplainSource'
+        explanation:
+          description: One explanation for each policy in the effective policies array
+          type: array
+          items:
+            $ref: '#/components/schemas/TpsPolicyExplanation'
+
+    TpsPolicyExplanation:
+      description: |
+        Explanation of one policy input, providing the input and the sources
+        that were combined to result in the policy. One of the sources can be the
+        requested object itself. The policyExplanations may be empty/not present if
+        this is a leaf in the explain graph.
+      type: object
+      required: [objectId, policyInput]
+      properties:
+        objectId:
+          $ref: '#/components/schemas/TpsObjectId'
+        policyInput:
+          $ref: '#/components/schemas/TpsPolicyInput'
+        policyExplanations:
+          type: array
+          items:
+            $ref: '#/components/schemas/TpsPolicyExplanation'
+
+    TpsPolicyExplainSource:
+      type: object
+      properties:
+        objectId:
+          $ref: '#/components/schemas/TpsObjectId'
+        component:
+          $ref: '#/components/schemas/TpsComponent'
+        objectType:
+          $ref: '#/components/schemas/TpsObjectType'
+        deleted:
+          description: Policy source has been deleted. Policies from the source still apply.
+          type: boolean
 
     TpsPaoGetResult:
       type: object
@@ -556,7 +643,9 @@ components:
 
     TpsPaoConflict:
       type: object
-      description: Describes a policy conflict between two PAOs
+      description: |
+        Describes a policy conflict between two PAOs. TargetPao is the pao with the conflict.
+        ConflictPao is the pao causing the conflict.
       required: [targetPao, conflictPao, namespace, name]
       properties:
         namespace:
@@ -566,10 +655,8 @@ components:
           description: Name of the conflicting policy; e.g., group-constraint
           type: string
         targetPao:
-          description: The target PAO receiving policy
           $ref: '#/components/schemas/TpsPaoDescription'
         conflictPao:
-          description: The PAO attempting to combine the conflicting policy
           $ref: '#/components/schemas/TpsPaoDescription'
 
     TpsPaoReplaceRequest:

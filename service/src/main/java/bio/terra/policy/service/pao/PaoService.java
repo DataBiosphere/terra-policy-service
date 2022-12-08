@@ -10,7 +10,9 @@ import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.DbPao;
 import bio.terra.policy.db.PaoDao;
 import bio.terra.policy.service.pao.graph.DeleteWalker;
+import bio.terra.policy.service.pao.graph.ExplainWalker;
 import bio.terra.policy.service.pao.graph.Walker;
+import bio.terra.policy.service.pao.graph.model.ExplainGraph;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
@@ -76,6 +78,18 @@ public class PaoService {
     DeleteWalker walker = new DeleteWalker(paoDao, objectId);
     Set<DbPao> toRemove = walker.findRemovablePaos();
     paoDao.deletePaos(toRemove);
+  }
+
+  /**
+   * Explain the source of each policy input in the effective attribute set of the object.
+   *
+   * @param objectId UUID of the object
+   * @param depth depth to traverse
+   */
+  public ExplainGraph explainPao(UUID objectId, int depth) {
+    logger.info("Explain PAO id {} to depth {}", objectId, depth);
+    ExplainWalker walker = new ExplainWalker(paoDao, objectId, depth);
+    return walker.getExplainGraph();
   }
 
   public Pao getPao(UUID objectId) {

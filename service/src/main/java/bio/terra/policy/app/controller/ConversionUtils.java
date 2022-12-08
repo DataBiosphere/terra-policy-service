@@ -1,13 +1,9 @@
 package bio.terra.policy.app.controller;
 
-import bio.terra.policy.common.exception.EnumNotRecognizedException;
-import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
-import bio.terra.policy.generated.model.ApiTpsComponent;
-import bio.terra.policy.generated.model.ApiTpsObjectType;
 import bio.terra.policy.generated.model.ApiTpsPaoConflict;
 import bio.terra.policy.generated.model.ApiTpsPaoDescription;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
@@ -15,12 +11,8 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
-import bio.terra.policy.generated.model.ApiTpsUpdateMode;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.pao.model.PaoComponent;
-import bio.terra.policy.service.pao.model.PaoObjectType;
-import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -31,34 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 /** Static methods to convert from API to internal objects and back. */
 public class ConversionUtils {
-  static PaoComponent componentFromApi(ApiTpsComponent apiComponent) {
-    if (apiComponent == ApiTpsComponent.WSM) {
-      return PaoComponent.WSM;
-    }
-    throw new EnumNotRecognizedException("Invalid TpsComponent");
-  }
-
-  static ApiTpsComponent componentToApi(PaoComponent component) {
-    if (component == PaoComponent.WSM) {
-      return ApiTpsComponent.WSM;
-    }
-    throw new InternalTpsErrorException("Invalid PaoComponent");
-  }
-
-  static PaoObjectType objectTypeFromApi(ApiTpsObjectType apiObjectType) {
-    if (apiObjectType == ApiTpsObjectType.WORKSPACE) {
-      return PaoObjectType.WORKSPACE;
-    }
-    throw new EnumNotRecognizedException("invalid TpsObjectType");
-  }
-
-  static ApiTpsObjectType objectTypeToApi(PaoObjectType objectType) {
-    if (objectType == PaoObjectType.WORKSPACE) {
-      return ApiTpsObjectType.WORKSPACE;
-    }
-    throw new InternalTpsErrorException("Invalid PaoObjectType");
-  }
-
   static PolicyInput policyInputFromApi(ApiTpsPolicyInput apiInput) {
     // These nulls shouldn't happen.
     if (apiInput == null
@@ -121,27 +85,12 @@ public class ConversionUtils {
   static ApiTpsPaoGetResult paoToApi(Pao pao) {
     return new ApiTpsPaoGetResult()
         .objectId(pao.getObjectId())
-        .component(componentToApi(pao.getComponent()))
-        .objectType(objectTypeToApi(pao.getObjectType()))
+        .component(pao.getComponent().toApi())
+        .objectType(pao.getObjectType().toApi())
         .attributes(policyInputsToApi(pao.getAttributes()))
         .effectiveAttributes(policyInputsToApi(pao.getEffectiveAttributes()))
         .sourcesObjectIds(pao.getSourceObjectIds().stream().toList())
         .deleted((pao.getDeleted()));
-  }
-
-  static PaoUpdateMode updateModeFromApi(ApiTpsUpdateMode apiUpdateMode) {
-    switch (apiUpdateMode) {
-      case DRY_RUN -> {
-        return PaoUpdateMode.DRY_RUN;
-      }
-      case FAIL_ON_CONFLICT -> {
-        return PaoUpdateMode.FAIL_ON_CONFLICT;
-      }
-      case ENFORCE_CONFLICT -> {
-        return PaoUpdateMode.ENFORCE_CONFLICTS;
-      }
-    }
-    throw new InvalidInputException("Invalid update mode: " + apiUpdateMode);
   }
 
   static ApiTpsPaoUpdateResult updateResultToApi(PolicyUpdateResult result) {
@@ -166,7 +115,7 @@ public class ConversionUtils {
   static ApiTpsPaoDescription paoToApiPaoDescription(Pao pao) {
     return new ApiTpsPaoDescription()
         .objectId(pao.getObjectId())
-        .component(componentToApi(pao.getComponent()))
-        .objectType(objectTypeToApi(pao.getObjectType()));
+        .component(pao.getComponent().toApi())
+        .objectType(pao.getObjectType().toApi());
   }
 }
