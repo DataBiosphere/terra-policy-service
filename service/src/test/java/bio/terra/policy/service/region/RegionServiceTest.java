@@ -12,7 +12,6 @@ import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
-import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Collections;
@@ -28,7 +27,7 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getRegion() {
-    String searchRegion = "gcp.europe-west3";
+    String searchRegion = "europe-west3";
     Region result = regionService.getRegion(searchRegion);
     assertNotNull(result);
     assertEquals(searchRegion, result.getName());
@@ -42,41 +41,25 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
-  void getDatacenter() {
-    String searchName = "gcp.us-central1";
-    Datacenter result = regionService.getDatacenter(searchName);
-    assertNotNull(result);
-    assertEquals(searchName, result.getId());
-  }
-
-  @Test
-  void getDatacenterInvalidIdReturnsNull() {
-    String searchName = "invalid";
-    Datacenter result = regionService.getDatacenter(searchName);
-    assertNull(result);
-  }
-
-  @Test
   void regionContainsDatacenterFromItself() {
-    assertTrue(regionService.regionContainsDatacenter("europe", "gcp.europe-west1"));
+    assertTrue(regionService.regionContainsDatacenter("europe", "europe-west1"));
   }
 
   @Test
   void regionContainsDatacenterFromSubRegion() {
-    assertTrue(regionService.regionContainsDatacenter("usa", "azure.centralus"));
+    assertTrue(regionService.regionContainsDatacenter("americas", "us-central1"));
   }
 
   @Test
   void regionContainsDatacenterNegative() {
-    assertFalse(regionService.regionContainsDatacenter("usa", "gcp.europe-west1"));
+    assertFalse(regionService.regionContainsDatacenter("usa", "europe-west1"));
   }
 
   @Test
   void getPaoDatacentersFromSelf() {
     var targetDatacenter = "europe-west3";
-    var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
 
-    var pao = createPao(targetRegion);
+    var pao = createPao(targetDatacenter);
     var datacenters =
         regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
@@ -171,7 +154,7 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void isSubregionGrandchild() {
-    // "finland" is a grandchild of "global"
-    assertTrue(regionService.isSubregion("global", "finland"));
+    // "northamerica-northeast2" is a grandchild of "global"
+    assertTrue(regionService.isSubregion("global", "northamerica-northeast2"));
   }
 }

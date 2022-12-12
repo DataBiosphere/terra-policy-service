@@ -4,7 +4,6 @@ public class Region {
   private String name;
   private String description;
   private Region[] regions;
-  private String[] datacenters;
 
   public String getName() {
     return name;
@@ -28,13 +27,5 @@ public class Region {
 
   public void setRegions(Region[] regions) {
     this.regions = regions;
-  }
-
-  public String[] getDatacenters() {
-    return datacenters;
-  }
-
-  public void setDatacenters(String[] datacenters) {
-    this.datacenters = datacenters;
   }
 }

@@ -62,7 +62,7 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var regionConstraint = new PolicyRegionConstraint();
 
     var region1 = "europe";
-    var region2 = "germany";
+    var region2 = "europe-west2";
 
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
@@ -81,9 +81,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
   void regionConstraintTest_combineEmptyDependent() {
     var regionConstraint = new PolicyRegionConstraint();
 
-    var sourceRegion = "germany";
+    var sourceRegion = "europe-west2";
 
-    // dependent only has a group constraint
+    // only dependent has a group constraint
     var dependentPolicy =
         new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
     var sourcePolicy =
@@ -101,12 +101,12 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
   void regionConstraintTest_combineEmptySource() {
     var regionConstraint = new PolicyRegionConstraint();
 
-    var dependentRegion = "germany";
+    var dependentRegion = "europe-west2";
 
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegion));
 
-    // source only has a group constraint
+    // only source has a group constraint
     var sourcePolicy =
         new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
 
@@ -140,7 +140,8 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
 
     Set<String> dependentRegions =
         new HashSet<>(Arrays.asList("americas", "asiapacific", "europe"));
-    Set<String> sourceRegions = new HashSet<>(Arrays.asList("uk", "usa-central", "japan"));
+    Set<String> sourceRegions =
+        new HashSet<>(Arrays.asList("europe-west2", "us-central1", "japan"));
 
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
@@ -160,7 +161,8 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
   void regionConstraintTest_combineReducesToDependents() {
     var regionConstraint = new PolicyRegionConstraint();
 
-    Set<String> dependentRegions = new HashSet<>(Arrays.asList("uk", "usa-central", "japan"));
+    Set<String> dependentRegions =
+        new HashSet<>(Arrays.asList("europe-west2", "us-central1", "japan"));
     Set<String> sourceRegions = new HashSet<>(Arrays.asList("americas", "asiapacific", "europe"));
 
     var dependentPolicy =
@@ -182,8 +184,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var regionConstraint = new PolicyRegionConstraint();
 
     Set<String> dependentRegions = new HashSet<>(Arrays.asList("europe"));
-    Set<String> sourceRegions = new HashSet<>(Arrays.asList("usa", "asiapacific", "uk", "finland"));
-    Set<String> expectedResult = new HashSet<>(Arrays.asList("uk", "finland"));
+    Set<String> sourceRegions =
+        new HashSet<>(Arrays.asList("usa", "asiapacific", "europe-west2", "europe-north1"));
+    Set<String> expectedResult = new HashSet<>(Arrays.asList("europe-west2", "europe-north1"));
 
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
@@ -204,9 +207,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var regionConstraint = new PolicyRegionConstraint();
 
     Set<String> dependentRegions =
-        new HashSet<>(Arrays.asList("usa", "asiapacific", "uk", "finland"));
+        new HashSet<>(Arrays.asList("usa", "asiapacific", "europe-west2", "europe-north1"));
     Set<String> sourceRegions = new HashSet<>(Arrays.asList("europe"));
-    Set<String> expectedResult = new HashSet<>(Arrays.asList("uk", "finland"));
+    Set<String> expectedResult = new HashSet<>(Arrays.asList("europe-west2", "europe-north1"));
 
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));

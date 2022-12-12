@@ -3,7 +3,6 @@ package bio.terra.policy.service.region;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class RegionService {
   private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
   private static final String TERRA_REGION_ATTRIBUTE_NAME = "region-name";
-  private static final String GLOBAL_REGION = "global";
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
@@ -34,8 +32,6 @@ public class RegionService {
   private final HashMap<String, HashSet<String>> regionSubregionMap;
   // Object map from the region name to the region object.
   private final HashMap<String, Region> regionNameMap;
-  // Object map from the data center name to the data center object.
-  private final HashMap<String, Datacenter> datacenterNameMap;
 
   @Autowired
   public RegionService() {
@@ -45,26 +41,9 @@ public class RegionService {
         this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
     Region rootRegion = regionYaml.load(inputStream);
 
-    /*
-     * Snakeyaml can easily transform into java classes like Regions above. However, it can't
-     * naturally load into Java Collections. Datacenters.yml represents an array or List of
-     * Datacenters. Since we want to work with that data type, we first create an object of that
-     * type to indicate to snakeyaml how to load the file.
-     */
-    logger.info("Loading datacenters from datacenters.yml resource.");
-    Datacenter[] type = new Datacenter[0];
-    Yaml datacenterYaml = new Yaml(new Constructor(type.getClass()));
-    inputStream = this.getClass().getClassLoader().getResourceAsStream("static/datacenters.yml");
-    Datacenter[] datacenters = datacenterYaml.load(inputStream);
-
     this.regionSubregionMap = new HashMap<>();
     this.regionDatacenterMap = new HashMap<>();
     this.regionNameMap = new HashMap<>();
-    this.datacenterNameMap = new HashMap<>();
-
-    for (Datacenter datacenter : datacenters) {
-      this.datacenterNameMap.put(datacenter.getId(), datacenter);
-    }
 
     constructRegionMapsRecursively(rootRegion);
   }
@@ -84,26 +63,19 @@ public class RegionService {
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
-      regionNames.add(GLOBAL_REGION);
+      return regionDatacenterMap.get(platform);
     }
 
+    var platformRegions = regionSubregionMap.get(platform);
+
     for (String regionName : regionNames) {
-      HashSet<String> datacenterIds = regionDatacenterMap.get(regionName);
-      if (datacenterIds != null) {
-        for (String datacenterId : datacenterIds) {
-          if (datacenterId.startsWith(platform)) {
-            result.add(datacenterNameMap.get(datacenterId).getCode());
-          }
-        }
+      if (platformRegions.contains(regionName)) {
+        HashSet<String> datacenterIds = regionDatacenterMap.get(regionName);
+        result.addAll(datacenterIds);
       }
     }
 
     return result;
-  }
-
-  @Nullable
-  public Datacenter getDatacenter(String id) {
-    return datacenterNameMap.get(id);
   }
 
   public boolean isDatacenterAllowedByPao(Pao pao, String datacenter, String platform) {
@@ -114,9 +86,11 @@ public class RegionService {
       return true;
     }
 
-    String tpsDatacenter = String.format("%s.%s", platform, datacenter);
+    HashSet<String> platformDatacenters = regionDatacenterMap.get(platform);
+
     for (String regionName : regionNames) {
-      if (regionContainsDatacenter(regionName, tpsDatacenter)) {
+      if (platformDatacenters.contains(datacenter)
+          && regionContainsDatacenter(regionName, datacenter)) {
         return true;
       }
     }
@@ -129,24 +103,23 @@ public class RegionService {
     return (subregions == null) ? false : subregions.contains(subregionName);
   }
 
+  /**
+   * DFS approach. Leaf nodes are equal to individual data centers and can be added to the map. When
+   * we've calculated all children, we can map the current node to its subregions and data centers.
+   */
   private void constructRegionMapsRecursively(Region current) {
-    if (current == null) return;
-
     regionNameMap.put(current.getName(), current);
     HashSet<String> currentDatacenters = new HashSet<>();
     HashSet<String> currentSubregions = new HashSet<>();
 
-    String[] datacenters = current.getDatacenters();
-    // If there are no datacenters defined on the region in the regions.yml file,
-    // snakeyaml will set the value to null rather than populating it with an empty array.
-    if (datacenters != null) {
-      currentDatacenters.addAll(List.of(datacenters));
-    }
-
     Region[] subregions = current.getRegions();
-    // Similarly, if there are no subregions defined in the .yml file, then this
+    // If there are no subregions defined in the .yml file, then this
     // field will be null rather than an empty array.
-    if (subregions != null) {
+    if (subregions == null) {
+      // If we have no subregions, we have hit a leaf node and the current region
+      // represents a single data center region. Don't recurse further.
+      currentDatacenters.add(current.getName());
+    } else {
       for (Region subregion : current.getRegions()) {
         constructRegionMapsRecursively(subregion);
         currentDatacenters.addAll(regionDatacenterMap.get(subregion.getName()));

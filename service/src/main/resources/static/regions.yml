@@ -2,107 +2,104 @@
 name: global
 description: Global Region
 regions:
-  - name: europe
-    description: Europe
+  # By Convention, second level region is the provider
+  - name: gcp
+    description: Google Cloud Platform
     regions:
-      - name: uk
-        description: United Kingdom
+      - name: europe
+        description: Europe
         regions:
-          - name: gcp.europe-west2
-            description: Europe West 2
-            datacenters:
-              - gcp.europe-west2
-      - name: finland
-        description: Finland
+          # By convention, leaves are individual data centers.
+          - name: europe-west2
+            description: London
+          - name: europe-north1
+            description: Finland
+          - name: europe-west3
+            description: Frankfurt
+          - name: europe-west1
+            description: Belgium
+          - name: europe-southwest1
+            description: Madrid
+          - name: europe-west8
+            description: Milan
+          - name: europe-west4
+            description: Netherlands
+          - name: europe-central2
+            description: Warsaw
+          - name: europe-west6
+            description: Zürich
+          - name: EU
+            description: Multi-Region EU
+
+      - name: americas
+        description: North and South America
         regions:
-        - name: gcp.europe-north1
-          description: Europe North 1
-          datacenters:
-            - gcp.europe-north1
-      - name: germany
-        description: Germany
-        regions:
-          - name: gcp.europe-west3
-            description: Europe West 3
-            datacenters:
-              - gcp.europe-west3
-      - name: multiregion-eu
-        description: Multi-Region EU
-        datacenters:
-          - gcp.EU
-    datacenters:
-      - gcp.europe-west1
-      - gcp.europe-southwest1
-      - gcp.europe-west8
-      - gcp.europe-west4
-      - gcp.europe-central2
-      - gcp.europe-west6
-  - name: americas
-    description: North and South America
-    regions:
-      - name: usa
-        description: United States of America
-        regions:
-          - name: usa-central
-            description: Central US
+          - name: usa
+            description: United States of America
             regions:
-              - name: gcp.us-central1
-                description: US Central 1
-                datacenters:
-                  - gcp.us-central1
-            datacenters:
-              - azure.centralus
-              - azure.northcentralus
-              - azure.southcentralus
-          - name: usa-east
-            description: Eastern US
-            datacenters:
-              - gcp.us-east1
-              - gcp.us-east4
-              - azure.eastus2
-          - name: usa-west
-            description: Western US
-            datacenters:
-              - gcp.us-west1
-              - gcp.us-west2
-              - gcp.us-west3
-              - gcp.us-west4
-          - name: multiregion-us
-            description: Multi-region US
-            datacenters:
-              - gcp.US
-      - name: canada
-        description: Canada
-        datacenters:
-          - gcp.northamerica-northeast1
-          - gcp.northamerica-northeast2
-      - name: brazil
-        description: Brazil
-        datacenters:
-          - gcp.southamerica-east1
-      - name: chile
-        description: Chile
-        datacenters:
-          - gcp.southamerica-west1
-  - name: asiapacific
-    description: Asia and Pacific
-    regions:
-      - name: japan
-        description: Japan
-        datacenters:
-          - gcp.asia-northeast1
-          - gcp.asia-northeast2
+              - name: us-central1
+                description: Iowa
+              - name: us-east1
+                description: South Carolina
+              - name: us-east4
+                description: Northern Virginia
+              - name: us-west1
+                description: Oregon
+              - name: us-west2
+                description: Los Angeles
+              - name: us-west3
+                description: Salt Lake City
+              - name: us-west4
+                description: Las Vegas
+              - name: US
+                description: Multi-region US
+          - name: canada
+            description: Canada
+            regions:
+              - name: northamerica-northeast1
+                description: Montréal
+              - name: northamerica-northeast2
+                description: Toronto
+          - name: southamerica-east1
+            description: Brazil
+          - name: southamerica-west1
+            description: Chile
+
+      - name: asiapacific
+        description: Asia and Pacific
         regions:
-          - name: gcp.asia-east1
-            description: Asia East 1
-            datacenters:
-              - gcp.asia-east1
-    datacenters:
-      - gcp.asia-south2
-      - gcp.asia-east2
-      - gcp.asia-southeast2
-      - gcp.australia-southeast2
-      - gcp.asia-south1
-      - gcp.asia-northeast3
-      - gcp.asia-southeast1
-      - gcp.australia-southeast1
+          - name: australia
+            description: Australia
+            regions:
+              - name: australia-southeast1
+                description: Sydney
+              - name: australia-southeast2
+                description: Melbourne
+          - name: asia-east2
+            description: Hong Kong
+          - name: india
+            description: India
+            regions:
+            - name: asia-south1
+              description: Mumbai
+            - name: asia-south2
+              description: Delhi
+          - name: asia-southeast2
+            description: Jakarta
+          - name: japan
+            description: Japan
+            regions:
+            - name: asia-northeast1
+              description: Tokyo
+            - name: asia-northeast2
+              description: Osaka
+          - name: asia-northeast3
+            description: Korea
+          - name: asia-southeast1
+            description: Singapore
+          - name: asia-east1
+            description: Taiwan
+
+  - name: azure
+    description: Azure
+    # regions TBD
