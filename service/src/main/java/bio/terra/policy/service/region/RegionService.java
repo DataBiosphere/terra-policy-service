@@ -87,10 +87,12 @@ public class RegionService {
     }
 
     HashSet<String> platformDatacenters = regionDatacenterMap.get(platform);
+    if (!platformDatacenters.contains(datacenter)) {
+      return false;
+    }
 
     for (String regionName : regionNames) {
-      if (platformDatacenters.contains(datacenter)
-          && regionContainsDatacenter(regionName, datacenter)) {
+      if (regionContainsDatacenter(regionName, datacenter)) {
         return true;
       }
     }
