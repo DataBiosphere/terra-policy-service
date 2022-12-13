@@ -2,107 +2,234 @@
 name: global
 description: Global Region
 regions:
-  - name: europe
-    description: Europe
+- name: europe
+  description: Europe
+  regions:
+  - name: belgium
+    description: Belgium
     regions:
-      - name: uk
-        description: United Kingdom
-        regions:
-          - name: gcp.europe-west2
-            description: Europe West 2
-            datacenters:
-              - gcp.europe-west2
-      - name: finland
-        description: Finland
-        regions:
-        - name: gcp.europe-north1
-          description: Europe North 1
-          datacenters:
-            - gcp.europe-north1
-      - name: germany
-        description: Germany
-        regions:
-          - name: gcp.europe-west3
-            description: Europe West 3
-            datacenters:
-              - gcp.europe-west3
-      - name: multiregion-eu
-        description: Multi-Region EU
-        datacenters:
-          - gcp.EU
-    datacenters:
+    - name: gcp.europe-west1
+      description: Europe West 1
+      datacenters:
       - gcp.europe-west1
-      - gcp.europe-southwest1
+  - name: finland
+    description: Finland
+    regions:
+    - name: gcp.europe-north1
+      description: Europe North 1
+      datacenters:
+        - gcp.europe-north1
+  - name: germany
+    description: Germany
+    regions:
+    - name: gcp.europe-west3
+      description: Europe West 3
+      datacenters:
+      - gcp.europe-west3
+  - name: italy
+    description: Italy
+    regions:
+    - name: gcp.europe-west8
+      description: Europe West 8
+      datacenters:
       - gcp.europe-west8
+  - name: netherlands
+    description: Netherlands
+    regions:
+    - name: gcp.europe-west4
+      description: Europe West 4
+      datacenters:
       - gcp.europe-west4
+  - name: poland
+    description: Poland
+    regions:
+    - name: gcp.europe-central2
+      description: Europe Central 2
+      datacenters:
       - gcp.europe-central2
+  - name: spain
+    description: Spain
+    regions:
+    - name: gcp.europe-southwest1
+      description: Europe Southwest 1
+      datacenters:
+      - gcp.europe-southwest1
+  - name: switzerland
+    description: Switzerland
+    regions:
+    - name: gcp.europe-west6
+      description: Europe West 6
+      datacenters:
       - gcp.europe-west6
-  - name: americas
-    description: North and South America
+  - name: uk
+    description: United Kingdom
     regions:
-      - name: usa
-        description: United States of America
-        regions:
-          - name: usa-central
-            description: Central US
-            regions:
-              - name: gcp.us-central1
-                description: US Central 1
-                datacenters:
-                  - gcp.us-central1
-            datacenters:
-              - azure.centralus
-              - azure.northcentralus
-              - azure.southcentralus
-          - name: usa-east
-            description: Eastern US
-            datacenters:
-              - gcp.us-east1
-              - gcp.us-east4
-              - azure.eastus2
-          - name: usa-west
-            description: Western US
-            datacenters:
-              - gcp.us-west1
-              - gcp.us-west2
-              - gcp.us-west3
-              - gcp.us-west4
-          - name: multiregion-us
-            description: Multi-region US
-            datacenters:
-              - gcp.US
-      - name: canada
-        description: Canada
-        datacenters:
-          - gcp.northamerica-northeast1
-          - gcp.northamerica-northeast2
-      - name: brazil
-        description: Brazil
-        datacenters:
-          - gcp.southamerica-east1
-      - name: chile
-        description: Chile
-        datacenters:
-          - gcp.southamerica-west1
-  - name: asiapacific
-    description: Asia and Pacific
-    regions:
-      - name: japan
-        description: Japan
-        datacenters:
-          - gcp.asia-northeast1
-          - gcp.asia-northeast2
-        regions:
-          - name: gcp.asia-east1
-            description: Asia East 1
-            datacenters:
-              - gcp.asia-east1
+    - name: gcp.europe-west2
+      description: Europe West 2
+      datacenters:
+      - gcp.europe-west2
+  - name: multiregion-eu
+    description: Multi-Region EU
     datacenters:
-      - gcp.asia-south2
-      - gcp.asia-east2
-      - gcp.asia-southeast2
-      - gcp.australia-southeast2
-      - gcp.asia-south1
-      - gcp.asia-northeast3
-      - gcp.asia-southeast1
+    - gcp.EU
+
+- name: americas
+  description: North and South America
+  regions:
+  - name: usa
+    description: United States of America
+    regions:
+    - name: california
+      description: California
+      regions:
+      - name: gcp.us-west2
+        description: US West 2
+        datacenters:
+        - gcp.us-west2
+    - name: iowa
+      description: Iowa
+      regions:
+      - name: gcp.us-central1
+        description: US Central 1
+        datacenters:
+        - gcp.us-central1
+    - name: nevada
+      description: Nevada
+      regions:
+      - name: gcp.us-west4
+        description: US West 4
+        datacenters:
+        - gcp.us-west4
+    - name: oregon
+      description: Oregon
+      regions:
+      - name: gcp.us-west1
+        description: US West 1
+        datacenters:
+        - gcp.us-west1
+    - name: south-carolina
+      description: South Carolina
+      regions:
+      - name: gcp.us-east1
+        description: US East 1
+        datacenters:
+        - gcp.us-east1
+    - name: utah
+      description: Utah
+      regions:
+      - name: gcp.us-west3
+        description: US West 3
+        datacenters:
+        - gcp.us-west3
+    - name: virginia
+      description: Virginia
+      regions:
+      - name: gcp.us-east4
+        description: US East 4
+        datacenters:
+        - gcp.us-east4
+    - name: multiregion-us
+      description: Multi-region US
+      datacenters:
+      - gcp.US
+  - name: canada
+    description: Canada
+    regions:
+    - name: gcp.northamerica-northeast1
+      description: North America Northeast 1
+      datacenters:
+      - gcp.northamerica-northeast1
+    - name: gcp.northamerica-northeast2
+      description: North America Northeast 2
+      datacenters:
+      - gcp.northamerica-northeast2
+  - name: brazil
+    description: Brazil
+    regions:
+    - name: gcp.southamerica-east1
+      description: South America East 1
+      datacenters:
+      - gcp.southamerica-east1
+  - name: chile
+    description: Chile
+    regions:
+    - name: gcp.southamerica-west1
+      description: South America West 1
+      datacenters:
+      - gcp.southamerica-west1
+
+- name: asiapacific
+  description: Asia and Pacific
+  regions:
+  - name: australia
+    description: Australia
+    regions:
+    - name: gcp.australia-southeast1
+      description: Australia Southeast 1
+      datacenters:
       - gcp.australia-southeast1
+    - name: gcp.australia-southeast2
+      description: Australia Southeast 2
+      datacenters:
+      - gcp.australia-southeast2
+  - name: hongkong
+    description: Hong Kong
+    regions:
+    - name: gcp.asia-east2
+      description: Asia East 2
+      datacenters:
+      - gcp.asia-east2
+  - name: india
+    description: India
+    regions:
+    - name: gcp.asia-south1
+      description: Asia South 1
+      datacenters:
+      - gcp.asia-south1
+    - name: gcp.asia-south2
+      description: Asia South 2
+      datacenters:
+      - gcp.asia-south2
+  - name: indonesia
+    description: Indonesia
+    regions:
+    - name: gcp.asia-southeast2
+      description: Asia Southeast 2
+      datacenters:
+      - gcp.asia-southeast2
+  - name: japan
+    description: Japan
+    regions:
+    - name: gcp.asia-northeast1
+      description: Asia Northeast 1
+      datacenters:
+      - gcp.asia-northeast1
+    - name: gcp.asia-northeast2
+      description: Asia Northeast 2
+      datacenters:
+      - gcp.asia-northeast2
+  - name: korea
+    description: Korea
+    regions:
+    - name: gcp.asia-northeast3
+      description: Asia Northeast 3
+      datacenters:
+      - gcp.asia-northeast3
+  - name: singapore
+    description: Singapore
+    regions:
+    - name: gcp.asia-southeast1
+      description: Asia Southeast 1
+      datacenters:
+      - gcp.asia-southeast1
+    - name: gcp.asia-northeast2
+      description: Asia Northeast 2
+      datacenters:
+      - gcp.asia-northeast2
+  - name: taiwan
+    description: Taiwan
+    regions:
+    - name: gcp.asia-east1
+      description: Asia East 1
+      datacenters:
+      - gcp.asia-east1

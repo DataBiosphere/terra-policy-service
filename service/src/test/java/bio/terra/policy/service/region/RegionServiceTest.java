@@ -63,7 +63,7 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void regionContainsDatacenterFromSubRegion() {
-    assertTrue(regionService.regionContainsDatacenter("usa", "azure.centralus"));
+    assertTrue(regionService.regionContainsDatacenter("usa", "gcp.us-central1"));
   }
 
   @Test
