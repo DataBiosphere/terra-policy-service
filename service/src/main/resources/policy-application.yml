@@ -33,7 +33,7 @@ server:
   compression:
     enabled: true
     mime-types: text/css,application/javascript
-  port: 8085
+  port: 8080
 
 spring:
   application.name: policy
