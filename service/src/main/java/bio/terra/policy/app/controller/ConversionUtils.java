@@ -4,6 +4,7 @@ import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
+import bio.terra.policy.generated.model.ApiTpsDatacenterList;
 import bio.terra.policy.generated.model.ApiTpsPaoConflict;
 import bio.terra.policy.generated.model.ApiTpsPaoDescription;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
@@ -11,11 +12,14 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
+import bio.terra.policy.generated.model.ApiTpsRegion;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
+import bio.terra.policy.service.region.model.Region;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -91,6 +95,25 @@ public class ConversionUtils {
         .effectiveAttributes(policyInputsToApi(pao.getEffectiveAttributes()))
         .sourcesObjectIds(pao.getSourceObjectIds().stream().toList())
         .deleted((pao.getDeleted()));
+  }
+
+  static ApiTpsRegion regionToApi(Region region) {
+    ApiTpsRegion apiRegion =
+        new ApiTpsRegion().name(region.getName()).description(region.getDescription());
+
+    ApiTpsDatacenterList datacenterList = new ApiTpsDatacenterList();
+    if (region.getDatacenters() != null) {
+      datacenterList.addAll(Arrays.stream(region.getDatacenters()).toList());
+    }
+    apiRegion.setDatacenters(datacenterList);
+
+    if (region.getRegions() != null) {
+      for (Region subregion : region.getRegions()) {
+        apiRegion.addRegionsItem(regionToApi(subregion));
+      }
+    }
+
+    return apiRegion;
   }
 
   static ApiTpsPaoUpdateResult updateResultToApi(PolicyUpdateResult result) {

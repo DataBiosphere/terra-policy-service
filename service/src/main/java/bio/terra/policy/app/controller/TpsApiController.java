@@ -14,6 +14,7 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplainSource;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
+import bio.terra.policy.generated.model.ApiTpsRegion;
 import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.graph.model.ExplainGraph;
 import bio.terra.policy.service.pao.graph.model.ExplainGraphNode;
@@ -23,6 +24,7 @@ import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.service.region.RegionService;
+import bio.terra.policy.service.region.model.Region;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -105,6 +107,30 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsPaoGetResult> getPao(UUID objectId) {
     Pao pao = paoService.getPao(objectId);
     ApiTpsPaoGetResult result = ConversionUtils.paoToApi(pao);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsDatacenterList> getRegionDatacenters(String platform, String region) {
+    ApiTpsDatacenterList result = new ApiTpsDatacenterList();
+
+    var list = regionService.getDataCentersForRegion(region, platform);
+
+    if (list == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    result.addAll(list);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<ApiTpsRegion> getRegionInfo(String platform, String regionName) {
+    Region region = regionService.getOntology(regionName, platform);
+    if (region == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    ApiTpsRegion result = ConversionUtils.regionToApi(region);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 

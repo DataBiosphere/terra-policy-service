@@ -280,6 +280,58 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/policy/v1alpha1/region:
+    parameters:
+      - $ref: '#/components/parameters/Platform'
+      - $ref: '#/components/parameters/RegionName'
+    get:
+      summary: Query to explore the region ontology. Find more information about what is inside of a given region
+      operationId: getRegionInfo
+      tags: [Tps]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsRegion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/policy/v1alpha1/region/datacenters:
+    parameters:
+    - $ref: '#/components/parameters/Platform'
+    - $ref: '#/components/parameters/RegionName'
+    get:
+      summary: Get the list of all data centers inside of a region.
+      operationId: getRegionDatacenters
+      tags: [Tps]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TpsDatacenterList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /api/policy/v1alpha1/region/{objectId}/evaluate:
     parameters:
       - $ref: '#/components/parameters/TpsObjectId'
@@ -328,6 +380,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /api/policy/v1alpha1/region/list-valid:
     parameters:
     - $ref: '#/components/parameters/Platform'
@@ -375,6 +428,14 @@ components:
       schema:
         type: string
         enum: ["gcp", "azure"]
+
+    RegionName:
+      name: region
+      in: query
+      description: The region to query
+      required: false
+      schema:
+        type: string
 
     TpsObjectId:
       name: objectId
@@ -711,6 +772,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TpsPaoConflict'
+
+    TpsRegion:
+      description: Region object description.
+      type: object
+      properties:
+          name:
+            description: The region name
+            type: string
+          description:
+            description: The region description
+            type: string
+          regions:
+            description: Subregions contained within this region.
+            type: array
+            items:
+              $ref: '#/components/schemas/TpsRegion'
+          datacenters:
+            $ref: '#/components/schemas/TpsDatacenterList'
 
     TpsUpdateMode:
       type: string

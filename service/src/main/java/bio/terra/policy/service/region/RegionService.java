@@ -69,9 +69,61 @@ public class RegionService {
     constructRegionMapsRecursively(rootRegion);
   }
 
-  public boolean regionContainsDatacenter(String regionName, String datacenterId) {
-    return regionDatacenterMap.containsKey(regionName)
-        && regionDatacenterMap.get(regionName).contains(datacenterId);
+  /**
+   * Get the list of all datacenters available in a region and its subregions, filtered by platform.
+   */
+  @Nullable
+  public HashSet<String> getDataCentersForRegion(String regionName, String platform) {
+    HashSet<String> result = new HashSet<>();
+    HashSet<String> regionDataCenters = regionDatacenterMap.get(regionName);
+
+    if (regionDataCenters != null) {
+      for (String region : regionDataCenters) {
+        if (region.startsWith(platform)) {
+          Datacenter datacenter = datacenterNameMap.get(region);
+          result.add(datacenter.getCode());
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Gets the ontology starting from the indicated region. Rather than just returning the ontology,
+   * this will filter data centers by the indicated platform.
+   */
+  @Nullable
+  public Region getOntology(String regionName, String platform) {
+    Region mappedRegion = regionNameMap.get(regionName);
+
+    if (mappedRegion == null) {
+      return null;
+    }
+
+    Region result = new Region();
+    result.setName(mappedRegion.getName());
+    result.setDescription(mappedRegion.getDescription());
+
+    List<String> filteredDatacenters = new ArrayList<>();
+    if (mappedRegion.getDatacenters() != null) {
+      for (String datacenter : mappedRegion.getDatacenters()) {
+        if (datacenter.startsWith(platform)) {
+          filteredDatacenters.add(datacenter);
+        }
+      }
+    }
+    result.setDatacenters(filteredDatacenters.toArray(new String[0]));
+
+    List<Region> subregions = new ArrayList<>();
+    if (mappedRegion.getRegions() != null) {
+      for (Region subregion : mappedRegion.getRegions()) {
+        subregions.add(getOntology(subregion.getName(), platform));
+      }
+    }
+    result.setRegions(subregions.toArray(new Region[0]));
+
+    return result;
   }
 
   @Nullable
@@ -127,6 +179,11 @@ public class RegionService {
   public boolean isSubregion(String parentRegionName, String subregionName) {
     HashSet<String> subregions = regionSubregionMap.get(parentRegionName);
     return (subregions == null) ? false : subregions.contains(subregionName);
+  }
+
+  public boolean regionContainsDatacenter(String regionName, String datacenterId) {
+    return regionDatacenterMap.containsKey(regionName)
+        && regionDatacenterMap.get(regionName).contains(datacenterId);
   }
 
   private void constructRegionMapsRecursively(Region current) {

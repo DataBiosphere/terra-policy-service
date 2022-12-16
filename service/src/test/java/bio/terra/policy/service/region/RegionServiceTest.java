@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class RegionServiceTest extends TestUnitBase {
   private static final String GCP_PLATFORM = "gcp";
+  private static final String AZURE_PLATFORM = "azure";
 
   @Autowired private RegionService regionService;
   @Autowired private PaoService paoService;
@@ -69,6 +70,41 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void regionContainsDatacenterNegative() {
     assertFalse(regionService.regionContainsDatacenter("usa", "gcp.europe-west1"));
+  }
+
+  @Test
+  void getDatacentersForRegionsInvalidRegion() {
+    var result = regionService.getDataCentersForRegion("invalid", GCP_PLATFORM);
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  void getDatacentersForRegionsAzureFilter() {
+    var result = regionService.getDataCentersForRegion("global", AZURE_PLATFORM);
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  void getDatacentersForRegionsGlobal() {
+    var result = regionService.getDataCentersForRegion("global", GCP_PLATFORM);
+    assertTrue(result.size() > 10);
+  }
+
+  @Test
+  void getOntologyInvalidRegionName() {
+    assertNull(regionService.getOntology("invalid", GCP_PLATFORM));
+  }
+
+  @Test
+  void getOntologyFiltersByAzurePlatform() {
+    var result = regionService.getOntology("gcp.us-central1", AZURE_PLATFORM);
+    assertEquals(0, result.getDatacenters().length);
+  }
+
+  @Test
+  void getOntologyFiltersByGcpPlatform() {
+    var result = regionService.getOntology("gcp.us-central1", GCP_PLATFORM);
+    assertEquals(1, result.getDatacenters().length);
   }
 
   @Test
