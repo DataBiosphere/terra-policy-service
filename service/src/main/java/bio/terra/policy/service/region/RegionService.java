@@ -7,6 +7,8 @@ import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,9 +71,47 @@ public class RegionService {
     constructRegionMapsRecursively(rootRegion);
   }
 
-  public boolean regionContainsDatacenter(String regionName, String datacenterId) {
-    return regionDatacenterMap.containsKey(regionName)
-        && regionDatacenterMap.get(regionName).contains(datacenterId);
+  /**
+   * Get the list of all datacenters available in a region and its subregions, filtered by platform.
+   */
+  @Nullable
+  public HashSet<String> getDataCentersForRegion(String regionName, String platform) {
+    HashSet<String> result = new HashSet<>();
+    HashSet<String> regionDataCenters = regionDatacenterMap.get(regionName);
+    result.addAll(filterDataCentersByPlatform(regionDataCenters, platform));
+    return result;
+  }
+
+  /**
+   * Gets the ontology starting from the indicated region. Rather than just returning the ontology,
+   * this will filter data centers by the indicated platform.
+   */
+  @Nullable
+  public Region getOntology(String regionName, String platform) {
+    Region mappedRegion = regionNameMap.get(regionName);
+
+    if (mappedRegion == null) {
+      return null;
+    }
+
+    Region result = new Region();
+    result.setName(mappedRegion.getName());
+    result.setDescription(mappedRegion.getDescription());
+
+    List<String> filteredDatacenters =
+        filterDataCentersByPlatform(Arrays.asList(mappedRegion.getDatacenters()), platform);
+
+    result.setDatacenters(filteredDatacenters.toArray(new String[0]));
+
+    List<Region> subregions = new ArrayList<>();
+    if (mappedRegion.getRegions() != null) {
+      for (Region subregion : mappedRegion.getRegions()) {
+        subregions.add(getOntology(subregion.getName(), platform));
+      }
+    }
+    result.setRegions(subregions.toArray(new Region[0]));
+
+    return result;
   }
 
   @Nullable
@@ -88,14 +128,7 @@ public class RegionService {
     }
 
     for (String regionName : regionNames) {
-      HashSet<String> datacenterIds = regionDatacenterMap.get(regionName);
-      if (datacenterIds != null) {
-        for (String datacenterId : datacenterIds) {
-          if (datacenterId.startsWith(platform)) {
-            result.add(datacenterNameMap.get(datacenterId).getCode());
-          }
-        }
-      }
+      result.addAll(filterDataCentersByPlatform(regionDatacenterMap.get(regionName), platform));
     }
 
     return result;
@@ -127,6 +160,11 @@ public class RegionService {
   public boolean isSubregion(String parentRegionName, String subregionName) {
     HashSet<String> subregions = regionSubregionMap.get(parentRegionName);
     return (subregions == null) ? false : subregions.contains(subregionName);
+  }
+
+  public boolean regionContainsDatacenter(String regionName, String datacenterId) {
+    return regionDatacenterMap.containsKey(regionName)
+        && regionDatacenterMap.get(regionName).contains(datacenterId);
   }
 
   private void constructRegionMapsRecursively(Region current) {
@@ -170,6 +208,23 @@ public class RegionService {
           PolicyInput input = inputs.get(key);
           result.addAll(input.getData(TERRA_REGION_ATTRIBUTE_NAME));
         }
+      }
+    }
+
+    return result;
+  }
+
+  private List<String> filterDataCentersByPlatform(
+      Collection<String> datacenterIds, String platform) {
+    List<String> result = new ArrayList<>();
+
+    if (datacenterIds == null) {
+      return result;
+    }
+
+    for (String datacenterId : datacenterIds) {
+      if (datacenterId.startsWith(platform)) {
+        result.add(datacenterNameMap.get(datacenterId).getCode());
       }
     }
 
