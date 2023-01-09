@@ -65,6 +65,8 @@ jobs:
     needs: [ bump-check ]
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
     - name: Set part of semantic version to bump
       id: controls
@@ -152,14 +154,6 @@ jobs:
     - name: Push GCR image
       run: docker push ${{ steps.image-name.outputs.name }}
 
-    - name: Deploy to Terra Dev environment
-      uses: broadinstitute/repository-dispatch@master
-      with:
-        token: ${{ secrets.BROADBOT_TOKEN }}
-        repository: broadinstitute/terra-helmfile
-        event-type: update-service
-        client-payload: '{"service": "tps", "version": "${{ steps.tag.outputs.tag }}", "dev_only": false}'
-
     - name: Notify slack on failure
       id: slack
       if: failure()
@@ -170,3 +164,29 @@ jobs:
         slack-message: "Tag-Publish failed for tag: ${{ steps.tag.outputs.tag }} eventUrl: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACKBOT_TOKEN }}
+
+  report-to-sherlock:
+    # Report new TPS version to Broad DevOps
+    uses: broadinstitute/sherlock/.github/workflows/client-report-app-version.yaml@main
+    needs: [ bump-check, tag-publish-docker-deploy ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    with:
+      new-version: ${{ needs.tag-publish-docker-deploy.outputs.tag }}
+      chart-name: 'tps'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+  set-version-in-dev:
+    # Put new TPS version in Broad dev environment
+    uses: broadinstitute/sherlock/.github/workflows/client-set-environment-app-version.yaml@main
+    needs: [ bump-check, tag-publish-docker-deploy, report-to-sherlock ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    with:
+      new-version: ${{ needs.tag-publish-docker-deploy.outputs.tag }}
+      chart-name: 'tps'
+      environment-name: 'dev'
+    secrets:
+      sync-git-token: ${{ secrets.BROADBOT_TOKEN }}
+    permissions:
+      id-token: 'write'
