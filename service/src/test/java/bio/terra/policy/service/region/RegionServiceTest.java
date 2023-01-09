@@ -91,6 +91,31 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
+  void getOntologyGlobalRegion() {
+    var result = regionService.getOntology("global", GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  void getOntologyEmptyRegion() {
+    var result = regionService.getOntology("", GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  /** As an optional query param for the primary API caller, the name might be null. * */
+  void getOntologyNullRegion() {
+    var result = regionService.getOntology(null, GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  void getOntologyChildRegion() {
+    var result = regionService.getOntology("usa", GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
   void getOntologyInvalidRegionName() {
     assertNull(regionService.getOntology("invalid", GCP_PLATFORM));
   }

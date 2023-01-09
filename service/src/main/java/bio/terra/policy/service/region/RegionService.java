@@ -88,7 +88,8 @@ public class RegionService {
    */
   @Nullable
   public Region getOntology(String regionName, String platform) {
-    Region mappedRegion = regionNameMap.get(regionName);
+    String queryRegion = (regionName == null || regionName.isEmpty()) ? GLOBAL_REGION : regionName;
+    Region mappedRegion = regionNameMap.get(queryRegion);
 
     if (mappedRegion == null) {
       return null;
@@ -98,8 +99,14 @@ public class RegionService {
     result.setName(mappedRegion.getName());
     result.setDescription(mappedRegion.getDescription());
 
+    String[] datacenters = mappedRegion.getDatacenters();
+
+    if (datacenters == null) {
+      datacenters = new String[0];
+    }
+
     List<String> filteredDatacenters =
-        filterDataCentersByPlatform(Arrays.asList(mappedRegion.getDatacenters()), platform);
+        filterDataCentersByPlatform(Arrays.asList(datacenters), platform);
 
     result.setDatacenters(filteredDatacenters.toArray(new String[0]));
 
