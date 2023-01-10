@@ -1,8 +1,8 @@
 package bio.terra.policy.common.exception;
 
-import bio.terra.common.exception.NotFoundException;
+import bio.terra.common.exception.ConflictException;
 
-public class DirectConflictException extends NotFoundException {
+public class DirectConflictException extends ConflictException {
   public DirectConflictException(String message) {
     super(message);
   }
