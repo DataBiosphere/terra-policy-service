@@ -79,6 +79,20 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
+  void getDatacentersForRegionsEmptyRegion() {
+    var result = regionService.getDataCentersForRegion("", GCP_PLATFORM);
+    assertNotNull(result);
+    assertTrue(result.size() > 1);
+  }
+
+  @Test
+  void getDatacentersForRegionsNullRegion() {
+    var result = regionService.getDataCentersForRegion(null, GCP_PLATFORM);
+    assertNotNull(result);
+    assertTrue(result.size() > 1);
+  }
+
+  @Test
   void getDatacentersForRegionsAzureFilter() {
     var result = regionService.getDataCentersForRegion("global", AZURE_PLATFORM);
     assertEquals(0, result.size());

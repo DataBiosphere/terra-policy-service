@@ -76,8 +76,9 @@ public class RegionService {
    */
   @Nullable
   public HashSet<String> getDataCentersForRegion(String regionName, String platform) {
+    String queryRegion = (regionName == null || regionName.isEmpty()) ? GLOBAL_REGION : regionName;
     HashSet<String> result = new HashSet<>();
-    HashSet<String> regionDataCenters = regionDatacenterMap.get(regionName);
+    HashSet<String> regionDataCenters = regionDatacenterMap.get(queryRegion);
     result.addAll(filterDataCentersByPlatform(regionDataCenters, platform));
     return result;
   }
