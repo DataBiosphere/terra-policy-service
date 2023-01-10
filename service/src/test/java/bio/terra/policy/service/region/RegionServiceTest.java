@@ -79,6 +79,20 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
+  void getDatacentersForRegionsEmptyRegion() {
+    var result = regionService.getDataCentersForRegion("", GCP_PLATFORM);
+    assertNotNull(result);
+    assertTrue(result.size() > 1);
+  }
+
+  @Test
+  void getDatacentersForRegionsNullRegion() {
+    var result = regionService.getDataCentersForRegion(null, GCP_PLATFORM);
+    assertNotNull(result);
+    assertTrue(result.size() > 1);
+  }
+
+  @Test
   void getDatacentersForRegionsAzureFilter() {
     var result = regionService.getDataCentersForRegion("global", AZURE_PLATFORM);
     assertEquals(0, result.size());
@@ -88,6 +102,31 @@ public class RegionServiceTest extends TestUnitBase {
   void getDatacentersForRegionsGlobal() {
     var result = regionService.getDataCentersForRegion("global", GCP_PLATFORM);
     assertTrue(result.size() > 10);
+  }
+
+  @Test
+  void getOntologyGlobalRegion() {
+    var result = regionService.getOntology("global", GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  void getOntologyEmptyRegion() {
+    var result = regionService.getOntology("", GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  /** As an optional query param for the primary API caller, the name might be null. * */
+  void getOntologyNullRegion() {
+    var result = regionService.getOntology(null, GCP_PLATFORM);
+    assertNotNull(result);
+  }
+
+  @Test
+  void getOntologyChildRegion() {
+    var result = regionService.getOntology("usa", GCP_PLATFORM);
+    assertNotNull(result);
   }
 
   @Test

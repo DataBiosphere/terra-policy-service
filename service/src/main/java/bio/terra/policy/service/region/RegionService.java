@@ -5,6 +5,7 @@ import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.region.model.Datacenter;
 import bio.terra.policy.service.region.model.Region;
+import com.google.common.base.Strings;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,8 +77,9 @@ public class RegionService {
    */
   @Nullable
   public HashSet<String> getDataCentersForRegion(String regionName, String platform) {
+    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_REGION : regionName;
     HashSet<String> result = new HashSet<>();
-    HashSet<String> regionDataCenters = regionDatacenterMap.get(regionName);
+    HashSet<String> regionDataCenters = regionDatacenterMap.get(queryRegion);
     result.addAll(filterDataCentersByPlatform(regionDataCenters, platform));
     return result;
   }
@@ -88,7 +90,8 @@ public class RegionService {
    */
   @Nullable
   public Region getOntology(String regionName, String platform) {
-    Region mappedRegion = regionNameMap.get(regionName);
+    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_REGION : regionName;
+    Region mappedRegion = regionNameMap.get(queryRegion);
 
     if (mappedRegion == null) {
       return null;
@@ -98,8 +101,14 @@ public class RegionService {
     result.setName(mappedRegion.getName());
     result.setDescription(mappedRegion.getDescription());
 
+    String[] datacenters = mappedRegion.getDatacenters();
+
+    if (datacenters == null) {
+      datacenters = new String[0];
+    }
+
     List<String> filteredDatacenters =
-        filterDataCentersByPlatform(Arrays.asList(mappedRegion.getDatacenters()), platform);
+        filterDataCentersByPlatform(Arrays.asList(datacenters), platform);
 
     result.setDatacenters(filteredDatacenters.toArray(new String[0]));
 
