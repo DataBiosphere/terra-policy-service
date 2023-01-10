@@ -37,7 +37,7 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getRegionInvalidRegionReturnsNull() {
-    String searchRegion = "invalid ";
+    String searchRegion = "invalid";
     Region result = regionService.getRegion(searchRegion);
     assertNull(result);
   }
