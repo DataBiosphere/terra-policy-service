@@ -65,9 +65,9 @@ public class PolicyRegionConstraint implements PolicyBase {
       for (String dependentRegion : dependentSet) {
         if (dependentRegion.equals(sourceRegion)) {
           resultSet.add(sourceRegion);
-        } else if (regionService.isSubregion(dependentRegion, sourceRegion)) {
+        } else if (regionService.isSubLocation(dependentRegion, sourceRegion)) {
           resultSet.add(sourceRegion);
-        } else if (regionService.isSubregion(sourceRegion, dependentRegion)) {
+        } else if (regionService.isSubLocation(sourceRegion, dependentRegion)) {
           resultSet.add(dependentRegion);
         }
       }

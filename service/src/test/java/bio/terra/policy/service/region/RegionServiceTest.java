@@ -12,7 +12,7 @@ import bio.terra.policy.service.pao.PaoService;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
-import bio.terra.policy.service.region.model.Datacenter;
+import bio.terra.policy.service.region.model.Location;
 import bio.terra.policy.service.region.model.Region;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Collections;
@@ -28,79 +28,79 @@ public class RegionServiceTest extends TestUnitBase {
   @Autowired private PaoService paoService;
 
   @Test
-  void getRegion() {
+  void getLocation() {
     String searchRegion = "gcp.europe-west3";
-    Region result = regionService.getRegion(searchRegion);
+    Location result = regionService.getLocation(searchRegion);
     assertNotNull(result);
-    assertEquals(searchRegion, result.getName());
+    assertEquals(searchRegion, result.getGeographicName());
   }
 
   @Test
-  void getRegionInvalidRegionReturnsNull() {
+  void getLocationInvalidRegionReturnsNull() {
     String searchRegion = "invalid";
-    Region result = regionService.getRegion(searchRegion);
+    Location result = regionService.getLocation(searchRegion);
     assertNull(result);
   }
 
   @Test
-  void getDatacenter() {
+  void getRegion() {
     String searchName = "gcp.us-central1";
-    Datacenter result = regionService.getDatacenter(searchName);
+    Region result = regionService.getRegion(searchName);
     assertNotNull(result);
     assertEquals(searchName, result.getId());
   }
 
   @Test
-  void getDatacenterInvalidIdReturnsNull() {
+  void getRegionInvalidIdReturnsNull() {
     String searchName = "invalid";
-    Datacenter result = regionService.getDatacenter(searchName);
+    Region result = regionService.getRegion(searchName);
     assertNull(result);
   }
 
   @Test
-  void regionContainsDatacenterFromItself() {
-    assertTrue(regionService.regionContainsDatacenter("europe", "gcp.europe-west1"));
+  void locationContainsRegionFromItself() {
+    assertTrue(regionService.locationContainsRegion("europe", "gcp.europe-west1"));
   }
 
   @Test
-  void regionContainsDatacenterFromSubRegion() {
-    assertTrue(regionService.regionContainsDatacenter("usa", "gcp.us-central1"));
+  void locationContainsRegionFromSubRegion() {
+    assertTrue(regionService.locationContainsRegion("usa", "gcp.us-central1"));
   }
 
   @Test
-  void regionContainsDatacenterNegative() {
-    assertFalse(regionService.regionContainsDatacenter("usa", "gcp.europe-west1"));
+  void locationContainsRegionNegative() {
+    assertFalse(regionService.locationContainsRegion("usa", "gcp.europe-west1"));
   }
 
   @Test
-  void getDatacentersForRegionsInvalidRegion() {
-    var result = regionService.getDataCentersForRegion("invalid", GCP_PLATFORM);
+  void getRegionsForLocationInvalidRegion() {
+    var result = regionService.getRegionsForLocation("invalid", GCP_PLATFORM);
     assertEquals(0, result.size());
   }
 
   @Test
-  void getDatacentersForRegionsEmptyRegion() {
-    var result = regionService.getDataCentersForRegion("", GCP_PLATFORM);
+  void getRegionsForLocationEmptyRegion() {
+    var result = regionService.getRegionsForLocation("", GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
-  void getDatacentersForRegionsNullRegion() {
-    var result = regionService.getDataCentersForRegion(null, GCP_PLATFORM);
+  void getRegionsForLocationNullRegion() {
+    var result = regionService.getRegionsForLocation(null, GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
-  void getDatacentersForRegionsAzureFilter() {
-    var result = regionService.getDataCentersForRegion("global", AZURE_PLATFORM);
+  void getRegionsForLocationAzureFilter() {
+    var result = regionService.getRegionsForLocation("global", AZURE_PLATFORM);
     assertEquals(0, result.size());
   }
 
   @Test
-  void getDatacentersForRegionsGlobal() {
-    var result = regionService.getDataCentersForRegion("global", GCP_PLATFORM);
+  void getRegionsForLocationGlobal() {
+    var result = regionService.getRegionsForLocation("global", GCP_PLATFORM);
     assertTrue(result.size() > 10);
   }
 
@@ -137,62 +137,62 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void getOntologyFiltersByAzurePlatform() {
     var result = regionService.getOntology("gcp.us-central1", AZURE_PLATFORM);
-    assertEquals(0, result.getDatacenters().length);
+    assertEquals(0, result.getRegions().length);
   }
 
   @Test
   void getOntologyFiltersByGcpPlatform() {
     var result = regionService.getOntology("gcp.us-central1", GCP_PLATFORM);
-    assertEquals(1, result.getDatacenters().length);
+    assertEquals(1, result.getRegions().length);
   }
 
   @Test
-  void getPaoDatacentersFromSelf() {
+  void getPolicyInputRegionCodesFromSelf() {
     var targetDatacenter = "europe-west3";
     var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
 
     var pao = createPao(targetRegion);
     var datacenters =
-        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
+        regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.contains(targetDatacenter));
   }
 
   @Test
-  void getPaoDatacentersFromChild() {
+  void getPolicyInputRegionCodesFromChild() {
     var region = "usa";
     var childDatacenter = "us-central1";
 
     var pao = createPao(region);
     var datacenters =
-        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
+        regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
     assertTrue(datacenters.contains(childDatacenter));
   }
 
   @Test
-  void getPaoDatacentersNegative() {
+  void getPolicyInputRegionCodesNegative() {
     var region = "usa";
     var childDatacenterCode = "europe-west3";
 
     var pao = createPao(region);
     var datacenters =
-        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
+        regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(datacenters.size() > 1);
     assertFalse(datacenters.contains(childDatacenterCode));
   }
 
   @Test
-  void getPaoDatacentersAllowAll() {
+  void getPolicyInputRegionCodesAllowAll() {
     // Create a PAO without a region constraint
     var objectId = UUID.randomUUID();
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     var pao = paoService.getPao(objectId);
 
     var datacenters =
-        regionService.getPolicyInputDataCenterCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
+        regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     // Pao should be allowed all datacenters
     assertTrue(datacenters.size() > 10);
@@ -215,38 +215,39 @@ public class RegionServiceTest extends TestUnitBase {
     return paoService.getPao(objectId);
   }
 
-  void isSubregionNegative() {
+  @Test
+  void isSubLocationNegative() {
     // 'japan' is not a subregion of 'usa'
-    assertFalse(regionService.isSubregion("usa", "japan"));
+    assertFalse(regionService.isSubLocation("usa", "japan"));
   }
 
   @Test
-  void isSubregionUnknownParent() {
+  void isSubLocationUnknownParent() {
     // 'unknown' is not in the ontology, it's an invalid parent
-    assertFalse(regionService.isSubregion("unknown", "global"));
+    assertFalse(regionService.isSubLocation("unknown", "global"));
   }
 
   @Test
-  void isSubregionUnknownChild() {
+  void isSubLocationUnknownChild() {
     // 'unknown' is not in the ontology, it's an invalid child
-    assertFalse(regionService.isSubregion("global", "unknown"));
+    assertFalse(regionService.isSubLocation("global", "unknown"));
   }
 
   @Test
-  void isSubregionSelf() {
+  void isSubLocationSelf() {
     // "global" should not be a subregion of itself
-    assertFalse(regionService.isSubregion("global", "global"));
+    assertFalse(regionService.isSubLocation("global", "global"));
   }
 
   @Test
-  void isSubregionChild() {
+  void isSubLocationChild() {
     // "europe" is a child of "global"
-    assertTrue(regionService.isSubregion("global", "europe"));
+    assertTrue(regionService.isSubLocation("global", "europe"));
   }
 
   @Test
-  void isSubregionGrandchild() {
+  void isSubLocationGrandchild() {
     // "finland" is a grandchild of "global"
-    assertTrue(regionService.isSubregion("global", "finland"));
+    assertTrue(regionService.isSubLocation("global", "finland"));
   }
 }

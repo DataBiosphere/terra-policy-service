@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class DatacenterEvaluateTest extends TestUnitBase {
+public class RegionEvaluateTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String REGION_CONSTRAINT = "region-constraint";
   private static final String REGION = "region-name";
@@ -25,32 +25,32 @@ public class DatacenterEvaluateTest extends TestUnitBase {
   @Autowired private RegionService regionService;
 
   @Test
-  void policyAllowsDatacenter() {
+  void policyAllowsRegion() {
     UUID paoId = UUID.randomUUID();
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.isDatacenterAllowedByPao(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isRegionAllowedByPao(pao, "us-central1", "gcp"));
   }
 
   @Test
-  void policyDeniesDatacenter() {
+  void policyDeniesRegion() {
     UUID paoId = UUID.randomUUID();
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertFalse(regionService.isDatacenterAllowedByPao(pao, "europe-west3", "gcp"));
+    assertFalse(regionService.isRegionAllowedByPao(pao, "europe-west3", "gcp"));
   }
 
   @Test
-  void policyWithoutConstraintAllowsDatacenter() {
+  void policyWithoutConstraintAllowsRegion() {
     UUID paoId = UUID.randomUUID();
     paoService.createPao(paoId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.isDatacenterAllowedByPao(pao, "europe-west3", "gcp"));
-    assertTrue(regionService.isDatacenterAllowedByPao(pao, "us-central1", "gcp"));
-    assertTrue(regionService.isDatacenterAllowedByPao(pao, "southcentralus", "azure"));
+    assertTrue(regionService.isRegionAllowedByPao(pao, "europe-west3", "gcp"));
+    assertTrue(regionService.isRegionAllowedByPao(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isRegionAllowedByPao(pao, "southcentralus", "azure"));
   }
 
   private void createRegionConstrainedPao(UUID objectId, String region) {

@@ -4,7 +4,7 @@ import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
-import bio.terra.policy.generated.model.ApiTpsDatacenterList;
+import bio.terra.policy.generated.model.ApiTpsLocation;
 import bio.terra.policy.generated.model.ApiTpsPaoConflict;
 import bio.terra.policy.generated.model.ApiTpsPaoDescription;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
@@ -12,11 +12,11 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
-import bio.terra.policy.generated.model.ApiTpsRegion;
+import bio.terra.policy.generated.model.ApiTpsRegions;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
-import bio.terra.policy.service.region.model.Region;
+import bio.terra.policy.service.region.model.Location;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Arrays;
@@ -97,22 +97,21 @@ public class ConversionUtils {
         .deleted((pao.getDeleted()));
   }
 
-  static ApiTpsRegion regionToApi(Region region) {
-    ApiTpsRegion apiRegion =
-        new ApiTpsRegion().name(region.getName()).description(region.getDescription());
+  static ApiTpsLocation regionToApi(Location region) {
+    ApiTpsLocation apiRegion =
+        new ApiTpsLocation().name(region.getGeographicName()).description(region.getDescription());
 
-    ApiTpsDatacenterList datacenterList = new ApiTpsDatacenterList();
-    if (region.getDatacenters() != null) {
-      datacenterList.addAll(Arrays.stream(region.getDatacenters()).toList());
+    ApiTpsRegions datacenterList = new ApiTpsRegions();
+    if (region.getRegions() != null) {
+      datacenterList.addAll(Arrays.stream(region.getRegions()).toList());
     }
     apiRegion.setDatacenters(datacenterList);
 
-    if (region.getRegions() != null) {
-      for (Region subregion : region.getRegions()) {
-        apiRegion.addRegionsItem(regionToApi(subregion));
+    if (region.getLocations() != null) {
+      for (Location subregion : region.getLocations()) {
+        apiRegion.addLocationsItem(regionToApi(subregion));
       }
     }
-
     return apiRegion;
   }
 
