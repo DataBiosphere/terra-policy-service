@@ -99,7 +99,7 @@ public class ConversionUtils {
 
   static ApiTpsLocation regionToApi(Location region) {
     ApiTpsLocation apiRegion =
-        new ApiTpsLocation().name(region.getGeographicName()).description(region.getDescription());
+        new ApiTpsLocation().name(region.getName()).description(region.getDescription());
 
     ApiTpsRegions datacenterList = new ApiTpsRegions();
     if (region.getRegions() != null) {

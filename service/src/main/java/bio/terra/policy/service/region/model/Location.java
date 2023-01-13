@@ -2,17 +2,18 @@ package bio.terra.policy.service.region.model;
 
 /** Location contains the geographic name and the region (a.k.a data center ids). */
 public class Location {
-  private String geographicName;
+  // Geographic name of the location (e.g. asia, usa, iowa)
+  private String name;
   private String description;
   private Location[] locations;
   private String[] regions;
 
-  public String getGeographicName() {
-    return geographicName;
+  public String getName() {
+    return name;
   }
 
-  public void setGeographicName(String geographicName) {
-    this.geographicName = geographicName;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getDescription() {

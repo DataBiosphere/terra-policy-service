@@ -44,10 +44,10 @@ public class RegionService {
 
   @Autowired
   public RegionService() {
-    logger.info("Loading regions from regions.yml resource.");
+    logger.info("Loading regions from locations.yml resource.");
     Yaml regionYaml = new Yaml(new Constructor(Location.class));
     InputStream inputStream =
-        this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
+        this.getClass().getClassLoader().getResourceAsStream("static/locations.yml");
     Location rootRegion = regionYaml.load(inputStream);
 
     /*
@@ -56,10 +56,10 @@ public class RegionService {
      * Datacenters. Since we want to work with that data type, we first create an object of that
      * type to indicate to snakeyaml how to load the file.
      */
-    logger.info("Loading regions from datacenters.yml resource.");
+    logger.info("Loading regions from regions.yml resource.");
     Region[] type = new Region[0];
     Yaml datacenterYaml = new Yaml(new Constructor(type.getClass()));
-    inputStream = this.getClass().getClassLoader().getResourceAsStream("static/datacenters.yml");
+    inputStream = this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
     Region[] regions = datacenterYaml.load(inputStream);
 
     this.locationSubLocationsMap = new HashMap<>();
@@ -100,7 +100,7 @@ public class RegionService {
     }
 
     Location result = new Location();
-    result.setGeographicName(mappedRegion.getGeographicName());
+    result.setName(mappedRegion.getName());
     result.setDescription(mappedRegion.getDescription());
 
     String[] regions = mappedRegion.getRegions();
@@ -116,7 +116,7 @@ public class RegionService {
     List<Location> subregions = new ArrayList<>();
     if (mappedRegion.getLocations() != null) {
       for (Location subregion : mappedRegion.getLocations()) {
-        subregions.add(getOntology(subregion.getGeographicName(), platform));
+        subregions.add(getOntology(subregion.getName(), platform));
       }
     }
     result.setLocations(subregions.toArray(new Location[0]));
@@ -181,12 +181,12 @@ public class RegionService {
   private void constructRegionMapsRecursively(Location current) {
     if (current == null) return;
 
-    locationNameMap.put(current.getGeographicName(), current);
+    locationNameMap.put(current.getName(), current);
     HashSet<String> currentRegions = new HashSet<>();
     HashSet<String> currentSubLocations = new HashSet<>();
 
     String[] regions = current.getRegions();
-    // If there are no datacenters defined on the region in the regions.yml file,
+    // If there are no regions defined on the location in the locations.yml file,
     // snakeyaml will set the value to null rather than populating it with an empty array.
     if (regions != null) {
       currentRegions.addAll(List.of(regions));
@@ -198,14 +198,14 @@ public class RegionService {
     if (subregions != null) {
       for (Location subregion : current.getLocations()) {
         constructRegionMapsRecursively(subregion);
-        currentRegions.addAll(locationMap.get(subregion.getGeographicName()));
-        currentSubLocations.add(subregion.getGeographicName());
-        currentSubLocations.addAll(locationSubLocationsMap.get(subregion.getGeographicName()));
+        currentRegions.addAll(locationMap.get(subregion.getName()));
+        currentSubLocations.add(subregion.getName());
+        currentSubLocations.addAll(locationSubLocationsMap.get(subregion.getName()));
       }
     }
 
-    locationMap.put(current.getGeographicName(), currentRegions);
-    locationSubLocationsMap.put(current.getGeographicName(), currentSubLocations);
+    locationMap.put(current.getName(), currentRegions);
+    locationSubLocationsMap.put(current.getName(), currentSubLocations);
   }
 
   private List<String> extractPolicyInputLocations(PolicyInputs policyInputs) {

@@ -32,7 +32,7 @@ public class RegionServiceTest extends TestUnitBase {
     String searchRegion = "gcp.europe-west3";
     Location result = regionService.getLocation(searchRegion);
     assertNotNull(result);
-    assertEquals(searchRegion, result.getGeographicName());
+    assertEquals(searchRegion, result.getName());
   }
 
   @Test
