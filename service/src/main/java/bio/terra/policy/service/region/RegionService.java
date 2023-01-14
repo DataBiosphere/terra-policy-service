@@ -27,7 +27,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class RegionService {
   private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
   private static final String TERRA_REGION_ATTRIBUTE_NAME = "region-name";
-  private static final String GLOBAL = "global";
+  private static final String GLOBAL_LOCATION = "global";
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
@@ -79,7 +79,8 @@ public class RegionService {
    */
   @Nullable
   public HashSet<String> getRegionsForLocation(String geographicLocation, String platform) {
-    String queryRegion = Strings.isNullOrEmpty(geographicLocation) ? GLOBAL : geographicLocation;
+    String queryRegion =
+        Strings.isNullOrEmpty(geographicLocation) ? GLOBAL_LOCATION : geographicLocation;
     HashSet<String> result = new HashSet<>();
     HashSet<String> regionDataCenters = locationMap.get(queryRegion);
     result.addAll(filterRegionsByPlatform(regionDataCenters, platform));
@@ -92,7 +93,7 @@ public class RegionService {
    */
   @Nullable
   public Location getOntology(String regionName, String platform) {
-    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL : regionName;
+    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_LOCATION : regionName;
     Location mappedRegion = locationNameMap.get(queryRegion);
 
     if (mappedRegion == null) {
@@ -135,7 +136,7 @@ public class RegionService {
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
-      regionNames.add(GLOBAL);
+      regionNames.add(GLOBAL_LOCATION);
     }
 
     for (String regionName : regionNames) {

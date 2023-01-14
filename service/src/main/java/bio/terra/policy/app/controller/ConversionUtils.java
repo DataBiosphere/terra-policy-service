@@ -97,22 +97,22 @@ public class ConversionUtils {
         .deleted((pao.getDeleted()));
   }
 
-  static ApiTpsLocation regionToApi(Location region) {
-    ApiTpsLocation apiRegion =
-        new ApiTpsLocation().name(region.getName()).description(region.getDescription());
+  static ApiTpsLocation regionToApi(Location location) {
+    ApiTpsLocation apiLocation =
+        new ApiTpsLocation().name(location.getName()).description(location.getDescription());
 
-    ApiTpsRegions datacenterList = new ApiTpsRegions();
-    if (region.getRegions() != null) {
-      datacenterList.addAll(Arrays.stream(region.getRegions()).toList());
+    ApiTpsRegions regions = new ApiTpsRegions();
+    if (location.getRegions() != null) {
+      regions.addAll(Arrays.stream(location.getRegions()).toList());
     }
-    apiRegion.setDatacenters(datacenterList);
+    apiLocation.setRegions(regions);
 
-    if (region.getLocations() != null) {
-      for (Location subregion : region.getLocations()) {
-        apiRegion.addLocationsItem(regionToApi(subregion));
+    if (location.getLocations() != null) {
+      for (Location subLocation : location.getLocations()) {
+        apiLocation.addLocationsItem(regionToApi(subLocation));
       }
     }
-    return apiRegion;
+    return apiLocation;
   }
 
   static ApiTpsPaoUpdateResult updateResultToApi(PolicyUpdateResult result) {

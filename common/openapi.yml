@@ -283,7 +283,7 @@ paths:
   /api/policy/v1alpha1/location:
     parameters:
       - $ref: '#/components/parameters/Platform'
-      - $ref: '#/components/parameters/GeographicLocation'
+      - $ref: '#/components/parameters/Location'
     get:
       summary: Query to explore the region ontology. Find more information about what is inside of a given location (e.g. usa, europe)
       operationId: getLocationInfo
@@ -309,7 +309,7 @@ paths:
   /api/policy/v1alpha1/location/regions:
     parameters:
     - $ref: '#/components/parameters/Platform'
-    - $ref: '#/components/parameters/GeographicLocation'
+    - $ref: '#/components/parameters/Location'
     get:
       summary: Get the list of all regions inside of a geographic location.
       operationId: getRegions
@@ -429,8 +429,8 @@ components:
         type: string
         enum: ["gcp", "azure"]
 
-    GeographicLocation:
-      name: geographicLocation
+    Location:
+      name: location
       in: query
       description: The geographic location to query (e.g. usa, europe, iowa)
       required: false
@@ -774,7 +774,7 @@ components:
             $ref: '#/components/schemas/TpsPaoConflict'
 
     TpsLocation:
-      description: Region object description.
+      description: Location object description.
       type: object
       properties:
           name:
@@ -784,11 +784,11 @@ components:
             description: The geographic location description (e.g. Europe, Iowa)
             type: string
           locations:
-            description: Subregions contained within this region.
+            description: Sub-locations contained within this region.
             type: array
             items:
               $ref: '#/components/schemas/TpsLocation'
-          datacenters:
+          regions:
             $ref: '#/components/schemas/TpsRegions'
 
     TpsUpdateMode:
