@@ -4,7 +4,7 @@ import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
-import bio.terra.policy.generated.model.ApiTpsDatacenterList;
+import bio.terra.policy.generated.model.ApiTpsLocation;
 import bio.terra.policy.generated.model.ApiTpsPaoConflict;
 import bio.terra.policy.generated.model.ApiTpsPaoDescription;
 import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
@@ -12,11 +12,11 @@ import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
-import bio.terra.policy.generated.model.ApiTpsRegion;
+import bio.terra.policy.generated.model.ApiTpsRegions;
 import bio.terra.policy.service.pao.graph.model.PolicyConflict;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
-import bio.terra.policy.service.region.model.Region;
+import bio.terra.policy.service.region.model.Location;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Arrays;
@@ -97,23 +97,22 @@ public class ConversionUtils {
         .deleted((pao.getDeleted()));
   }
 
-  static ApiTpsRegion regionToApi(Region region) {
-    ApiTpsRegion apiRegion =
-        new ApiTpsRegion().name(region.getName()).description(region.getDescription());
+  static ApiTpsLocation regionToApi(Location location) {
+    ApiTpsLocation apiLocation =
+        new ApiTpsLocation().name(location.getName()).description(location.getDescription());
 
-    ApiTpsDatacenterList datacenterList = new ApiTpsDatacenterList();
-    if (region.getDatacenters() != null) {
-      datacenterList.addAll(Arrays.stream(region.getDatacenters()).toList());
+    ApiTpsRegions regions = new ApiTpsRegions();
+    if (location.getRegions() != null) {
+      regions.addAll(Arrays.stream(location.getRegions()).toList());
     }
-    apiRegion.setDatacenters(datacenterList);
+    apiLocation.setRegions(regions);
 
-    if (region.getRegions() != null) {
-      for (Region subregion : region.getRegions()) {
-        apiRegion.addRegionsItem(regionToApi(subregion));
+    if (location.getLocations() != null) {
+      for (Location subLocation : location.getLocations()) {
+        apiLocation.addLocationsItem(regionToApi(subLocation));
       }
     }
-
-    return apiRegion;
+    return apiLocation;
   }
 
   static ApiTpsPaoUpdateResult updateResultToApi(PolicyUpdateResult result) {

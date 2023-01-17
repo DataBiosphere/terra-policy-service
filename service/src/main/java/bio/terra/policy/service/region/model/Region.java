@@ -1,17 +1,16 @@
 package bio.terra.policy.service.region.model;
 
 public class Region {
-  private String name;
+  private String id;
   private String description;
-  private Region[] regions;
-  private String[] datacenters;
+  private String code;
 
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getDescription() {
@@ -22,19 +21,11 @@ public class Region {
     this.description = description;
   }
 
-  public Region[] getRegions() {
-    return regions;
+  public String getCode() {
+    return code;
   }
 
-  public void setRegions(Region[] regions) {
-    this.regions = regions;
-  }
-
-  public String[] getDatacenters() {
-    return datacenters;
-  }
-
-  public void setDatacenters(String[] datacenters) {
-    this.datacenters = datacenters;
+  public void setCode(String code) {
+    this.code = code;
   }
 }

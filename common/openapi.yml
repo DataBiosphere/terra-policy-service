@@ -280,13 +280,13 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /api/policy/v1alpha1/region:
+  /api/policy/v1alpha1/location:
     parameters:
       - $ref: '#/components/parameters/Platform'
-      - $ref: '#/components/parameters/RegionName'
+      - $ref: '#/components/parameters/Location'
     get:
-      summary: Query to explore the region ontology. Find more information about what is inside of a given region
-      operationId: getRegionInfo
+      summary: Query to explore the region ontology. Find more information about what is inside of a given location (e.g. usa, europe)
+      operationId: getLocationInfo
       tags: [Tps]
       responses:
         '200':
@@ -294,7 +294,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TpsRegion'
+                $ref: '#/components/schemas/TpsLocation'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -306,13 +306,13 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /api/policy/v1alpha1/region/datacenters:
+  /api/policy/v1alpha1/location/regions:
     parameters:
     - $ref: '#/components/parameters/Platform'
-    - $ref: '#/components/parameters/RegionName'
+    - $ref: '#/components/parameters/Location'
     get:
-      summary: Get the list of all data centers inside of a region.
-      operationId: getRegionDatacenters
+      summary: Get the list of all regions inside of a geographic location.
+      operationId: getRegions
       tags: [Tps]
       responses:
         '200':
@@ -320,7 +320,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TpsDatacenterList'
+                $ref: '#/components/schemas/TpsRegions'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -335,15 +335,15 @@ paths:
   /api/policy/v1alpha1/region/{objectId}/evaluate:
     parameters:
       - $ref: '#/components/parameters/TpsObjectId'
-      - $ref: '#/components/parameters/Datacenter'
+      - $ref: '#/components/parameters/Region'
       - $ref: '#/components/parameters/Platform'
     get:
-      summary: Evaluate whether a datacenter is available inside of a region constraint
-      operationId: validateDatacenterAllowed
+      summary: Evaluate whether a region is available inside of a location constraint
+      operationId: validateRegionAllowed
       tags: [Tps]
       responses:
         '204':
-          description: Datacenter evaluated successfully
+          description: Region evaluated successfully
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -360,8 +360,8 @@ paths:
     - $ref: '#/components/parameters/TpsObjectId'
     - $ref: '#/components/parameters/Platform'
     get:
-      summary: Retrieve a list of data centers allowed by the policy.
-      operationId: listValidDatacenters
+      summary: Retrieve a list of regions allowed by the policy.
+      operationId: listValidRegions
       tags: [Tps]
       responses:
         '200':
@@ -369,7 +369,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TpsDatacenterList'
+                $ref: '#/components/schemas/TpsRegions'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -381,11 +381,11 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /api/policy/v1alpha1/region/list-valid:
+  /api/policy/v1alpha1/location/list-valid:
     parameters:
     - $ref: '#/components/parameters/Platform'
     post:
-      summary: Retrieve the list of datacenters allowed for the policy inputs
+      summary: Retrieve the list of regions allowed for the policy inputs
       operationId: listValidByPolicyInput
       tags: [Tps]
       requestBody:
@@ -400,7 +400,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TpsDatacenterList'
+                $ref: '#/components/schemas/TpsRegions'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -412,10 +412,10 @@ paths:
 
 components:
   parameters:
-    Datacenter:
-      name: datacenter
+    Region:
+      name: region
       in: query
-      description: The TPS id of a datacenter
+      description: The TPS id of a region
       required: true
       schema:
         type: string
@@ -429,10 +429,10 @@ components:
         type: string
         enum: ["gcp", "azure"]
 
-    RegionName:
-      name: region
+    Location:
+      name: location
       in: query
-      description: The region to query
+      description: The geographic location to query (e.g. usa, europe, iowa)
       required: false
       schema:
         type: string
@@ -545,9 +545,9 @@ components:
       description: Enum representing a policy-bearing Terra component.
       enum: [ 'WSM' ]
 
-    TpsDatacenterList:
+    TpsRegions:
       type: array
-      description: List of data centers
+      description: List of regions (e.g. us-central1)
       items:
         uniqueItems: true
         type: string
@@ -773,23 +773,23 @@ components:
           items:
             $ref: '#/components/schemas/TpsPaoConflict'
 
-    TpsRegion:
-      description: Region object description.
+    TpsLocation:
+      description: Location object description.
       type: object
       properties:
           name:
-            description: The region name
+            description: The geographic location name (e.g. europe, iowa)
             type: string
           description:
-            description: The region description
+            description: The geographic location description (e.g. Europe, Iowa)
             type: string
-          regions:
-            description: Subregions contained within this region.
+          locations:
+            description: Sub-locations contained within this region.
             type: array
             items:
-              $ref: '#/components/schemas/TpsRegion'
-          datacenters:
-            $ref: '#/components/schemas/TpsDatacenterList'
+              $ref: '#/components/schemas/TpsLocation'
+          regions:
+            $ref: '#/components/schemas/TpsRegions'
 
     TpsUpdateMode:
       type: string

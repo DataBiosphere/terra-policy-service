@@ -3,8 +3,9 @@ package bio.terra.policy.service.region;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
-import bio.terra.policy.service.region.model.Datacenter;
+import bio.terra.policy.service.region.model.Location;
 import bio.terra.policy.service.region.model.Region;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,27 +27,28 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class RegionService {
   private static final String TERRA_REGION_CONSTRAINT = "terra:region-constraint";
   private static final String TERRA_REGION_ATTRIBUTE_NAME = "region-name";
-  private static final String GLOBAL_REGION = "global";
+  private static final String GLOBAL_LOCATION = "global";
 
   private static final Logger logger = LoggerFactory.getLogger(RegionService.class);
 
-  // Map from a region name to a list of the names of all data centers contained in that region and
-  // its subregions.
-  private final HashMap<String, HashSet<String>> regionDatacenterMap;
-  // Map from region name to a list of the names of all subregions contained in that region.
-  private final HashMap<String, HashSet<String>> regionSubregionMap;
+  // Map from a geographic location (e.g. europe, usa, iowa) to a list of the names of all regions
+  // contained in that location and sub-locations (e.g. inside usa, there are data centers in
+  // different states)
+  private final HashMap<String, HashSet<String>> locationMap;
+  // Map from location geographic name to a list of the names of all sub-locations.
+  private final HashMap<String, HashSet<String>> locationSubLocationsMap;
+  // Object map from the location name to the location object.
+  private final HashMap<String, Location> locationNameMap;
   // Object map from the region name to the region object.
   private final HashMap<String, Region> regionNameMap;
-  // Object map from the data center name to the data center object.
-  private final HashMap<String, Datacenter> datacenterNameMap;
 
   @Autowired
   public RegionService() {
-    logger.info("Loading regions from regions.yml resource.");
-    Yaml regionYaml = new Yaml(new Constructor(Region.class));
+    logger.info("Loading regions from locations.yml resource.");
+    Yaml regionYaml = new Yaml(new Constructor(Location.class));
     InputStream inputStream =
-        this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
-    Region rootRegion = regionYaml.load(inputStream);
+        this.getClass().getClassLoader().getResourceAsStream("static/locations.yml");
+    Location rootRegion = regionYaml.load(inputStream);
 
     /*
      * Snakeyaml can easily transform into java classes like Regions above. However, it can't
@@ -54,19 +56,19 @@ public class RegionService {
      * Datacenters. Since we want to work with that data type, we first create an object of that
      * type to indicate to snakeyaml how to load the file.
      */
-    logger.info("Loading datacenters from datacenters.yml resource.");
-    Datacenter[] type = new Datacenter[0];
+    logger.info("Loading regions from regions.yml resource.");
+    Region[] type = new Region[0];
     Yaml datacenterYaml = new Yaml(new Constructor(type.getClass()));
-    inputStream = this.getClass().getClassLoader().getResourceAsStream("static/datacenters.yml");
-    Datacenter[] datacenters = datacenterYaml.load(inputStream);
+    inputStream = this.getClass().getClassLoader().getResourceAsStream("static/regions.yml");
+    Region[] regions = datacenterYaml.load(inputStream);
 
-    this.regionSubregionMap = new HashMap<>();
-    this.regionDatacenterMap = new HashMap<>();
+    this.locationSubLocationsMap = new HashMap<>();
+    this.locationMap = new HashMap<>();
+    this.locationNameMap = new HashMap<>();
     this.regionNameMap = new HashMap<>();
-    this.datacenterNameMap = new HashMap<>();
 
-    for (Datacenter datacenter : datacenters) {
-      this.datacenterNameMap.put(datacenter.getId(), datacenter);
+    for (Region region : regions) {
+      this.regionNameMap.put(region.getId(), region);
     }
 
     constructRegionMapsRecursively(rootRegion);
@@ -76,11 +78,12 @@ public class RegionService {
    * Get the list of all datacenters available in a region and its subregions, filtered by platform.
    */
   @Nullable
-  public HashSet<String> getDataCentersForRegion(String regionName, String platform) {
-    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_REGION : regionName;
+  public HashSet<String> getRegionsForLocation(String geographicLocation, String platform) {
+    String queryRegion =
+        Strings.isNullOrEmpty(geographicLocation) ? GLOBAL_LOCATION : geographicLocation;
     HashSet<String> result = new HashSet<>();
-    HashSet<String> regionDataCenters = regionDatacenterMap.get(queryRegion);
-    result.addAll(filterDataCentersByPlatform(regionDataCenters, platform));
+    HashSet<String> regionDataCenters = locationMap.get(queryRegion);
+    result.addAll(filterRegionsByPlatform(regionDataCenters, platform));
     return result;
   }
 
@@ -89,76 +92,77 @@ public class RegionService {
    * this will filter data centers by the indicated platform.
    */
   @Nullable
-  public Region getOntology(String regionName, String platform) {
-    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_REGION : regionName;
-    Region mappedRegion = regionNameMap.get(queryRegion);
+  public Location getOntology(String regionName, String platform) {
+    String queryRegion = Strings.isNullOrEmpty(regionName) ? GLOBAL_LOCATION : regionName;
+    Location mappedRegion = locationNameMap.get(queryRegion);
 
     if (mappedRegion == null) {
       return null;
     }
 
-    Region result = new Region();
+    Location result = new Location();
     result.setName(mappedRegion.getName());
     result.setDescription(mappedRegion.getDescription());
 
-    String[] datacenters = mappedRegion.getDatacenters();
+    String[] regions = mappedRegion.getRegions();
 
-    if (datacenters == null) {
-      datacenters = new String[0];
+    if (regions == null) {
+      regions = new String[0];
     }
 
-    List<String> filteredDatacenters =
-        filterDataCentersByPlatform(Arrays.asList(datacenters), platform);
+    List<String> filteredDatacenters = filterRegionsByPlatform(Arrays.asList(regions), platform);
 
-    result.setDatacenters(filteredDatacenters.toArray(new String[0]));
+    result.setRegions(filteredDatacenters.toArray(new String[0]));
 
-    List<Region> subregions = new ArrayList<>();
-    if (mappedRegion.getRegions() != null) {
-      for (Region subregion : mappedRegion.getRegions()) {
+    List<Location> subregions = new ArrayList<>();
+    if (mappedRegion.getLocations() != null) {
+      for (Location subregion : mappedRegion.getLocations()) {
         subregions.add(getOntology(subregion.getName(), platform));
       }
     }
-    result.setRegions(subregions.toArray(new Region[0]));
+    result.setLocations(subregions.toArray(new Location[0]));
 
     return result;
   }
 
   @Nullable
-  public Region getRegion(String name) {
-    return regionNameMap.get(name);
+  @VisibleForTesting
+  public Location getLocation(String name) {
+    return locationNameMap.get(name);
   }
 
-  public HashSet<String> getPolicyInputDataCenterCodes(PolicyInputs inputs, String platform) {
-    List<String> regionNames = extractPolicyInputRegions(inputs);
+  public HashSet<String> getPolicyInputRegionCodes(PolicyInputs inputs, String platform) {
+    List<String> regionNames = extractPolicyInputLocations(inputs);
     HashSet<String> result = new HashSet<>();
 
     if (regionNames.isEmpty()) {
-      regionNames.add(GLOBAL_REGION);
+      regionNames.add(GLOBAL_LOCATION);
     }
 
     for (String regionName : regionNames) {
-      result.addAll(filterDataCentersByPlatform(regionDatacenterMap.get(regionName), platform));
+      result.addAll(filterRegionsByPlatform(locationMap.get(regionName), platform));
     }
 
     return result;
   }
 
   @Nullable
-  public Datacenter getDatacenter(String id) {
-    return datacenterNameMap.get(id);
+  @VisibleForTesting
+  public Region getRegion(String id) {
+    return regionNameMap.get(id);
   }
 
-  public boolean isDatacenterAllowedByPao(Pao pao, String datacenter, String platform) {
-    List<String> regionNames = extractPolicyInputRegions(pao.getEffectiveAttributes());
+  public boolean isRegionAllowedByPao(Pao pao, String region, String platform) {
+    List<String> regionNames = extractPolicyInputLocations(pao.getEffectiveAttributes());
 
     if (regionNames.isEmpty()) {
       // pao doesn't have a region constraint
       return true;
     }
 
-    String tpsDatacenter = String.format("%s.%s", platform, datacenter);
+    String tpsRegion = String.format("%s.%s", platform, region);
     for (String regionName : regionNames) {
-      if (regionContainsDatacenter(regionName, tpsDatacenter)) {
+      if (locationContainsRegion(regionName, tpsRegion)) {
         return true;
       }
     }
@@ -166,47 +170,46 @@ public class RegionService {
     return false;
   }
 
-  public boolean isSubregion(String parentRegionName, String subregionName) {
-    HashSet<String> subregions = regionSubregionMap.get(parentRegionName);
-    return (subregions == null) ? false : subregions.contains(subregionName);
+  public boolean isSubLocation(String parentLocationName, String subLocationName) {
+    HashSet<String> subLocations = locationSubLocationsMap.get(parentLocationName);
+    return subLocations != null && subLocations.contains(subLocationName);
   }
 
-  public boolean regionContainsDatacenter(String regionName, String datacenterId) {
-    return regionDatacenterMap.containsKey(regionName)
-        && regionDatacenterMap.get(regionName).contains(datacenterId);
+  public boolean locationContainsRegion(String locationName, String region) {
+    return locationMap.containsKey(locationName) && locationMap.get(locationName).contains(region);
   }
 
-  private void constructRegionMapsRecursively(Region current) {
+  private void constructRegionMapsRecursively(Location current) {
     if (current == null) return;
 
-    regionNameMap.put(current.getName(), current);
-    HashSet<String> currentDatacenters = new HashSet<>();
-    HashSet<String> currentSubregions = new HashSet<>();
+    locationNameMap.put(current.getName(), current);
+    HashSet<String> currentRegions = new HashSet<>();
+    HashSet<String> currentSubLocations = new HashSet<>();
 
-    String[] datacenters = current.getDatacenters();
-    // If there are no datacenters defined on the region in the regions.yml file,
+    String[] regions = current.getRegions();
+    // If there are no regions defined on the location in the locations.yml file,
     // snakeyaml will set the value to null rather than populating it with an empty array.
-    if (datacenters != null) {
-      currentDatacenters.addAll(List.of(datacenters));
+    if (regions != null) {
+      currentRegions.addAll(List.of(regions));
     }
 
-    Region[] subregions = current.getRegions();
+    Location[] subregions = current.getLocations();
     // Similarly, if there are no subregions defined in the .yml file, then this
     // field will be null rather than an empty array.
     if (subregions != null) {
-      for (Region subregion : current.getRegions()) {
+      for (Location subregion : current.getLocations()) {
         constructRegionMapsRecursively(subregion);
-        currentDatacenters.addAll(regionDatacenterMap.get(subregion.getName()));
-        currentSubregions.add(subregion.getName());
-        currentSubregions.addAll(regionSubregionMap.get(subregion.getName()));
+        currentRegions.addAll(locationMap.get(subregion.getName()));
+        currentSubLocations.add(subregion.getName());
+        currentSubLocations.addAll(locationSubLocationsMap.get(subregion.getName()));
       }
     }
 
-    regionDatacenterMap.put(current.getName(), currentDatacenters);
-    regionSubregionMap.put(current.getName(), currentSubregions);
+    locationMap.put(current.getName(), currentRegions);
+    locationSubLocationsMap.put(current.getName(), currentSubLocations);
   }
 
-  private List<String> extractPolicyInputRegions(PolicyInputs policyInputs) {
+  private List<String> extractPolicyInputLocations(PolicyInputs policyInputs) {
     List<String> result = new ArrayList<>();
 
     if (policyInputs != null && policyInputs.getInputs() != null) {
@@ -223,17 +226,16 @@ public class RegionService {
     return result;
   }
 
-  private List<String> filterDataCentersByPlatform(
-      Collection<String> datacenterIds, String platform) {
+  private List<String> filterRegionsByPlatform(Collection<String> regions, String platform) {
     List<String> result = new ArrayList<>();
 
-    if (datacenterIds == null) {
+    if (regions == null) {
       return result;
     }
 
-    for (String datacenterId : datacenterIds) {
+    for (String datacenterId : regions) {
       if (datacenterId.startsWith(platform)) {
-        result.add(datacenterNameMap.get(datacenterId).getCode());
+        result.add(regionNameMap.get(datacenterId).getCode());
       }
     }
 
