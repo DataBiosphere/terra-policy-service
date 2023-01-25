@@ -77,7 +77,7 @@
   code: europe-west1
 - id: gcp.europe-north1
   description: Finland
-  code: gcp.europe-north1
+  code: europe-north1
 - id: gcp.europe-west3
   description: Frankfurt
   code: europe-west3
