@@ -92,9 +92,3 @@ spotbugsMain {
         }
     }
 }
-
-dependencyLocking {
-    lockAllConfigurations()
-    lockMode = LockMode.STRICT
-}
-
