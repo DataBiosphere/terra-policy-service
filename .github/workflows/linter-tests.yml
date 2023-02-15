@@ -1,12 +1,13 @@
 name: Run linter tests
+
 on:
   workflow_dispatch: {}
   push:
-    branches:
-    - main
+    branches: [ main ]
+    paths-ignore: [ '*.md' ]
   pull_request:
-    branches:
-    - '**'
+    # Branch settings require status checks before merging, so don't add paths-ignore.
+    branches: [ main ]
 
 jobs:
   lint-and-static-analysis:
