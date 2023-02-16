@@ -26,16 +26,16 @@ generateSwaggerCode {
     jvmArgs = ['--add-opens=java.base/java.util=ALL-UNNAMED']
 
     components = [
-            apiDocs  : false, apiTests: false,
-            modelDocs: false, modelTests: false
+        apiDocs  : false, apiTests: false,
+        modelDocs: false, modelTests: false
     ]
 
     templateDir = file("${projectDir}/src/main/resources/swaggercodegen")
     additionalProperties = [
-            modelPackage  : "${artifactGroup}.model",
-            apiPackage    : "${artifactGroup}.api",
-            invokerPackage: "${artifactGroup}.client",
-            dateLibrary   : 'java8'
+        modelPackage  : "${artifactGroup}.model",
+        apiPackage    : "${artifactGroup}.api",
+        invokerPackage: "${artifactGroup}.client",
+        dateLibrary   : 'java8'
     ]
 
     rawOptions = ['--ignore-file-override', "${projectDir}/.swagger-codegen-ignore"]
