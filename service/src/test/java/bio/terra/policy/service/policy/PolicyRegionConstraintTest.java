@@ -1,5 +1,6 @@
 package bio.terra.policy.service.policy;
 
+import static bio.terra.policy.service.policy.PolicyTestUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -8,34 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 public class PolicyRegionConstraintTest extends TestUnitBase {
-  private static final String TERRA = "terra";
-  private static final String REGION_KEY = "region-name";
-  private static final String REGION_CONSTRAINT = "region-constraint";
-  private static final String GROUP_CONSTRAINT = "group-constraint";
-  private static final String GROUP_KEY = "group";
-  private static final String GROUP_NAME = "mygroup";
-
-  private Multimap<String, String> buildMultimap(String key, String... values) {
-    Multimap<String, String> mm = ArrayListMultimap.create();
-    for (String value : values) {
-      mm.put(key, value);
-    }
-    return mm;
-  }
-
-  private Multimap<String, String> buildMultimap(String key, Set<String> values) {
-    Multimap<String, String> mm = ArrayListMultimap.create();
-    mm.putAll(key, values);
-    return mm;
-  }
 
   @Test
   void regionConstraintTest_combineSameRegion() throws Exception {
