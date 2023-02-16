@@ -141,4 +141,61 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
     assertNull(resultPolicy);
   }
+
+  @Test
+  void groupConstraintTest_removeGroup() throws Exception {
+    var groupConstraint = new PolicyGroupConstraint();
+
+    String group2 = GROUP_NAME + "2";
+    String group3 = GROUP_NAME + "3";
+
+    Set<String> groups = new HashSet<>(Arrays.asList(GROUP_NAME));
+    var removePolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+
+    groups.add(group2);
+    groups.add(group3);
+    var targetPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+
+    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(2, groupSet.size());
+    assertTrue(groupSet.contains(group2));
+    assertTrue(groupSet.contains(group3));
+  }
+
+  @Test
+  void groupConstraintTest_removeNonExistentGroup() throws Exception {
+    var groupConstraint = new PolicyGroupConstraint();
+
+    var removePolicy =
+        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+
+    String group2 = GROUP_NAME + "2";
+    String group3 = GROUP_NAME + "3";
+    Set<String> groups = new HashSet<>(Arrays.asList(group2, group3));
+    var targetPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+
+    // we never added GROUP_NAME into the policy, removing it shouldn't break.
+    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(2, groupSet.size());
+    assertTrue(groupSet.contains(group2));
+    assertTrue(groupSet.contains(group3));
+  }
+
+  @Test
+  void groupConstraintTest_removeOnlyGroup() throws Exception {
+    var groupConstraint = new PolicyGroupConstraint();
+
+    Set<String> groups = new HashSet<>(Arrays.asList(GROUP_NAME));
+    var removePolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+    var targetPolicy = new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+
+    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
+    assertNull(resultPolicy);
+  }
 }

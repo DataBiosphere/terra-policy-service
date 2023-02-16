@@ -17,10 +17,7 @@ import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
 import bio.terra.policy.testutils.TestUnitBase;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,10 +25,11 @@ public class TpsExplainControllerTest extends TestUnitBase {
   private static final String TERRA = "terra";
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String GROUP = "group";
+  // TODO: PF-2503 - set these group names to different values when we can merge different groups.
   private static final String DDGROUP = "ddgroup";
-  private static final String MNGROUP = "mngroup";
-  private static final String YUGROUP = "yugroup";
-  private static final String MCGROUP = "mcgroup";
+  private static final String MNGROUP = DDGROUP;
+  private static final String YUGROUP = DDGROUP;
+  private static final String MCGROUP = DDGROUP;
 
   private static final ApiTpsPolicyPair DD_POLICY_PAIR =
       new ApiTpsPolicyPair().key(GROUP).value(DDGROUP);
@@ -49,8 +47,9 @@ public class TpsExplainControllerTest extends TestUnitBase {
           .name(GROUP_CONSTRAINT)
           .addAdditionalDataItem(MN_POLICY_PAIR);
 
+  // TODO: PF-2503 using MNGROUP for YU_POLICY_PAIR since dissimilar groups cannot merge.
   private static final ApiTpsPolicyPair YU_POLICY_PAIR =
-      new ApiTpsPolicyPair().key(GROUP).value(YUGROUP);
+      new ApiTpsPolicyPair().key(GROUP).value(MNGROUP);
   private static final ApiTpsPolicyInput YU_POLICY_INPUT =
       new ApiTpsPolicyInput()
           .namespace(TERRA)
@@ -142,8 +141,7 @@ public class TpsExplainControllerTest extends TestUnitBase {
     assertEquals(topPao, explanation.getObjectId());
     // Effective policy should be the merge of the two
     assertThat(
-        explanation.getPolicyInput().getAdditionalData(),
-        containsInAnyOrder(MN_POLICY_PAIR, YU_POLICY_PAIR));
+        explanation.getPolicyInput().getAdditionalData(), containsInAnyOrder(MN_POLICY_PAIR));
 
     // There should be two explanation under top
     assertEquals(2, explanation.getPolicyExplanations().size());
@@ -357,7 +355,8 @@ public class TpsExplainControllerTest extends TestUnitBase {
 
   private void checkPolicyInput(List<ApiTpsPolicyPair> policyPairs, String... expectedGroups) {
     List<String> actualGroups = policyPairs.stream().map(ApiTpsPolicyPair::getValue).toList();
-    assertThat(actualGroups, containsInAnyOrder(expectedGroups));
+    Set<String> expectedSet = new HashSet<>(Arrays.asList(expectedGroups));
+    assertThat(actualGroups, containsInAnyOrder(expectedSet.toArray()));
   }
 
   private void checkExplainSources(
