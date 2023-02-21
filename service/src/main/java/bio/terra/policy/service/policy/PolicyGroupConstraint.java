@@ -19,9 +19,9 @@ public class PolicyGroupConstraint implements PolicyBase {
   }
 
   /**
-   * Combine of groups - there is no conflict case. We simply create two Sets of group names from
-   * the comma-separated form, then mash them together, and make them back into comma-separated
-   * form.
+   * Combine for groups - for our milestone 1, we can only merge if the source has no groups or the
+   * source's groups match exactly the dependent groups. In either case, the result is equal to the
+   * dependent. In any other case, the result is a conflict.
    *
    * @param dependent policy input
    * @param source policy input
@@ -31,10 +31,13 @@ public class PolicyGroupConstraint implements PolicyBase {
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
-    dependentSet.addAll(sourceSet);
-    Multimap<String, String> newData = ArrayListMultimap.create();
-    dependentSet.forEach(group -> newData.put(DATA_KEY, group));
-    return new PolicyInput(dependent.getPolicyName(), newData);
+
+    if (sourceSet.size() == 0
+        || (sourceSet.containsAll(dependentSet) && dependentSet.containsAll(sourceSet))) {
+      return dependent;
+    }
+
+    return null;
   }
 
   /**
