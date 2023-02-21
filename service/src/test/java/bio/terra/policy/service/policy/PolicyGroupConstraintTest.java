@@ -3,7 +3,9 @@ package bio.terra.policy.service.policy;
 import static bio.terra.policy.service.policy.PolicyTestUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;

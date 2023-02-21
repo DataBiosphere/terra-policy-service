@@ -1,6 +1,12 @@
 package bio.terra.policy.service.policy;
 
-import static bio.terra.policy.service.policy.PolicyTestUtils.*;
+import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_CONSTRAINT;
+import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_KEY;
+import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_NAME;
+import static bio.terra.policy.service.policy.PolicyTestUtils.REGION_CONSTRAINT;
+import static bio.terra.policy.service.policy.PolicyTestUtils.REGION_KEY;
+import static bio.terra.policy.service.policy.PolicyTestUtils.TERRA;
+import static bio.terra.policy.service.policy.PolicyTestUtils.buildMultimap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
