@@ -17,9 +17,16 @@ import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
 import bio.terra.policy.testutils.TestUnitBase;
-import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class TpsExplainControllerTest extends TestUnitBase {
   private static final String TERRA = "terra";
@@ -47,9 +54,8 @@ public class TpsExplainControllerTest extends TestUnitBase {
           .name(GROUP_CONSTRAINT)
           .addAdditionalDataItem(MN_POLICY_PAIR);
 
-  // TODO: PF-2503 using MNGROUP for YU_POLICY_PAIR since dissimilar groups cannot merge.
   private static final ApiTpsPolicyPair YU_POLICY_PAIR =
-      new ApiTpsPolicyPair().key(GROUP).value(MNGROUP);
+      new ApiTpsPolicyPair().key(GROUP).value(YUGROUP);
   private static final ApiTpsPolicyInput YU_POLICY_INPUT =
       new ApiTpsPolicyInput()
           .namespace(TERRA)
