@@ -29,6 +29,11 @@ public class PolicyGroupConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+    if (source == null || dependent == null) {
+      // We can't modify the groups. If the dependent is empty, we need to leave it empty.
+      return dependent;
+    }
+
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
 

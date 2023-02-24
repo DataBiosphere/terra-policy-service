@@ -25,15 +25,19 @@ public class PolicyMutator {
    */
   public static PolicyInput combine(PolicyInput target, PolicyInput addPolicy) {
     validateMatchedPolicies(target, addPolicy);
-    return findPolicy(target).combine(target, addPolicy);
+    return findPolicy(target == null ? addPolicy : target).combine(target, addPolicy);
   }
 
   public static PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
     validateMatchedPolicies(target, removePolicy);
-    return findPolicy(target).remove(target, removePolicy);
+    return findPolicy(target == null ? removePolicy : target).remove(target, removePolicy);
   }
 
   private static void validateMatchedPolicies(PolicyInput one, PolicyInput two) {
+    if (one == null || two == null) {
+      // We can still call combine if one of the policies is empty.
+      return;
+    }
     // Ensure that the inputs are combine-able; this shouldn't happen, but... belts and suspenders.
     if (!StringUtils.equals(one.getKey(), two.getKey())) {
       throw new InternalTpsErrorException("Policies have different policy keys");

@@ -40,17 +40,24 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
     var dependentPolicy =
         new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
 
-    // source policy has no group constraint.
-    var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, GROUP_NAME));
-
-    PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
+    PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, null);
 
     Set<String> groupSet =
         groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
 
     assertEquals(1, groupSet.size(), "Contains 1 group");
     assertThat(groupSet, contains(GROUP_NAME));
+  }
+
+  @Test
+  void groupConstraintTest_combineEmptyDestination() throws Exception {
+    var groupConstraint = new PolicyGroupConstraint();
+
+    var sourcePolicy =
+        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+
+    PolicyInput resultPolicy = groupConstraint.combine(null, sourcePolicy);
+    assertNull(resultPolicy);
   }
 
   @Test

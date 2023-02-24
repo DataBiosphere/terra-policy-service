@@ -326,18 +326,13 @@ public class PaoService {
 
     for (PolicyInput input : sourcePao.getAttributes().getInputs().values()) {
       PolicyInput destinationMatchedPolicy = policyInputs.lookupPolicy(input);
-      // If the policy does not exist in the destination, so we add it
-      if (destinationMatchedPolicy == null) {
-        policyInputs.addInput(input);
+      PolicyInput resultInput = PolicyMutator.combine(destinationMatchedPolicy, input);
+      if (resultInput == null) {
+        // Uh oh, we hit a conflict
+        conflicts.add(new PolicyConflict(destinationPao, sourcePao, input.getPolicyName()));
       } else {
-        PolicyInput resultInput = PolicyMutator.combine(destinationMatchedPolicy, input);
-        if (resultInput == null) {
-          // Uh oh, we hit a conflict
-          conflicts.add(new PolicyConflict(destinationPao, sourcePao, input.getPolicyName()));
-        } else {
-          // Replace the policy with the combined policy
-          policyInputs.addInput(resultInput);
-        }
+        // Replace the policy with the combined policy
+        policyInputs.addInput(resultInput);
       }
     }
 

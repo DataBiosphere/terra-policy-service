@@ -74,7 +74,7 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var sourcePolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegion));
 
-    PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
+    PolicyInput resultPolicy = regionConstraint.combine(null, sourcePolicy);
 
     Set<String> groupSet =
         regionConstraint.dataToSet(resultPolicy.getAdditionalData().get(REGION_KEY));
@@ -91,11 +91,7 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var dependentPolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegion));
 
-    // source only has a group constraint
-    var sourcePolicy =
-        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
-
-    PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
+    PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, null);
 
     Set<String> groupSet =
         regionConstraint.dataToSet(resultPolicy.getAdditionalData().get(REGION_KEY));
