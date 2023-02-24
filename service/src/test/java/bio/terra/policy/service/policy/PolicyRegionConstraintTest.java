@@ -68,9 +68,6 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
 
     var sourceRegion = "germany";
 
-    // dependent only has a group constraint
-    var dependentPolicy =
-        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
     var sourcePolicy =
         new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegion));
 
