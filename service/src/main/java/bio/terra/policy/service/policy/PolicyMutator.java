@@ -25,12 +25,12 @@ public class PolicyMutator {
    */
   public static PolicyInput combine(PolicyInput target, PolicyInput addPolicy) {
     validateMatchedPolicies(target, addPolicy);
-    return findPolicy(target == null ? addPolicy : target).combine(target, addPolicy);
+    return findPolicy(addPolicy).combine(target, addPolicy);
   }
 
   public static PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
     validateMatchedPolicies(target, removePolicy);
-    return findPolicy(target == null ? removePolicy : target).remove(target, removePolicy);
+    return findPolicy(removePolicy).remove(target, removePolicy);
   }
 
   private static void validateMatchedPolicies(PolicyInput one, PolicyInput two) {
