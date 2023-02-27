@@ -34,7 +34,8 @@ public class PolicyGroupConstraint implements PolicyBase {
     }
 
     if (dependent == null) {
-      // We can't modify the groups. If the dependent is empty, we can't add to it so the result is a conflict.
+      // We can't modify the groups. If the dependent is empty, we can't add to it so the result is
+      // a conflict.
       return null;
     }
 
