@@ -32,7 +32,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 
 {{! Begin Terra change }}
 // Import the connector we use to workaround the JDK17 issues in Jersey
-import org.glassfish.jersey.jdk.connector.JdkConnectorProvider;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 {{! End Terra change }}
 
 {{^supportJava6}}
@@ -822,7 +822,7 @@ public class ApiClient {
     {{! Begin Terra change }}
     // For JDK17, we need to use this connection provider to work around the way Jersey
     // implements PATCH
-    clientConfig.connectorProvider(new JdkConnectorProvider());
+    clientConfig.connectorProvider(new ApacheConnectorProvider());
     {{! End Terra change }}
   }
 

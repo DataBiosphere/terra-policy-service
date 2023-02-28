@@ -102,9 +102,7 @@ public class ExplainWalker {
     }
   }
 
-  /**
-   * @return Return the graph in two parts
-   */
+  /** @return Return the graph in two parts */
   public ExplainGraph getExplainGraph() {
     return new ExplainGraph(graph, paoMap.values());
   }
