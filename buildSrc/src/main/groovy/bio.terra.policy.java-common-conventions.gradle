@@ -43,7 +43,6 @@ repositories {
 // Use Gradle dependency locking in all subprojects.
 dependencyLocking {
     lockAllConfigurations()
-    lockMode = LockMode.STRICT
 }
 
 dependencies {
