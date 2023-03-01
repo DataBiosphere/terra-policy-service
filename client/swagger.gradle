@@ -1,8 +1,4 @@
 dependencies {
-    ext {
-        jerseyVersion = "2.32"
-    }
-
     // Version controlled by dependency management plugin
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'org.glassfish.jersey.core:jersey-client'
@@ -10,8 +6,8 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-multipart'
     implementation 'io.swagger.core.v3:swagger-annotations'
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli'
-    implementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
-    implementation "org.glassfish.jersey.connectors:jersey-jdk-connector:$jerseyVersion"
+    implementation "org.glassfish.jersey.inject:jersey-hk2"
+    implementation "org.glassfish.jersey.connectors:jersey-apache-connector"
 }
 
 def artifactGroup = "${group}.policy"
