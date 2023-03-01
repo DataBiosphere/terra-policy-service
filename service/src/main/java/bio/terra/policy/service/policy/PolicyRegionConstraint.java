@@ -34,6 +34,14 @@ public class PolicyRegionConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+    if (dependent == null) {
+      return source;
+    }
+
+    if (source == null) {
+      return dependent;
+    }
+
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
     int sourceSize = sourceSet.size();

@@ -32,6 +32,13 @@ public class PolicyUnknown implements PolicyBase {
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+    if (dependent == null) {
+      return source;
+    }
+    if (source == null) {
+      return dependent;
+    }
+
     Multimap<String, String> dependentData = dependent.getAdditionalData();
     Multimap<String, String> sourceData = source.getAdditionalData();
     Multimap<String, String> newData = ArrayListMultimap.create();
