@@ -33,6 +33,8 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 {{! Begin Terra change }}
 // Import the connector we use to workaround the JDK17 issues in Jersey
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 {{! End Terra change }}
 
 {{^supportJava6}}
@@ -823,6 +825,9 @@ public class ApiClient {
     // For JDK17, we need to use this connection provider to work around the way Jersey
     // implements PATCH
     clientConfig.connectorProvider(new ApacheConnectorProvider());
+    // Note the PoolingHttpClientConnectionManager defaults to a maximum of 2 connections per route.
+    // This may be too low for our use cases, but we can modify it here later if needed.
+    clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
     {{! End Terra change }}
   }
 
