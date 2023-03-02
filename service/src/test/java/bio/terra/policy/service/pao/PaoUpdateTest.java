@@ -340,12 +340,12 @@ public class PaoUpdateTest extends TestUnitBase {
             TERRA_NAMESPACE, GROUP_CONSTRAINT, Collections.singletonMap(GROUP_KEY, GROUP_NAME));
 
     UUID paoId = PaoTestUtil.makePao(paoService, regionPolicy);
-    logger.info("paoId: {}", paoId);
+    logger.info("make pao {} with region policy", paoId);
 
-    PolicyInputs adds = PaoTestUtil.makePolicyInputs(groupPolicy);
+    PolicyInputs groupPolicyInput = PaoTestUtil.makePolicyInputs(groupPolicy);
 
     PolicyUpdateResult result =
-        paoService.updatePao(paoId, adds, new PolicyInputs(), PaoUpdateMode.FAIL_ON_CONFLICT);
+        paoService.updatePao(paoId, groupPolicyInput, new PolicyInputs(), PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Update 1 adds a group constraint. Result: {}", result);
 
     assertTrue(result.updateApplied());

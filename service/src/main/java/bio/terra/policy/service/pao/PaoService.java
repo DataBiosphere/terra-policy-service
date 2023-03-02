@@ -237,18 +237,18 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
-    PolicyInputs newAttributes = targetPao.getAttributes();
+    PolicyInputs attributesToUpdate = targetPao.getAttributes();
 
     // We do the removes first, so we don't remove newly added things
     for (PolicyInput removePolicy : removeAttributes.getInputs().values()) {
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(removePolicy);
       if (existingPolicy != null) {
         // We have something to remove
-        newAttributes.removeInput(existingPolicy);
+        attributesToUpdate.removeInput(existingPolicy);
         PolicyInput removeResult = PolicyMutator.remove(existingPolicy, removePolicy);
         if (removeResult != null) {
           // There is something left of the policy to keep
-          newAttributes.addInput(removeResult);
+          attributesToUpdate.addInput(removeResult);
         }
       }
     }
@@ -258,13 +258,13 @@ public class PaoService {
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
       if (existingPolicy == null) {
         // Nothing to combine; just take the new
-        newAttributes.addInput(addPolicy);
+        attributesToUpdate.addInput(addPolicy);
       } else {
         PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
         if (addResult != null) {
           // We have a combined policy to add
-          newAttributes.removeInput(existingPolicy);
-          newAttributes.addInput(addResult);
+          attributesToUpdate.removeInput(existingPolicy);
+          attributesToUpdate.addInput(addResult);
         } else {
           throw new DirectConflictException(
               String.format(
@@ -274,7 +274,7 @@ public class PaoService {
       }
     }
 
-    return updateAttributesWorker(newAttributes, targetPao, updateMode);
+    return updateAttributesWorker(attributesToUpdate, targetPao, updateMode);
   }
 
   // Common code to update new attributes to a targetPao
