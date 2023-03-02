@@ -17,6 +17,14 @@ import java.util.Collections;
 import java.util.UUID;
 
 public class PaoTestUtil {
+  public static final String TERRA_NAMESPACE = "terra";
+  public static final String REGION_CONSTRAINT = "region-constraint";
+  public static final String GROUP_CONSTRAINT = "group-constraint";
+  public static final String REGION_KEY = "region-name";
+  public static final String DEFAULT_REGION_NAME = "usa";
+  public static final String GROUP_KEY = "group";
+  public static final String GROUP_NAME = "mygroup";
+
   public static final String TEST_NAMESPACE = "test_namespace";
   public static final String TEST_FLAG_POLICY_A = "test_flag_a";
   public static final String TEST_FLAG_POLICY_B = "test_flag_b";

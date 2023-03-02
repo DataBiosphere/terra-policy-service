@@ -1,5 +1,12 @@
 package bio.terra.policy.service.pao;
 
+import static bio.terra.policy.testutils.PaoTestUtil.DEFAULT_REGION_NAME;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
+import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
+import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
+import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,6 +26,7 @@ import bio.terra.policy.service.policy.PolicyMutator;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.testutils.PaoTestUtil;
 import bio.terra.policy.testutils.TestUnitBase;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -318,6 +326,32 @@ public class PaoUpdateTest extends TestUnitBase {
     assertThrows(
         IllegalCycleException.class,
         () -> paoService.linkSourcePao(paoAid, paoNone, PaoUpdateMode.FAIL_ON_CONFLICT));
+  }
+
+  @Test
+  void updateSinglePaoTest_addDifferentConstraintType() throws Exception {
+    PolicyInput regionPolicy =
+        PolicyInput.createFromMap(
+            TERRA_NAMESPACE,
+            REGION_CONSTRAINT,
+            Collections.singletonMap(REGION_KEY, DEFAULT_REGION_NAME));
+    PolicyInput groupPolicy =
+        PolicyInput.createFromMap(
+            TERRA_NAMESPACE, GROUP_CONSTRAINT, Collections.singletonMap(GROUP_KEY, GROUP_NAME));
+
+    UUID paoId = PaoTestUtil.makePao(paoService, regionPolicy);
+    logger.info("paoId: {}", paoId);
+
+    PolicyInputs adds = PaoTestUtil.makePolicyInputs(groupPolicy);
+
+    PolicyUpdateResult result =
+        paoService.updatePao(paoId, adds, new PolicyInputs(), PaoUpdateMode.FAIL_ON_CONFLICT);
+    logger.info("Update 1 adds a group constraint. Result: {}", result);
+
+    assertTrue(result.updateApplied());
+    assertTrue(result.conflicts().isEmpty());
+    Pao resultPao = result.computedPao();
+    PaoTestUtil.checkForPolicies(resultPao, regionPolicy, groupPolicy);
   }
 
   @Test

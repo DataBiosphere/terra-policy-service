@@ -237,13 +237,14 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
-    PolicyInputs newAttributes = new PolicyInputs();
+    PolicyInputs newAttributes = targetPao.getAttributes();
 
     // We do the removes first, so we don't remove newly added things
     for (PolicyInput removePolicy : removeAttributes.getInputs().values()) {
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(removePolicy);
       if (existingPolicy != null) {
         // We have something to remove
+        newAttributes.removeInput(existingPolicy);
         PolicyInput removeResult = PolicyMutator.remove(existingPolicy, removePolicy);
         if (removeResult != null) {
           // There is something left of the policy to keep
@@ -262,6 +263,7 @@ public class PaoService {
         PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
         if (addResult != null) {
           // We have a combined policy to add
+          newAttributes.removeInput(existingPolicy);
           newAttributes.addInput(addResult);
         } else {
           throw new DirectConflictException(
