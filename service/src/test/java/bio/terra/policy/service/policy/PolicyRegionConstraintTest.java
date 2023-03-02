@@ -1,12 +1,12 @@
 package bio.terra.policy.service.policy;
 
-import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_CONSTRAINT;
-import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_KEY;
-import static bio.terra.policy.service.policy.PolicyTestUtils.GROUP_NAME;
-import static bio.terra.policy.service.policy.PolicyTestUtils.REGION_CONSTRAINT;
-import static bio.terra.policy.service.policy.PolicyTestUtils.REGION_KEY;
-import static bio.terra.policy.service.policy.PolicyTestUtils.TERRA;
 import static bio.terra.policy.service.policy.PolicyTestUtils.buildMultimap;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
+import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
+import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
+import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -30,9 +30,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var region2 = region1;
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -50,9 +50,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var region2 = "germany";
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -69,7 +69,8 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var sourceRegion = "germany";
 
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegion));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegion));
 
     PolicyInput resultPolicy = regionConstraint.combine(null, sourcePolicy);
 
@@ -86,7 +87,8 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var dependentRegion = "germany";
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegion));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegion));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, null);
 
@@ -102,9 +104,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
 
     // neither input contains a region constraint
     var dependentPolicy =
-        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
     var sourcePolicy =
-        new PolicyInput(TERRA, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -121,9 +123,11 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     Set<String> sourceRegions = new HashSet<>(Arrays.asList("uk", "gcp.us-central1", "japan"));
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -142,9 +146,11 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     Set<String> sourceRegions = new HashSet<>(Arrays.asList("americas", "asiapacific", "europe"));
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -164,9 +170,11 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     Set<String> expectedResult = new HashSet<>(Arrays.asList("uk", "finland"));
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -187,9 +195,11 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     Set<String> expectedResult = new HashSet<>(Arrays.asList("uk", "finland"));
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -208,9 +218,11 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     Set<String> sourceRegions = new HashSet<>(Arrays.asList("europe"));
 
     var dependentPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, dependentRegions));
     var sourcePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, sourceRegions));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
@@ -225,9 +237,10 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var region2 = "usa";
 
     var targetPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1, region2));
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1, region2));
     var removePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region2));
 
     PolicyInput resultPolicy = regionConstraint.remove(targetPolicy, removePolicy);
     Set<String> groupSet =
@@ -243,9 +256,9 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
     var region1 = "europe";
 
     var targetPolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
     var removePolicy =
-        new PolicyInput(TERRA, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, region1));
 
     PolicyInput resultPolicy = regionConstraint.remove(targetPolicy, removePolicy);
     assertNull(resultPolicy);
