@@ -345,7 +345,8 @@ public class PaoUpdateTest extends TestUnitBase {
     PolicyInputs groupPolicyInput = PaoTestUtil.makePolicyInputs(groupPolicy);
 
     PolicyUpdateResult result =
-        paoService.updatePao(paoId, groupPolicyInput, new PolicyInputs(), PaoUpdateMode.FAIL_ON_CONFLICT);
+        paoService.updatePao(
+            paoId, groupPolicyInput, new PolicyInputs(), PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Update 1 adds a group constraint. Result: {}", result);
 
     assertTrue(result.updateApplied());
