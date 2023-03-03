@@ -827,7 +827,11 @@ public class ApiClient {
     clientConfig.connectorProvider(new ApacheConnectorProvider());
     // Note the PoolingHttpClientConnectionManager defaults to a maximum of 2 connections per route.
     // This may be too low for our use cases, but we can modify it here later if needed.
-    clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
+    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+    // Validate inactive connections after 500ms instead of default 2000ms to avoid
+    // NoHttpResponseExceptions from stale connections.
+    connectionManager.setValidateAfterInactivity(500);
+    clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, connectionManager);
     {{! End Terra change }}
   }
 
