@@ -825,12 +825,13 @@ public class ApiClient {
     // For JDK17, we need to use this connection provider to work around the way Jersey
     // implements PATCH
     clientConfig.connectorProvider(new ApacheConnectorProvider());
-    // Note the PoolingHttpClientConnectionManager defaults to a maximum of 2 connections per route.
-    // This may be too low for our use cases, but we can modify it here later if needed.
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-    // Validate inactive connections after 500ms instead of default 2000ms to avoid
-    // NoHttpResponseExceptions from stale connections.
-    connectionManager.setValidateAfterInactivity(500);
+    connectionManager.setDefaultMaxPerRoute(20);
+    // Validate inactive connections after 1ms instead of default 2000ms. This is
+    // the closest to "always validate" behavior we can get.
+    // This is a small performance hit, but avoids errors from stale connections
+    // that Terra hits otherwise.
+    connectionManager.setValidateAfterInactivity(1);
     clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, connectionManager);
     {{! End Terra change }}
   }
