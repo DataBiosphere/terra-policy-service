@@ -76,6 +76,7 @@ vaulttoken=${2:-$(cat "$HOME"/.vault-token)}
 outputdir=${3:-$default_outputdir}
 default_vaultenv=${TPS_VAULT_ENV:-docker}
 vaultenv=${4:-$default_vaultenv}
+vaultaddr="https://clotho.broadinstitute.org:8200"
 
 # The vault paths are irregular, so we map the target into three variables:
 # k8senv    - the kubernetes environment: alpha, staging, dev, or integration
@@ -143,12 +144,12 @@ function dovault {
     local dofilename=$2
     case $vaultenv in
         docker)
-            docker run --rm -e VAULT_TOKEN="${vaulttoken}" broadinstitute/dsde-toolbox:consul-0.20.0 \
+            docker run --rm  -e VAULT_ADDR="${vaultaddr}" -e VAULT_TOKEN="${vaulttoken}" vault:1.7.3 \
                    vault read -format=json "${dovaultpath}" > "${dofilename}"
             ;;
 
         local)
-            VAULT_TOKEN="${vaulttoken}" VAULT_ADDR="https://clotho.broadinstitute.org:8200" \
+            VAULT_TOKEN="${vaulttoken}" VAULT_ADDR="${vaultaddr}" \
                    vault read -format=json "${dovaultpath}" > "${dofilename}"
             ;;
     esac

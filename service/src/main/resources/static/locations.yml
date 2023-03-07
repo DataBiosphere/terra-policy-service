@@ -86,6 +86,13 @@ locations:
         description: US West 2
         regions:
         - gcp.us-west2
+    - name: washington
+      description: Washington
+      locations:
+      - name: azure.westus2
+        description: Azure US West 2
+        regions:
+        - azure.westus2
     - name: iowa
       description: Iowa
       locations:
@@ -114,6 +121,13 @@ locations:
         description: US East 1
         regions:
         - gcp.us-east1
+    - name: virginia
+      description: Virginia
+      locations:
+      - name: azure.eastus2
+        description: Azure US East 2
+        regions:
+        - azure.eastus2
     - name: utah
       description: Utah
       locations:

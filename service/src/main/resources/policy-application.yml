@@ -7,7 +7,7 @@
 # This is for deployment-specific values, which may be managed by other teams
 env:
   db:
-    host: jdbc:postgresql://${DATABASE_HOSTNAME:127.0.0.1}:5432
+    host: jdbc:postgresql://${DATABASE_HOSTNAME:127.0.0.1}:${DATABASE_PORT:5432}
     init: ${INIT_DB:false}
     policy:
       name: ${POLICY_DATABASE_NAME:policy_db}
@@ -33,7 +33,7 @@ server:
   compression:
     enabled: true
     mime-types: text/css,application/javascript
-  port: 8080
+  port: ${APPLICATION_PORT:8080}
 
 spring:
   application.name: policy
