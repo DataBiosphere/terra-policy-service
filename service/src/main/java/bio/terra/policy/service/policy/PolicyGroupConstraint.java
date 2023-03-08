@@ -3,8 +3,6 @@ package bio.terra.policy.service.policy;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,8 +49,8 @@ public class PolicyGroupConstraint implements PolicyBase {
   }
 
   /**
-   * Remove groups - remove groups in the removePolicy from groups in the target policy Removing a
-   * group that is not found is not an error. If there is nothing left over, return null.
+   * Remove groups - we don't currently have the ability to modify groups, so return the current
+   * policy.
    *
    * @param target existing policy
    * @param removePolicy policy to remove
@@ -60,16 +58,7 @@ public class PolicyGroupConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
-    Set<String> targetGroups = dataToSet(target.getData(DATA_KEY));
-    Set<String> removeGroups = dataToSet(removePolicy.getData(DATA_KEY));
-    targetGroups.removeAll(removeGroups);
-    if (targetGroups.isEmpty()) {
-      return null;
-    }
-
-    Multimap<String, String> newData = ArrayListMultimap.create();
-    targetGroups.forEach(group -> newData.put(DATA_KEY, group));
-    return new PolicyInput(target.getPolicyName(), newData);
+    return target;
   }
 
   /**

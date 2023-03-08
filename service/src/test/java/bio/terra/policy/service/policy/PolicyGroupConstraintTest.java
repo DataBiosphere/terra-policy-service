@@ -182,7 +182,9 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
     Set<String> groupSet =
         groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
 
-    assertEquals(2, groupSet.size());
+    // since we can't remove, the result set should match the original set
+    assertEquals(groups.size(), groupSet.size());
+    assertTrue(groupSet.contains(GROUP_NAME));
     assertTrue(groupSet.contains(group2));
     assertTrue(groupSet.contains(group3));
   }

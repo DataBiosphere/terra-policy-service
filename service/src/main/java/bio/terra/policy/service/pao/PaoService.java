@@ -261,21 +261,18 @@ public class PaoService {
             String.format("Invalid PolicyInput: %s", addPolicy.getKey()));
       }
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
-      if (existingPolicy == null) {
-        // Nothing to combine; just take the new
-        attributesToUpdate.addInput(addPolicy);
-      } else {
-        PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
-        if (addResult != null) {
-          // We have a combined policy to add
+      PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
+      if (addResult != null) {
+        // We have a combined policy to add
+        if (existingPolicy != null) {
           attributesToUpdate.removeInput(existingPolicy);
-          attributesToUpdate.addInput(addResult);
-        } else {
-          throw new DirectConflictException(
-              String.format(
-                  "Update of policy %s adding %s creates a conflict",
-                  existingPolicy.getKey(), addPolicy.getKey()));
         }
+        attributesToUpdate.addInput(addResult);
+      } else {
+        throw new DirectConflictException(
+            String.format(
+                "Update of policy %s adding %s creates a conflict",
+                existingPolicy.getKey(), addPolicy.getKey()));
       }
     }
 
