@@ -12,8 +12,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Arrays;
@@ -163,7 +165,7 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
   }
 
   @Test
-  void groupConstraintTest_removeGroup() throws Exception {
+  void groupConstraintTest_removeGroupThrows() throws Exception {
     var groupConstraint = new PolicyGroupConstraint();
 
     String group2 = GROUP_NAME + "2";
@@ -178,38 +180,8 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
     var targetPolicy =
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
 
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    Set<String> groupSet =
-        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
-
-    // since we can't remove, the result set should match the original set
-    assertEquals(groups.size(), groupSet.size());
-    assertTrue(groupSet.contains(GROUP_NAME));
-    assertTrue(groupSet.contains(group2));
-    assertTrue(groupSet.contains(group3));
-  }
-
-  @Test
-  void groupConstraintTest_removeNonExistentGroup() throws Exception {
-    var groupConstraint = new PolicyGroupConstraint();
-
-    var removePolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
-
-    String group2 = GROUP_NAME + "2";
-    String group3 = GROUP_NAME + "3";
-    Set<String> groups = new HashSet<>(Arrays.asList(group2, group3));
-    var targetPolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-
-    // we never added GROUP_NAME into the policy, removing it shouldn't break.
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    Set<String> groupSet =
-        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
-
-    assertEquals(2, groupSet.size());
-    assertTrue(groupSet.contains(group2));
-    assertTrue(groupSet.contains(group3));
+    assertThrows(
+        InvalidInputException.class, () -> groupConstraint.remove(targetPolicy, removePolicy));
   }
 
   @Test
