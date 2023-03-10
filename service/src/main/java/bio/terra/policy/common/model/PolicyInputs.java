@@ -17,6 +17,16 @@ public class PolicyInputs {
     this.inputs = inputs;
   }
 
+  public PolicyInputs(PolicyInputs source) {
+    this.inputs = new HashMap<>();
+
+    Map<String, PolicyInput> sourceInputs = source.getInputs();
+
+    for (String key : sourceInputs.keySet()) {
+      addInput(sourceInputs.get(key).duplicate());
+    }
+  }
+
   public PolicyInputs() {
     this.inputs = new HashMap<>();
   }
