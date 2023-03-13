@@ -117,7 +117,6 @@ public class PolicyRegionConstraint implements PolicyBase {
    * ontology.
    *
    * @param policyInput the input to validate
-   * @return
    */
   @Override
   public boolean isValid(PolicyInput policyInput) {

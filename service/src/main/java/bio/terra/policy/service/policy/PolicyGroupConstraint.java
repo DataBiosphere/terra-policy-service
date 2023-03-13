@@ -73,8 +73,8 @@ public class PolicyGroupConstraint implements PolicyBase {
   }
 
   /**
-   * For groups, the only thing we can validate right now is that the key is correct. TODO: When we
-   * connect TPS to SAM, we can validate the group name as well.
+   * For groups, the only thing we can validate right now is that the key is correct. TODO PF-2558:
+   * When we connect TPS to SAM, we can validate the group name as well.
    *
    * @param policyInput the input to validate
    * @return
