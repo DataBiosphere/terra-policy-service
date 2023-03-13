@@ -10,6 +10,7 @@ import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -221,5 +222,26 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
 
     PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
     assertNull(resultPolicy);
+  }
+
+  @Test
+  void groupConstraintTest_validation() {
+    var groupConstraint = new PolicyGroupConstraint();
+
+    Set<String> groups = new HashSet<>(Arrays.asList(GROUP_NAME));
+    var validPolicy =
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+    var invalidKey =
+        new PolicyInput(
+            TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY + "invalid", groups));
+
+    groups.add("invalid");
+    var invalidValue =
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
+
+    assertTrue(groupConstraint.isValid(validPolicy));
+    assertFalse(groupConstraint.isValid(invalidKey));
+    // we don't currently validate the value
+    assertTrue(groupConstraint.isValid(invalidValue));
   }
 }

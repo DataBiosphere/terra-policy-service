@@ -33,6 +33,11 @@ public class PolicyMutator {
     return findPolicy(removePolicy).remove(target, removePolicy);
   }
 
+  public static boolean validate(PolicyInput policyInput) {
+    PolicyBase policy = findPolicy(policyInput);
+    return policy.isValid(policyInput);
+  }
+
   private static void validateMatchedPolicies(PolicyInput one, PolicyInput two) {
     if (one == null || two == null) {
       // We can still call combine if one of the policies is empty.

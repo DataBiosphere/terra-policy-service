@@ -23,4 +23,12 @@ public interface PolicyBase {
    * @return resulting policy or null if the policy is gone
    */
   PolicyInput remove(PolicyInput target, PolicyInput removePolicy);
+
+  /**
+   * Validate a policy input.
+   *
+   * @param policyInput the input to validate
+   * @return boolean indicating valid or not
+   */
+  boolean isValid(PolicyInput policyInput);
 }

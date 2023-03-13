@@ -19,7 +19,7 @@ public class TpsBasicControllerTest extends TestUnitBase {
   private static final String GROUP = "group";
   private static final String REGION = "region-name";
   private static final String DDGROUP = "ddgroup";
-  private static final String US_REGION = "US";
+  private static final String US_REGION = "usa";
 
   @Autowired private MvcUtils mvcUtils;
 

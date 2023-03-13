@@ -72,6 +72,23 @@ public class PolicyGroupConstraint implements PolicyBase {
     return new PolicyInput(target.getPolicyName(), newData);
   }
 
+  /**
+   * For groups, the only thing we can validate right now is that the key is correct. TODO: When we
+   * connect TPS to SAM, we can validate the group name as well.
+   *
+   * @param policyInput the input to validate
+   * @return
+   */
+  @Override
+  public boolean isValid(PolicyInput policyInput) {
+    for (var key : policyInput.getAdditionalData().keySet()) {
+      if (!key.equals(DATA_KEY)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @VisibleForTesting
   Set<String> dataToSet(Collection<String> groups) {
     return new HashSet<>(groups);

@@ -11,7 +11,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;
@@ -262,5 +264,31 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
 
     PolicyInput resultPolicy = regionConstraint.remove(targetPolicy, removePolicy);
     assertNull(resultPolicy);
+  }
+
+  @Test
+  void regionConstraintTest_validation() {
+    var regionConstraint = new PolicyRegionConstraint();
+
+    var location1 = "europe";
+
+    var validPolicy =
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, location1));
+    var validMultiValue =
+        new PolicyInput(
+            TERRA_NAMESPACE,
+            REGION_CONSTRAINT,
+            buildMultimap(REGION_KEY, location1, "usa", "asiapacific"));
+    var invalidKey =
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY + "invalid", location1));
+    var invalidValue =
+        new PolicyInput(
+            TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, location1 + "invalid"));
+
+    assertTrue(regionConstraint.isValid(validPolicy));
+    assertTrue(regionConstraint.isValid(validMultiValue));
+    assertFalse(regionConstraint.isValid(invalidKey));
+    assertFalse(regionConstraint.isValid(invalidValue));
   }
 }
