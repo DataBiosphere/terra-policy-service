@@ -72,13 +72,13 @@ public class PolicyUnknown implements PolicyBase {
   }
 
   /**
-   * Unknown policies will be seen as valid.
+   * Unknown policies will be seen as invalid.
    *
    * @param policyInput the input to validate
-   * @return true
+   * @return false
    */
   @Override
   public boolean isValid(PolicyInput policyInput) {
-    return true;
+    return false;
   }
 }

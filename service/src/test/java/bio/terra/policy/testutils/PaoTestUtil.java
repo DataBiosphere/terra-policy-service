@@ -1,8 +1,8 @@
 package bio.terra.policy.testutils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -21,7 +21,8 @@ public class PaoTestUtil {
   public static final String REGION_CONSTRAINT = "region-constraint";
   public static final String GROUP_CONSTRAINT = "group-constraint";
   public static final String REGION_KEY = "region-name";
-  public static final String DEFAULT_REGION_NAME = "usa";
+  public static final String REGION_NAME_USA = "usa";
+  public static final String REGION_NAME_EUROPE = "europe";
   public static final String GROUP_KEY = "group";
   public static final String GROUP_NAME = "mygroup";
 
@@ -51,6 +52,16 @@ public class PaoTestUtil {
 
   public static PolicyInput makeFlagInput(String name) {
     return PolicyInput.createFromMap(TEST_NAMESPACE, name, Collections.emptyMap());
+  }
+
+  public static PolicyInput makeRegionPolicyInput(String location) {
+    return PolicyInput.createFromMap(
+        TERRA_NAMESPACE, REGION_CONSTRAINT, Collections.singletonMap(REGION_KEY, location));
+  }
+
+  public static PolicyInput makeGroupPolicyInput(String groupName) {
+    return PolicyInput.createFromMap(
+        TERRA_NAMESPACE, GROUP_CONSTRAINT, Collections.singletonMap(GROUP_KEY, groupName));
   }
 
   public static PolicyInput makeDataInput(String name, String data) {
@@ -106,7 +117,9 @@ public class PaoTestUtil {
     PolicyInputs inputs = pao.getEffectiveAttributes();
     for (PolicyInput input : inputList) {
       var foundInput = inputs.lookupPolicy(input);
-      assertNull(foundInput);
+      if (foundInput != null) {
+        assertNotEquals(input.getAdditionalData(), foundInput.getAdditionalData());
+      }
     }
   }
 }
