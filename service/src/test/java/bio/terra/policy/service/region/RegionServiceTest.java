@@ -74,33 +74,33 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getRegionsForLocationInvalidRegion() {
-    var result = regionService.getRegionsForLocation("invalid", GCP_PLATFORM);
+    var result = regionService.getRegionCodesForLocation("invalid", GCP_PLATFORM);
     assertEquals(0, result.size());
   }
 
   @Test
   void getRegionsForLocationEmptyRegion() {
-    var result = regionService.getRegionsForLocation("", GCP_PLATFORM);
+    var result = regionService.getRegionCodesForLocation("", GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
   void getRegionsForLocationNullRegion() {
-    var result = regionService.getRegionsForLocation(null, GCP_PLATFORM);
+    var result = regionService.getRegionCodesForLocation(null, GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
   void getRegionsForLocationAzureFilter() {
-    var result = regionService.getRegionsForLocation("global", AZURE_PLATFORM);
+    var result = regionService.getRegionCodesForLocation("global", AZURE_PLATFORM);
     assertEquals(0, result.size());
   }
 
   @Test
   void getRegionsForLocationGlobal() {
-    var result = regionService.getRegionsForLocation("global", GCP_PLATFORM);
+    var result = regionService.getRegionCodesForLocation("global", GCP_PLATFORM);
     assertTrue(result.size() > 10);
   }
 
@@ -148,40 +148,40 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getPolicyInputRegionCodesFromSelf() {
-    var targetDatacenter = "europe-west3";
-    var targetRegion = GCP_PLATFORM + "." + targetDatacenter;
+    var targetRegionCode = "europe-west3";
+    var targetRegion = GCP_PLATFORM + "." + targetRegionCode;
 
     var pao = createPao(targetRegion);
-    var datacenters =
+    var actual =
         regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
-    assertTrue(datacenters.contains(targetDatacenter));
+    assertTrue(actual.contains(targetRegionCode));
   }
 
   @Test
   void getPolicyInputRegionCodesFromChild() {
     var region = "usa";
-    var childDatacenter = "us-central1";
+    var childRegion = "us-central1";
 
     var pao = createPao(region);
-    var datacenters =
+    var regions =
         regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
-    assertTrue(datacenters.size() > 1);
-    assertTrue(datacenters.contains(childDatacenter));
+    assertTrue(regions.size() > 1);
+    assertTrue(regions.contains(childRegion));
   }
 
   @Test
   void getPolicyInputRegionCodesNegative() {
     var region = "usa";
-    var childDatacenterCode = "europe-west3";
+    var childRegionCode = "europe-west3";
 
     var pao = createPao(region);
-    var datacenters =
+    var regions =
         regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
-    assertTrue(datacenters.size() > 1);
-    assertFalse(datacenters.contains(childDatacenterCode));
+    assertTrue(regions.size() > 1);
+    assertFalse(regions.contains(childRegionCode));
   }
 
   @Test
@@ -191,13 +191,13 @@ public class RegionServiceTest extends TestUnitBase {
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     var pao = paoService.getPao(objectId);
 
-    var datacenters =
+    var regions =
         regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
-    // Pao should be allowed all datacenters
-    assertTrue(datacenters.size() > 10);
-    assertTrue(datacenters.contains("us-east1"));
-    assertTrue(datacenters.contains("europe-west3"));
+    // Pao should be allowed all regions
+    assertTrue(regions.size() > 10);
+    assertTrue(regions.contains("us-east1"));
+    assertTrue(regions.contains("europe-west3"));
   }
 
   private Pao createPao(String region) {

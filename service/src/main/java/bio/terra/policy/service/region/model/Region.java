@@ -1,5 +1,9 @@
 package bio.terra.policy.service.region.model;
 
+/**
+ * Region corresponds to the cloud concept of region. The id is in the form [platform].[code] where
+ * code is the identifier given by the cloud platform.
+ */
 public class Region {
   private String id;
   private String description;

@@ -111,26 +111,26 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
-  public ResponseEntity<ApiTpsRegions> getRegions(String platform, String region) {
+  public ResponseEntity<ApiTpsRegions> getRegions(String platform, String location) {
     ApiTpsRegions result = new ApiTpsRegions();
 
-    var list = regionService.getRegionsForLocation(region, platform);
+    var regionCodes = regionService.getRegionCodesForLocation(location, platform);
 
-    if (list == null) {
+    if (regionCodes == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    result.addAll(list);
+    result.addAll(regionCodes);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<ApiTpsLocation> getLocationInfo(String platform, String regionName) {
-    Location region = regionService.getOntology(regionName, platform);
-    if (region == null) {
+  public ResponseEntity<ApiTpsLocation> getLocationInfo(String platform, String locationName) {
+    Location location = regionService.getOntology(locationName, platform);
+    if (location == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    ApiTpsLocation result = ConversionUtils.regionToApi(region);
+    ApiTpsLocation result = ConversionUtils.regionToApi(location);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
@@ -147,19 +147,19 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsRegions> listValidByPolicyInput(
       String platform, ApiTpsPolicyInputs policyInputs) {
     PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);
-    HashSet<String> datacenters = regionService.getPolicyInputRegionCodes(inputs, platform);
+    HashSet<String> regions = regionService.getPolicyInputRegionCodes(inputs, platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(datacenters);
+    response.addAll(regions);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @Override
   public ResponseEntity<ApiTpsRegions> listValidRegions(UUID objectId, String platform) {
     Pao pao = paoService.getPao(objectId);
-    HashSet<String> datacenters =
+    HashSet<String> regionCodes =
         regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(datacenters);
+    response.addAll(regionCodes);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -201,13 +201,11 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
-  public ResponseEntity<Void> validateRegionAllowed(
-      UUID objectId, String datacenter, String platform) {
+  public ResponseEntity<Void> validateRegionAllowed(UUID objectId, String region, String platform) {
     Pao pao = paoService.getPao(objectId);
-    if (!regionService.isRegionAllowedByPao(pao, datacenter, platform)) {
+    if (!regionService.isRegionAllowedByPao(pao, region, platform)) {
       throw new ConflictException(
-          String.format(
-              "Data center '%s' is not allowed per the effective region constraint.", datacenter),
+          String.format("Region '%s' is not allowed per the effective region constraint.", region),
           regionService.getPolicyInputRegionCodes(pao.getEffectiveAttributes(), platform).stream()
               .toList());
     }

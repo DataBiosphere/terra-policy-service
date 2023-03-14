@@ -1,6 +1,9 @@
 package bio.terra.policy.service.region.model;
 
-/** Location contains the geographic name and the region (a.k.a data center ids). */
+/**
+ * Location is a Terra concept containing nested locations and regions corresponding to the cloud
+ * concept of region.
+ */
 public class Location {
   // Geographic name of the location (e.g. asia, usa, iowa)
   private String name;
