@@ -4,6 +4,7 @@ import bio.terra.common.db.WriteTransaction;
 import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -255,6 +256,10 @@ public class PaoService {
 
     // Now integrate the adds into the attribute set
     for (PolicyInput addPolicy : addAttributes.getInputs().values()) {
+      if (!PolicyMutator.validate(addPolicy)) {
+        throw new InvalidInputException(
+            String.format("Invalid PolicyInput: %s", addPolicy.getKey()));
+      }
       PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
       if (existingPolicy == null) {
         // Nothing to combine; just take the new

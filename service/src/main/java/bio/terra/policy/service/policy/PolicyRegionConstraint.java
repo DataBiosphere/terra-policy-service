@@ -112,6 +112,29 @@ public class PolicyRegionConstraint implements PolicyBase {
     return new PolicyInput(POLICY_NAME, newData);
   }
 
+  /**
+   * Validate that a region policy input has the right key and that the value exists in the
+   * ontology.
+   *
+   * @param policyInput the input to validate
+   */
+  @Override
+  public boolean isValid(PolicyInput policyInput) {
+    Multimap<String, String> additionalData = policyInput.getAdditionalData();
+    for (String key : additionalData.keySet()) {
+      if (!key.equals(DATA_KEY)) {
+        return false;
+      }
+
+      for (var value : additionalData.get(key)) {
+        if (regionService.getLocation(value) == null) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   @VisibleForTesting
   Set<String> dataToSet(Collection<String> regions) {
     return new HashSet<>(regions);

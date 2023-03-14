@@ -1,11 +1,11 @@
 package bio.terra.policy.service.pao;
 
-import static bio.terra.policy.testutils.PaoTestUtil.DEFAULT_REGION_NAME;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
+import static bio.terra.policy.testutils.PaoTestUtil.REGION_NAME_USA;
 import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -334,7 +334,7 @@ public class PaoUpdateTest extends TestUnitBase {
         PolicyInput.createFromMap(
             TERRA_NAMESPACE,
             REGION_CONSTRAINT,
-            Collections.singletonMap(REGION_KEY, DEFAULT_REGION_NAME));
+            Collections.singletonMap(REGION_KEY, REGION_NAME_USA));
     PolicyInput groupPolicy =
         PolicyInput.createFromMap(
             TERRA_NAMESPACE, GROUP_CONSTRAINT, Collections.singletonMap(GROUP_KEY, GROUP_NAME));
@@ -358,21 +358,20 @@ public class PaoUpdateTest extends TestUnitBase {
   @Test
   void updateSinglePaoTest_paoAttributesUpdateCorrectly() throws Exception {
     // Basic updates on a single Pao
-    // Pao has flag A and data policy X, data1
+    // Pao has group and usaRegion policies
     UUID paoId =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME),
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
     logger.info("paoId: {}", paoId);
 
     PolicyInputs removes =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
     PolicyInputs adds =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
 
     PolicyUpdateResult result =
         paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -382,10 +381,10 @@ public class PaoUpdateTest extends TestUnitBase {
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B));
+        PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME),
+        PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
     PaoTestUtil.checkForMissingPolicies(
-        resultPao, PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        resultPao, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
 
     // Repeating the operation should get the same result.
     result = paoService.updatePao(paoId, adds, removes, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -395,27 +394,28 @@ public class PaoUpdateTest extends TestUnitBase {
     resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B));
+        PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME),
+        PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
     PaoTestUtil.checkForMissingPolicies(
-        resultPao, PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        resultPao, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
 
     // Go from zero to one policy
     UUID paoNone = PaoTestUtil.makePao(paoService);
     logger.info("paoNone: {}", paoNone);
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
-    PolicyInputs oneFlag =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
-    result = paoService.updatePao(paoNone, oneFlag, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
+    PolicyInputs usaRegion =
+        PaoTestUtil.makePolicyInputs(
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
+    result = paoService.updatePao(paoNone, usaRegion, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Update 3 removes {} adds {} result {}", removes, adds, result);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
     resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
-        resultPao, PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
+        resultPao, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
 
     // Go from one to zero policy
-    result = paoService.updatePao(paoNone, empty, oneFlag, PaoUpdateMode.FAIL_ON_CONFLICT);
+    result = paoService.updatePao(paoNone, empty, usaRegion, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Update 4 removes {} adds {} result {}", removes, adds, result);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
@@ -425,12 +425,11 @@ public class PaoUpdateTest extends TestUnitBase {
     // Try to add a conflicting policy
     UUID paoConflict =
         PaoTestUtil.makePao(
-            paoService,
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            paoService, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
     logger.info("paoConflict: {}", paoConflict);
     PolicyInputs conflictPolicy =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
 
     assertThrows(
         DirectConflictException.class,
@@ -452,22 +451,22 @@ public class PaoUpdateTest extends TestUnitBase {
     paoService.linkSourcePao(paoDid, paoSid, PaoUpdateMode.FAIL_ON_CONFLICT);
 
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
-    PolicyInputs oneFlag =
-        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
-    // Add the flag policy
+    PolicyInputs oneRegion =
+        PaoTestUtil.makePolicyInputs(PaoTestUtil.makeRegionPolicyInput(REGION_NAME_USA));
+    // Add the region policy
     PolicyUpdateResult result =
-        paoService.updatePao(paoSid, oneFlag, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
+        paoService.updatePao(paoSid, oneRegion, empty, PaoUpdateMode.FAIL_ON_CONFLICT);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
     PaoTestUtil.checkForPolicies(
-        result.computedPao(), PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
+        result.computedPao(), PaoTestUtil.makeRegionPolicyInput(REGION_NAME_USA));
 
     // Double check that the policy got saved properly
     Pao checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A));
+    PaoTestUtil.checkForPolicies(checkD, PaoTestUtil.makeRegionPolicyInput(REGION_NAME_USA));
 
     // Remove the flag policy
-    result = paoService.updatePao(paoSid, empty, oneFlag, PaoUpdateMode.FAIL_ON_CONFLICT);
+    result = paoService.updatePao(paoSid, empty, oneRegion, PaoUpdateMode.FAIL_ON_CONFLICT);
     assertTrue(result.updateApplied());
     assertTrue(result.conflicts().isEmpty());
     assertTrue(result.computedPao().getEffectiveAttributes().getInputs().isEmpty());
@@ -480,14 +479,13 @@ public class PaoUpdateTest extends TestUnitBase {
   @Test
   void updatePropagateConflictTest_sourcesConflict() throws Exception {
     // Two sources and a dependent
-    // Start S1 empty, S2 policy X data2; link both to D
-    // add S1 policy X data1; conflict - try with DRY_RUN, FAIL_ON_CONFLICT, ENFORCE_CONFLICT
-    PolicyInput xData2 =
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2);
+    // Start S1 empty, S2 policy usaRegion; link both to D
+    // add S1 policy europeRegion; conflict - try with DRY_RUN, FAIL_ON_CONFLICT, ENFORCE_CONFLICT
+    PolicyInput usaRegion = PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA);
 
     UUID paoS1id = PaoTestUtil.makePao(paoService);
     logger.info("paoS1id: {}", paoS1id);
-    UUID paoS2id = PaoTestUtil.makePao(paoService, xData2);
+    UUID paoS2id = PaoTestUtil.makePao(paoService, usaRegion);
     logger.info("paoS2id: {}", paoS2id);
     UUID paoDid = PaoTestUtil.makePao(paoService);
     logger.info("paoDid: {}", paoDid);
@@ -496,13 +494,13 @@ public class PaoUpdateTest extends TestUnitBase {
 
     // Check that the dependent has the right policy
     Pao checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, xData2);
+    PaoTestUtil.checkForPolicies(checkD, usaRegion);
 
     // Conflict case - DRY_RUN
     PolicyInputs empty = PaoTestUtil.makePolicyInputs();
     PolicyInputs conflictPolicy =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
 
     PolicyUpdateResult result =
         paoService.updatePao(paoS1id, conflictPolicy, empty, PaoUpdateMode.DRY_RUN);
@@ -511,10 +509,10 @@ public class PaoUpdateTest extends TestUnitBase {
         result,
         paoDid,
         paoS1id,
-        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
+        new PolicyName(PaoTestUtil.TERRA_NAMESPACE, PaoTestUtil.REGION_CONSTRAINT));
     checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, xData2);
-    PolicyInput conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
+    PaoTestUtil.checkForPolicies(checkD, usaRegion);
+    PolicyInput conflicted = checkD.getEffectiveAttributes().getInputs().get(usaRegion.getKey());
     assertEquals(0, conflicted.getConflicts().size());
 
     // Conflict case - FAIL_ON_CONFLICT
@@ -525,10 +523,10 @@ public class PaoUpdateTest extends TestUnitBase {
         result,
         paoDid,
         paoS1id,
-        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
+        new PolicyName(PaoTestUtil.TERRA_NAMESPACE, PaoTestUtil.REGION_CONSTRAINT));
     checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, xData2);
-    conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
+    PaoTestUtil.checkForPolicies(checkD, usaRegion);
+    conflicted = checkD.getEffectiveAttributes().getInputs().get(usaRegion.getKey());
     assertEquals(0, conflicted.getConflicts().size());
 
     // Conflict case - ENFORCE_CONFLICTS
@@ -538,29 +536,28 @@ public class PaoUpdateTest extends TestUnitBase {
         result,
         paoDid,
         paoS1id,
-        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
+        new PolicyName(PaoTestUtil.TERRA_NAMESPACE, PaoTestUtil.REGION_CONSTRAINT));
     checkD = paoService.getPao(paoDid);
-    PaoTestUtil.checkForPolicies(checkD, xData2);
+    PaoTestUtil.checkForPolicies(checkD, usaRegion);
 
-    conflicted = checkD.getEffectiveAttributes().getInputs().get(xData2.getKey());
+    conflicted = checkD.getEffectiveAttributes().getInputs().get(usaRegion.getKey());
     assertEquals(1, conflicted.getConflicts().size());
     assertTrue(conflicted.getConflicts().contains(paoS1id));
   }
 
   @Test
   void updatePropagateConflictTest_dependentsConflict() throws Exception {
-    // We build this graph A --> B(X-data1) --> C --> D
-    // Then we attempt to update A(X-data2) for DRY_RUN, FAIL_ON_CONFLICT, and ENFORCE_CONFLICTS
+    // We build this graph A --> B(usaRegion) --> C --> D
+    // Then we attempt to update A(europeRegion) for DRY_RUN, FAIL_ON_CONFLICT, and
+    // ENFORCE_CONFLICTS
     // We expect the conflict to propagate from B to C and D.
-    PolicyInput xData1 =
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1);
-    PolicyInput xData2 =
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2);
-    PolicyInputs conflictPolicy = PaoTestUtil.makePolicyInputs(xData2);
+    PolicyInput usaRegion = PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA);
+    PolicyInput europeRegion = PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE);
+    PolicyInputs conflictPolicy = PaoTestUtil.makePolicyInputs(europeRegion);
     PolicyInputs emptyPolicy = PaoTestUtil.makePolicyInputs();
 
     UUID paoAid = PaoTestUtil.makePao(paoService);
-    UUID paoBid = PaoTestUtil.makePao(paoService, xData1);
+    UUID paoBid = PaoTestUtil.makePao(paoService, usaRegion);
     UUID paoCid = PaoTestUtil.makePao(paoService);
     UUID paoDid = PaoTestUtil.makePao(paoService);
 
@@ -568,36 +565,36 @@ public class PaoUpdateTest extends TestUnitBase {
     paoService.linkSourcePao(paoBid, paoAid, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoDid, paoCid, PaoUpdateMode.FAIL_ON_CONFLICT);
     paoService.linkSourcePao(paoCid, paoBid, PaoUpdateMode.FAIL_ON_CONFLICT);
-    PaoTestUtil.checkForPolicies(paoService.getPao(paoDid), xData1);
-    PaoTestUtil.checkForPolicies(paoService.getPao(paoCid), xData1);
-    PaoTestUtil.checkForPolicies(paoService.getPao(paoBid), xData1);
-    PaoTestUtil.checkForMissingPolicies(paoService.getPao(paoAid), xData1);
+    PaoTestUtil.checkForPolicies(paoService.getPao(paoDid), usaRegion);
+    PaoTestUtil.checkForPolicies(paoService.getPao(paoCid), usaRegion);
+    PaoTestUtil.checkForPolicies(paoService.getPao(paoBid), usaRegion);
+    PaoTestUtil.checkForMissingPolicies(paoService.getPao(paoAid), usaRegion);
 
     PolicyUpdateResult result =
         paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.DRY_RUN);
     logger.info("Result: {}", result);
     assertFalse(result.updateApplied());
     assertEquals(3, result.conflicts().size()); // B, C, and D
-    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, usaRegion.getPolicyName());
 
     result =
         paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("Result: {}", result);
     assertFalse(result.updateApplied());
     assertEquals(3, result.conflicts().size()); // B, C, and D
-    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, usaRegion.getPolicyName());
 
     result =
         paoService.updatePao(paoAid, conflictPolicy, emptyPolicy, PaoUpdateMode.ENFORCE_CONFLICTS);
     logger.info("Result: {}", result);
     assertTrue(result.updateApplied());
     assertEquals(3, result.conflicts().size()); // B, C, and D
-    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, xData1.getPolicyName());
-    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, xData1.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoBid, paoAid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoCid, paoBid, usaRegion.getPolicyName());
+    PaoTestUtil.checkConflictFind(result, paoDid, paoCid, usaRegion.getPolicyName());
   }
 }

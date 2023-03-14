@@ -70,4 +70,15 @@ public class PolicyUnknown implements PolicyBase {
   public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
     return null;
   }
+
+  /**
+   * Unknown policies will be seen as invalid.
+   *
+   * @param policyInput the input to validate
+   * @return false
+   */
+  @Override
+  public boolean isValid(PolicyInput policyInput) {
+    return false;
+  }
 }
