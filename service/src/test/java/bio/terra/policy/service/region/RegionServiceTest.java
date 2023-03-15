@@ -95,7 +95,7 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void getRegionsForLocationAzureFilter() {
     var result = regionService.getRegionsForLocation("global", AZURE_PLATFORM);
-    assertEquals(0, result.size());
+    assertEquals(25, result.size());
   }
 
   @Test

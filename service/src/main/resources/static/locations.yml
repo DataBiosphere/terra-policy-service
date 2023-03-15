@@ -26,6 +26,10 @@ locations:
       description: Europe West 3
       regions:
       - gcp.europe-west3
+    - name: azure.germanywestcentral
+      description: Germany West Central
+      regions:
+        - azure.germanywestcentral
   - name: italy
     description: Italy
     locations:
@@ -40,6 +44,10 @@ locations:
       description: Europe West 4
       regions:
       - gcp.europe-west4
+    - name: azure.westeurope
+      description: West Europe
+      regions:
+      - azure.westeurope
   - name: poland
     description: Poland
     locations:
@@ -61,6 +69,10 @@ locations:
       description: Europe West 6
       regions:
       - gcp.europe-west6
+    - name: azure.switzerlandnorth
+      description: Switzerland North
+      regions:
+      - azure.switzerlandnorth
   - name: uk
     description: United Kingdom
     locations:
@@ -68,10 +80,42 @@ locations:
       description: Europe West 2
       regions:
       - gcp.europe-west2
+    - name: azure.uksouth
+      description: UK South
+      regions:
+      - azure.uksouth
   - name: multiregion-eu
     description: Multi-Region EU
     regions:
     - gcp.EU
+  - name: sweden
+    description: Sweden
+    locations:
+    - name: azure.swedencentral
+      description: Sweden Central
+      regions:
+      - azure.swedencentral
+  - name: ireland
+    description: Ireland
+    locations:
+    - name: azure.northeurope
+      description: North Europe
+      regions:
+      - azure.northeurope
+  - name: norway
+    description: Norway
+    locations:
+    - name: azure.norwayeast
+      description: Norway East
+      regions:
+      - azure.norwayeast
+  - name: france
+    description: France
+    locations:
+    - name: azure.francecentral
+      description: France Central
+      regions:
+      - azure.francecentral
 
 - name: americas
   description: North and South America
@@ -93,6 +137,10 @@ locations:
         description: US Central 1
         regions:
         - gcp.us-central1
+      - name: azure.centralus
+        description: Central US
+        regions:
+        - azure.centralus
     - name: nevada
       description: Nevada
       locations:
@@ -128,6 +176,38 @@ locations:
         description: US East 4
         regions:
         - gcp.us-east4
+      - name: azure.eastus2
+        description: US East 2
+        regions:
+        - azure.eastus2
+    - name: illinois
+      description: Illinois
+      locations:
+      - name: azure.northcentralus
+        description: North Central US
+        regions:
+        - azure.northcentralus
+    - name: texas
+      description: Texas
+      locations:
+      - name: azure.southcentralus
+        description: South Central US
+        regions:
+        - azure.southcentralus
+    - name: washington
+      description: Washington
+      locations:
+      - name: azure.westus2
+        description: West US 2
+        regions:
+        - azure.westus2
+    - name: arizona
+      description: Arizona
+      locations:
+      - name: azure.westus3
+        description: West US 3
+        regions:
+        - azure.westus3
     - name: multiregion-us
       description: Multi-region US
       regions:
@@ -143,6 +223,20 @@ locations:
       description: North America Northeast 2
       regions:
       - gcp.northamerica-northeast2
+    - name: toronto
+      description: Toronto
+      locations:
+      - name: azure.canadacentral
+        description: Canada Central
+        regions:
+        - azure.canadacentral
+    - name: quebeccity
+      description: Quebec City
+      locations:
+      - name: azure.canadaeast
+        description: Canada East
+        regions:
+        - azure.canadaeast
   - name: brazil
     description: Brazil
     locations:
@@ -150,6 +244,13 @@ locations:
       description: South America East 1
       regions:
       - gcp.southamerica-east1
+    - name: saopaulo
+      description: São Paulo
+      locations:
+      - name: azure.brazilsouth
+        description: Brazil South
+        regions:
+        - azure.brazilsouth
   - name: chile
     description: Chile
     locations:
@@ -172,6 +273,13 @@ locations:
       description: Australia Southeast 2
       regions:
       - gcp.australia-southeast2
+    - name: newsouthwales
+      description: New South Wales
+      locations:
+      - name: azure.australiaeast
+        description: Australia East
+        regions:
+        - azure.australiaeast
   - name: hongkong
     description: Hong Kong
     locations:
@@ -179,6 +287,10 @@ locations:
       description: Asia East 2
       regions:
       - gcp.asia-east2
+    - name: azure.eastasia
+      description: East Asia
+      regions:
+      - azure.eastasia
   - name: india
     description: India
     locations:
@@ -190,6 +302,20 @@ locations:
       description: Asia South 2
       regions:
       - gcp.asia-south2
+    - name: pune
+      description: Pune
+      locations:
+      - name: azure.centralindia
+        description: Central India
+        regions:
+        - azure.centralindia
+    - name: chennai
+      description: Chennai
+      locations:
+      - name: azure.southindia
+        description: South India
+        regions:
+        - azure.southindia
   - name: indonesia
     description: Indonesia
     locations:
@@ -208,6 +334,20 @@ locations:
       description: Asia Northeast 2
       regions:
       - gcp.asia-northeast2
+    - name: tokyo
+      description: Tokyo
+      locations:
+      - name: azure.japaneast
+        description: Japan East
+        regions:
+        - azure.japaneast
+    - name: osaka
+      description: Osaka
+      locations:
+      - name: azure.japanwest
+        description: Japan West
+        regions:
+        - azure.japanwest
   - name: korea
     description: Korea
     locations:
@@ -215,6 +355,13 @@ locations:
       description: Asia Northeast 3
       regions:
       - gcp.asia-northeast3
+    - name: seoul
+      description: Seoul
+      locations:
+      - name: azure.koreacentral
+        description: Korea Central
+        regions:
+        - azure.koreacentral
   - name: singapore
     description: Singapore
     locations:
@@ -226,6 +373,10 @@ locations:
       description: Asia Northeast 2
       regions:
       - gcp.asia-northeast2
+    - name: azure.southeastasia
+      description: Southeast Asia
+      regions:
+      - azure.southeastasia
   - name: taiwan
     description: Taiwan
     locations:
