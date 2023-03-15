@@ -10,11 +10,13 @@ import com.google.common.base.Strings;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,13 +36,13 @@ public class RegionService {
   // Map from a location (e.g. europe, usa, iowa) to a list of the names of all regions
   // contained in that location and sub-locations (e.g. inside usa, there are locations in
   // different states)
-  private final HashMap<String, HashSet<String>> regionsWithinLocation;
+  private final Map<String, Set<Region>> regionsWithinLocation;
   // Map from location name to a list of the names of all sub-locations.
-  private final HashMap<String, HashSet<String>> subLocationsWithinLocation;
+  private final Map<String, Set<Location>> subLocationsWithinLocation;
   // Object map from the location name to the location object.
-  private final HashMap<String, Location> locationsByName;
+  private final Map<String, Location> locationsByName;
   // Object map from the region name to the region object.
-  private final HashMap<String, Region> regionsByName;
+  private final Map<String, Region> regionsByName;
 
   @Autowired
   public RegionService() {
@@ -79,12 +81,12 @@ public class RegionService {
    * platform.
    */
   @Nullable
-  public HashSet<String> getRegionCodesForLocation(String locationName, String platform) {
+  public Set<Region> getRegionsForLocation(String locationName, String platform) {
     String queryLocation = Strings.isNullOrEmpty(locationName) ? GLOBAL_LOCATION : locationName;
-    HashSet<String> result = new HashSet<>();
-    HashSet<String> regions = regionsWithinLocation.get(queryLocation);
-    result.addAll(filterRegionCodesByPlatform(regions, platform));
-    return result;
+    if (!regionsWithinLocation.containsKey(queryLocation)) {
+      return null;
+    }
+    return filterRegionsByPlatform(regionsWithinLocation.get(queryLocation), platform);
   }
 
   /**
@@ -104,15 +106,16 @@ public class RegionService {
     result.setName(location.getName());
     result.setDescription(location.getDescription());
 
-    String[] regions = location.getRegions();
+    Set<String> regionIds =
+        Optional.ofNullable(location.getRegions()).map(Set::of).orElse(Set.of());
+    Set<Region> regions = regionIds.stream().map(regionsByName::get).collect(Collectors.toSet());
 
-    if (regions == null) {
-      regions = new String[0];
-    }
+    Set<Region> filteredRegions = filterRegionsByPlatform(regions, platform);
 
-    List<String> filteredRegions = filterRegionCodesByPlatform(Arrays.asList(regions), platform);
-
-    result.setRegions(filteredRegions.toArray(new String[0]));
+    // note that this is setting the region codes into the regions field, usually these are region
+    // ids
+    // but the calling code expects the platform prefix to be stripped off
+    result.setRegions(filteredRegions.stream().map(Region::getCode).toArray(String[]::new));
 
     List<Location> subLocations = new ArrayList<>();
     if (location.getLocations() != null) {
@@ -131,19 +134,18 @@ public class RegionService {
     return locationsByName.get(name);
   }
 
-  public HashSet<String> getPolicyInputRegionCodes(PolicyInputs inputs, String platform) {
+  public Set<Region> getPolicyInputRegions(PolicyInputs inputs, String platform) {
     List<String> locationNames = extractPolicyInputLocations(inputs);
-    HashSet<String> result = new HashSet<>();
 
     if (locationNames.isEmpty()) {
       locationNames.add(GLOBAL_LOCATION);
     }
 
-    for (String locationName : locationNames) {
-      result.addAll(filterRegionCodesByPlatform(regionsWithinLocation.get(locationName), platform));
-    }
-
-    return result;
+    return locationNames.stream()
+        .flatMap(
+            locationName ->
+                filterRegionsByPlatform(regionsWithinLocation.get(locationName), platform).stream())
+        .collect(Collectors.toSet());
   }
 
   @Nullable
@@ -160,38 +162,35 @@ public class RegionService {
       return true;
     }
 
-    String tpsRegion = String.format("%s.%s", platform, region);
-    for (String locationName : locationNames) {
-      if (locationContainsRegion(locationName, tpsRegion)) {
-        return true;
-      }
-    }
-
-    return false;
+    String regionId = String.format("%s.%s", platform, region);
+    return locationNames.stream().anyMatch(n -> locationContainsRegion(n, regionId));
   }
 
   public boolean isSubLocation(String parentLocationName, String subLocationName) {
-    HashSet<String> subLocations = subLocationsWithinLocation.get(parentLocationName);
-    return subLocations != null && subLocations.contains(subLocationName);
+    Set<Location> subLocations = subLocationsWithinLocation.get(parentLocationName);
+    return subLocations != null
+        && subLocations.stream().anyMatch(l -> l.getName().equals(subLocationName));
   }
 
-  public boolean locationContainsRegion(String locationName, String region) {
+  public boolean locationContainsRegion(String locationName, String regionId) {
     return regionsWithinLocation.containsKey(locationName)
-        && regionsWithinLocation.get(locationName).contains(region);
+        && regionsWithinLocation.get(locationName).stream()
+            .anyMatch(r -> r.getId().equals(regionId));
   }
 
   private void constructLocationMapsRecursively(Location current) {
     if (current == null) return;
 
     locationsByName.put(current.getName(), current);
-    HashSet<String> currentRegions = new HashSet<>();
-    HashSet<String> currentSubLocations = new HashSet<>();
+    HashSet<Region> currentRegions = new HashSet<>();
+    HashSet<Location> currentSubLocations = new HashSet<>();
 
     String[] regions = current.getRegions();
     // If there are no regions defined on the location in the locations.yml file,
     // snakeyaml will set the value to null rather than populating it with an empty array.
     if (regions != null) {
-      currentRegions.addAll(List.of(regions));
+      currentRegions.addAll(
+          Arrays.stream(regions).map(regionsByName::get).collect(Collectors.toSet()));
     }
 
     Location[] subLocations = current.getLocations();
@@ -201,7 +200,7 @@ public class RegionService {
       for (Location subLocation : current.getLocations()) {
         constructLocationMapsRecursively(subLocation);
         currentRegions.addAll(regionsWithinLocation.get(subLocation.getName()));
-        currentSubLocations.add(subLocation.getName());
+        currentSubLocations.add(subLocation);
         currentSubLocations.addAll(subLocationsWithinLocation.get(subLocation.getName()));
       }
     }
@@ -227,19 +226,7 @@ public class RegionService {
     return result;
   }
 
-  private List<String> filterRegionCodesByPlatform(Collection<String> regions, String platform) {
-    List<String> result = new ArrayList<>();
-
-    if (regions == null) {
-      return result;
-    }
-
-    for (String region : regions) {
-      if (region.startsWith(platform)) {
-        result.add(regionsByName.get(region).getCode());
-      }
-    }
-
-    return result;
+  private Set<Region> filterRegionsByPlatform(Set<Region> regions, String platform) {
+    return regions.stream().filter(r -> r.getId().startsWith(platform)).collect(Collectors.toSet());
   }
 }
