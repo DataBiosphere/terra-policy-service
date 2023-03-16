@@ -260,7 +260,7 @@ public class PaoService {
         throw new InvalidInputException(
             String.format("Invalid PolicyInput: %s", addPolicy.getKey()));
       }
-      PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
+      PolicyInput existingPolicy = attributesToUpdate.lookupPolicy(addPolicy);
       PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
       if (addResult != null) {
         // We have a combined policy to add

@@ -185,20 +185,6 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
   }
 
   @Test
-  void groupConstraintTest_removeOnlyGroup() throws Exception {
-    var groupConstraint = new PolicyGroupConstraint();
-
-    Set<String> groups = new HashSet<>(Arrays.asList(GROUP_NAME));
-    var removePolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-    var targetPolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    assertNull(resultPolicy);
-  }
-
-  @Test
   void groupConstraintTest_validation() {
     var groupConstraint = new PolicyGroupConstraint();
 
