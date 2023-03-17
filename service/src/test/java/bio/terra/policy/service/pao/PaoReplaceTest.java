@@ -63,8 +63,8 @@ public class PaoReplaceTest extends TestUnitBase {
     UUID paoAid =
         PaoTestUtil.makePao(
             paoService,
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA),
+            PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME));
     logger.info("paoAid: {}", paoAid);
 
     // PaoB - starts empty
@@ -80,20 +80,19 @@ public class PaoReplaceTest extends TestUnitBase {
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA),
+        PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME));
 
     // Try a conflicting replace on A
     var newAttributes =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE));
     result = paoService.replacePao(paoBid, newAttributes, PaoUpdateMode.FAIL_ON_CONFLICT);
     assertFalse(result.updateApplied());
     PaoTestUtil.checkConflict(
         result,
         paoBid,
         paoBid,
-        new PolicyName(PaoTestUtil.TEST_NAMESPACE, PaoTestUtil.TEST_DATA_POLICY_X));
+        new PolicyName(PaoTestUtil.TERRA_NAMESPACE, PaoTestUtil.REGION_CONSTRAINT));
   }
 }
