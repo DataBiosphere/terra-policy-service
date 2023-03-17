@@ -31,6 +31,14 @@ public class PolicyGroupConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+    if (source == null) {
+      return dependent;
+    }
+
+    if (dependent == null) {
+      return source;
+    }
+
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
     dependentSet.addAll(sourceSet);
