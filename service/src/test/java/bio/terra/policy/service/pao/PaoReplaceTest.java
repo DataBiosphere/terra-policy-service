@@ -27,8 +27,8 @@ public class PaoReplaceTest extends TestUnitBase {
 
     var newAttributes =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA),
+            PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME));
 
     PolicyUpdateResult result =
         paoService.replacePao(paoId, newAttributes, PaoUpdateMode.FAIL_ON_CONFLICT);
@@ -38,13 +38,13 @@ public class PaoReplaceTest extends TestUnitBase {
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA),
+        PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME));
 
     var moreNewAttributes =
         PaoTestUtil.makePolicyInputs(
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2));
+            PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE),
+            PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME_ALT));
 
     result = paoService.replacePao(paoId, moreNewAttributes, PaoUpdateMode.FAIL_ON_CONFLICT);
     logger.info("replace2 result: {}", result);
@@ -53,8 +53,8 @@ public class PaoReplaceTest extends TestUnitBase {
     resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
         resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA2));
+        PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE),
+        PaoTestUtil.makeGroupPolicyInput(PaoTestUtil.GROUP_NAME_ALT));
   }
 
   @Test

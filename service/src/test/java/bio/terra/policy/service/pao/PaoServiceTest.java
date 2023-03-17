@@ -24,9 +24,9 @@ public class PaoServiceTest extends TestUnitBase {
   private static final String GROUP_CONSTRAINT = "group-constraint";
   private static final String REGION_CONSTRAINT = "region-constraint";
   private static final String GROUP = "group";
-  private static final String REGION = "region";
+  private static final String REGION = "region-name";
   private static final String DDGROUP = "ddgroup";
-  private static final String US_REGION = "US";
+  private static final String US_REGION = "usa";
 
   @Autowired private PaoService paoService;
 
