@@ -4,6 +4,8 @@ import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,9 +20,10 @@ public class PolicyGroupConstraint implements PolicyBase {
   }
 
   /**
-   * Combine for groups - for our milestone 1, we can only merge if the source has no groups or the
-   * source's groups match exactly the dependent groups. In either case, the result is equal to the
-   * dependent. In any other case, the result is a conflict.
+   * Combine of groups - there is no conflict case. We simply create two Sets of group names from
+   * the comma-separated form, then mash them together, and make them back into comma-separated
+   * form. For milestone 1 limitations, WSM will need to interpret results of the combine and handle
+   * enforcement.
    *
    * @param dependent policy input
    * @param source policy input
@@ -28,25 +31,12 @@ public class PolicyGroupConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
-    if (source == null) {
-      return dependent;
-    }
-
-    if (dependent == null) {
-      // We can't modify the groups. If the dependent is empty, we can't add to it so the result is
-      // a conflict.
-      return null;
-    }
-
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
-
-    if (sourceSet.size() == 0
-        || (sourceSet.containsAll(dependentSet) && dependentSet.containsAll(sourceSet))) {
-      return dependent;
-    }
-
-    return null;
+    dependentSet.addAll(sourceSet);
+    Multimap<String, String> newData = ArrayListMultimap.create();
+    dependentSet.forEach(group -> newData.put(DATA_KEY, group));
+    return new PolicyInput(dependent.getPolicyName(), newData);
   }
 
   /**
