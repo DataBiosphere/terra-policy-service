@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
@@ -59,6 +60,33 @@ public class PaoServiceTest extends TestUnitBase {
     paoService.deletePao(objectId);
 
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId));
+  }
+
+  @Test
+  void createPaoTest_invalidInputThrows() throws Exception {
+    var objectId = UUID.randomUUID();
+
+    var invalidGroupPolicy =
+        PolicyInput.createFromMap(
+            TERRA, GROUP_CONSTRAINT, Collections.singletonMap("badkey", DDGROUP));
+    var invalidRegionPolicy =
+        PolicyInput.createFromMap(
+            TERRA, REGION_CONSTRAINT, Collections.singletonMap(REGION, "badregion"));
+
+    var groupInputs = new PolicyInputs();
+    groupInputs.addInput(invalidGroupPolicy);
+    assertThrows(
+        InvalidInputException.class,
+        () ->
+            paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, groupInputs));
+
+    var regionInputs = new PolicyInputs();
+    regionInputs.addInput(invalidRegionPolicy);
+    assertThrows(
+        InvalidInputException.class,
+        () ->
+            paoService.createPao(
+                objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, regionInputs));
   }
 
   private void checkAttributeSet(

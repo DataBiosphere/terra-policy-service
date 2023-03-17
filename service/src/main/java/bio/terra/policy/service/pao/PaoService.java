@@ -67,7 +67,12 @@ public class PaoService {
         component.name(),
         objectType.name());
 
-    // TODO: Validate policy inputs against the policy descriptions when those are available.
+    for (PolicyInput policyInput : inputs.getInputs().values()) {
+      if (!PolicyMutator.validate(policyInput)) {
+        throw new InvalidInputException(
+            String.format("Invalid PolicyInput: %s", policyInput.getKey()));
+      }
+    }
 
     // The DAO does the heavy lifting.
     paoDao.createPao(objectId, component, objectType, inputs);
