@@ -29,31 +29,31 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getLocation() {
-    String searchRegion = "gcp.europe-west3";
-    Location result = regionService.getLocation(searchRegion);
+    String searchLocation = "europe";
+    Location result = regionService.getLocation(searchLocation);
     assertNotNull(result);
-    assertEquals(searchRegion, result.getName());
+    assertEquals(searchLocation, result.getName());
   }
 
   @Test
   void getLocationInvalidRegionReturnsNull() {
-    String searchRegion = "invalid";
-    Location result = regionService.getLocation(searchRegion);
+    String searchLocation = "invalid";
+    Location result = regionService.getLocation(searchLocation);
     assertNull(result);
   }
 
   @Test
   void getRegion() {
-    String searchName = "gcp.us-central1";
-    Region result = regionService.getRegion(searchName);
+    String searchRegion = "gcp.us-central1";
+    Region result = regionService.getRegion(searchRegion);
     assertNotNull(result);
-    assertEquals(searchName, result.getId());
+    assertEquals(searchRegion, result.getId());
   }
 
   @Test
   void getRegionInvalidIdReturnsNull() {
-    String searchName = "invalid";
-    Region result = regionService.getRegion(searchName);
+    String searchRegion = "invalid";
+    Region result = regionService.getRegion(searchRegion);
     assertNull(result);
   }
 
@@ -136,21 +136,22 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getOntologyFiltersByAzurePlatform() {
-    var result = regionService.getOntology("gcp.us-central1", AZURE_PLATFORM);
-    assertEquals(0, result.getRegions().length);
+    var result = regionService.getOntology("saopaulo", AZURE_PLATFORM);
+    assertEquals(1, result.getRegions().length);
   }
 
   @Test
   void getOntologyFiltersByGcpPlatform() {
-    var result = regionService.getOntology("gcp.us-central1", GCP_PLATFORM);
+    var result = regionService.getOntology("saopaulo", GCP_PLATFORM);
     assertEquals(1, result.getRegions().length);
   }
 
   @Test
   void getPolicyInputRegionCodesFromSelf() {
+    var targetLocation = "germany";
     var targetRegion = GCP_PLATFORM + ".europe-west3";
 
-    var pao = createPao(targetRegion);
+    var pao = createPao(targetLocation);
     var actual = regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(actual.stream().anyMatch(r -> r.getId().equals(targetRegion)));
