@@ -238,7 +238,7 @@ public class PaoService {
         updateMode);
 
     Pao targetPao = paoDao.getPao(targetPaoId);
-    PolicyInputs attributesToUpdate = targetPao.getAttributes();
+    PolicyInputs attributesToUpdate = new PolicyInputs(targetPao.getAttributes());
 
     // We do the removes first, so we don't remove newly added things
     for (PolicyInput removePolicy : removeAttributes.getInputs().values()) {
@@ -260,22 +260,16 @@ public class PaoService {
         throw new InvalidInputException(
             String.format("Invalid PolicyInput: %s", addPolicy.getKey()));
       }
-      PolicyInput existingPolicy = targetPao.getAttributes().lookupPolicy(addPolicy);
-      if (existingPolicy == null) {
-        // Nothing to combine; just take the new
-        attributesToUpdate.addInput(addPolicy);
+      PolicyInput existingPolicy = attributesToUpdate.lookupPolicy(addPolicy);
+      PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
+      if (addResult != null) {
+        // We have a combined policy to add
+        attributesToUpdate.addInput(addResult);
       } else {
-        PolicyInput addResult = PolicyMutator.combine(existingPolicy, addPolicy);
-        if (addResult != null) {
-          // We have a combined policy to add
-          attributesToUpdate.removeInput(existingPolicy);
-          attributesToUpdate.addInput(addResult);
-        } else {
-          throw new DirectConflictException(
-              String.format(
-                  "Update of policy %s adding %s creates a conflict",
-                  existingPolicy.getKey(), addPolicy.getKey()));
-        }
+        throw new DirectConflictException(
+            String.format(
+                "Update of policy %s adding %s creates a conflict",
+                existingPolicy.getKey(), addPolicy.getKey()));
       }
     }
 

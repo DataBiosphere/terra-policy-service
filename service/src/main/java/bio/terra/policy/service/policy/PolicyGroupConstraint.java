@@ -1,5 +1,6 @@
 package bio.terra.policy.service.policy;
 
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 import com.google.common.annotations.VisibleForTesting;
@@ -19,9 +20,10 @@ public class PolicyGroupConstraint implements PolicyBase {
   }
 
   /**
-   * Combine for groups - for our milestone 1, we can only merge if the source has no groups or the
-   * source's groups match exactly the dependent groups. In either case, the result is equal to the
-   * dependent. In any other case, the result is a conflict.
+   * Combine of groups - there is no conflict case. We simply create two Sets of group names from
+   * the comma-separated form, then mash them together, and make them back into comma-separated
+   * form. For milestone 1 limitations, WSM will need to interpret results of the combine and handle
+   * enforcement.
    *
    * @param dependent policy input
    * @param source policy input
@@ -34,25 +36,19 @@ public class PolicyGroupConstraint implements PolicyBase {
     }
 
     if (dependent == null) {
-      // We can't modify the groups. If the dependent is empty, we can't add to it so the result is
-      // a conflict.
-      return null;
+      return source;
     }
 
     Set<String> dependentSet = dataToSet(dependent.getData(DATA_KEY));
     Set<String> sourceSet = dataToSet(source.getData(DATA_KEY));
-
-    if (sourceSet.size() == 0
-        || (sourceSet.containsAll(dependentSet) && dependentSet.containsAll(sourceSet))) {
-      return dependent;
-    }
-
-    return null;
+    dependentSet.addAll(sourceSet);
+    Multimap<String, String> newData = ArrayListMultimap.create();
+    dependentSet.forEach(group -> newData.put(DATA_KEY, group));
+    return new PolicyInput(dependent.getPolicyName(), newData);
   }
 
   /**
-   * Remove groups - remove groups in the removePolicy from groups in the target policy Removing a
-   * group that is not found is not an error. If there is nothing left over, return null.
+   * Remove groups - we don't currently have the ability to modify groups, so throw an exception.
    *
    * @param target existing policy
    * @param removePolicy policy to remove
@@ -60,16 +56,7 @@ public class PolicyGroupConstraint implements PolicyBase {
    */
   @Override
   public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
-    Set<String> targetGroups = dataToSet(target.getData(DATA_KEY));
-    Set<String> removeGroups = dataToSet(removePolicy.getData(DATA_KEY));
-    targetGroups.removeAll(removeGroups);
-    if (targetGroups.isEmpty()) {
-      return null;
-    }
-
-    Multimap<String, String> newData = ArrayListMultimap.create();
-    targetGroups.forEach(group -> newData.put(DATA_KEY, group));
-    return new PolicyInput(target.getPolicyName(), newData);
+    throw new InvalidInputException("Cannot remove a group constraint");
   }
 
   /**

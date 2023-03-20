@@ -25,6 +25,7 @@ public class PaoTestUtil {
   public static final String REGION_NAME_EUROPE = "europe";
   public static final String GROUP_KEY = "group";
   public static final String GROUP_NAME = "mygroup";
+  public static final String GROUP_NAME_ALT = "myaltgroup";
 
   public static final String TEST_NAMESPACE = "test_namespace";
   public static final String TEST_FLAG_POLICY_A = "test_flag_a";

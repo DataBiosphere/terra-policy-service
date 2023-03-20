@@ -4,6 +4,7 @@ import static bio.terra.policy.service.policy.PolicyTestUtils.*;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
+import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME_ALT;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
@@ -11,9 +12,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.exception.InvalidInputException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Arrays;
@@ -64,7 +66,11 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
 
     PolicyInput resultPolicy = groupConstraint.combine(null, sourcePolicy);
-    assertNull(resultPolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(1, groupSet.size());
+    assertTrue(groupSet.containsAll(Arrays.asList(GROUP_NAME)));
   }
 
   @Test
@@ -86,17 +92,21 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
   }
 
   @Test
-  void groupConstraintTest_combineMismatchGroupsFails() throws Exception {
+  void groupConstraintTest_combineMismatchGroups() throws Exception {
     var groupConstraint = new PolicyGroupConstraint();
 
     var dependentPolicy =
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
     var sourcePolicy =
         new PolicyInput(
-            TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME + "a"));
+            TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME_ALT));
 
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
-    assertNull(resultPolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(2, groupSet.size());
+    assertTrue(groupSet.containsAll(Arrays.asList(GROUP_NAME, GROUP_NAME_ALT)));
   }
 
   @Test
@@ -114,7 +124,6 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
 
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
-
     Set<String> groupSet =
         groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
 
@@ -139,7 +148,11 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
 
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
-    assertNull(resultPolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(groups.size(), groupSet.size());
+    assertTrue(groupSet.containsAll(groups));
   }
 
   @Test
@@ -159,11 +172,15 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
 
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
-    assertNull(resultPolicy);
+    Set<String> groupSet =
+        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
+
+    assertEquals(3, groupSet.size());
+    assertTrue(groupSet.containsAll(groups));
   }
 
   @Test
-  void groupConstraintTest_removeGroup() throws Exception {
+  void groupConstraintTest_removeGroupThrows() throws Exception {
     var groupConstraint = new PolicyGroupConstraint();
 
     String group2 = GROUP_NAME + "2";
@@ -178,50 +195,8 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
     var targetPolicy =
         new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
 
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    Set<String> groupSet =
-        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
-
-    assertEquals(2, groupSet.size());
-    assertTrue(groupSet.contains(group2));
-    assertTrue(groupSet.contains(group3));
-  }
-
-  @Test
-  void groupConstraintTest_removeNonExistentGroup() throws Exception {
-    var groupConstraint = new PolicyGroupConstraint();
-
-    var removePolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
-
-    String group2 = GROUP_NAME + "2";
-    String group3 = GROUP_NAME + "3";
-    Set<String> groups = new HashSet<>(Arrays.asList(group2, group3));
-    var targetPolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-
-    // we never added GROUP_NAME into the policy, removing it shouldn't break.
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    Set<String> groupSet =
-        groupConstraint.dataToSet(resultPolicy.getAdditionalData().get(GROUP_KEY));
-
-    assertEquals(2, groupSet.size());
-    assertTrue(groupSet.contains(group2));
-    assertTrue(groupSet.contains(group3));
-  }
-
-  @Test
-  void groupConstraintTest_removeOnlyGroup() throws Exception {
-    var groupConstraint = new PolicyGroupConstraint();
-
-    Set<String> groups = new HashSet<>(Arrays.asList(GROUP_NAME));
-    var removePolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-    var targetPolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, groups));
-
-    PolicyInput resultPolicy = groupConstraint.remove(targetPolicy, removePolicy);
-    assertNull(resultPolicy);
+    assertThrows(
+        InvalidInputException.class, () -> groupConstraint.remove(targetPolicy, removePolicy));
   }
 
   @Test
