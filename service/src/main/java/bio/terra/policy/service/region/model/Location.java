@@ -9,7 +9,8 @@ public class Location {
   private String name;
   private String description;
   private Location[] locations;
-  private String[] regions;
+  private String cloudRegion;
+  private String cloudPlatform;
 
   public String getName() {
     return name;
@@ -35,11 +36,19 @@ public class Location {
     this.locations = locations;
   }
 
-  public String[] getRegions() {
-    return regions;
+  public String getCloudRegion() {
+    return cloudRegion;
   }
 
-  public void setRegions(String[] regions) {
-    this.regions = regions;
+  public void setCloudRegion(String cloudRegion) {
+    this.cloudRegion = cloudRegion;
+  }
+
+  public String getCloudPlatform() {
+    return cloudPlatform;
+  }
+
+  public void setCloudPlatform(String cloudPlatform) {
+    this.cloudPlatform = cloudPlatform;
   }
 }

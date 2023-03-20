@@ -25,7 +25,6 @@ import bio.terra.policy.service.pao.model.PaoUpdateMode;
 import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.service.region.RegionService;
 import bio.terra.policy.service.region.model.Location;
-import bio.terra.policy.service.region.model.Region;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -116,13 +115,13 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsRegions> getRegions(String platform, String location) {
     ApiTpsRegions result = new ApiTpsRegions();
 
-    var regions = regionService.getRegionsForLocation(location, platform);
+    var locations = regionService.getLocationsForPlatform(location, platform);
 
-    if (regions == null) {
+    if (locations == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    result.addAll(regions.stream().map(Region::getCode).collect(Collectors.toList()));
+    result.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
@@ -149,19 +148,19 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsRegions> listValidByPolicyInput(
       String platform, ApiTpsPolicyInputs policyInputs) {
     PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);
-    Set<Region> regions = regionService.getPolicyInputRegions(inputs, platform);
+    Set<Location> locations = regionService.getPolicyInputLocationsForPlatform(inputs, platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(regions.stream().map(Region::getCode).collect(Collectors.toList()));
+    response.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @Override
   public ResponseEntity<ApiTpsRegions> listValidRegions(UUID objectId, String platform) {
     Pao pao = paoService.getPao(objectId);
-    Set<Region> regions =
-        regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), platform);
+    var locations =
+        regionService.getPolicyInputLocationsForPlatform(pao.getEffectiveAttributes(), platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(regions.stream().map(Region::getCode).collect(Collectors.toList()));
+    response.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -205,11 +204,13 @@ public class TpsApiController implements TpsApi {
   @Override
   public ResponseEntity<Void> validateRegionAllowed(UUID objectId, String region, String platform) {
     Pao pao = paoService.getPao(objectId);
-    if (!regionService.isRegionAllowedByPao(pao, region, platform)) {
+    if (!regionService.isCloudRegionAllowedByPao(pao, region, platform)) {
       throw new ConflictException(
           String.format("Region '%s' is not allowed per the effective region constraint.", region),
-          regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), platform).stream()
-              .map(Region::getCode)
+          regionService
+              .getPolicyInputLocationsForPlatform(pao.getEffectiveAttributes(), platform)
+              .stream()
+              .map(Location::getCloudRegion)
               .toList());
     }
 
