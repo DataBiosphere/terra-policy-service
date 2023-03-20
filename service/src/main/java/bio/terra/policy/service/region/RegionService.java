@@ -227,6 +227,7 @@ public class RegionService {
   }
 
   private Set<Region> filterRegionsByPlatform(Set<Region> regions, String platform) {
+    if (regions == null) return Set.of();
     return regions.stream().filter(r -> r.getId().startsWith(platform)).collect(Collectors.toSet());
   }
 }
