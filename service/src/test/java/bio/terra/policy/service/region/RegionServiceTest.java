@@ -121,13 +121,13 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void getOntologyFiltersByAzurePlatform() {
     var result = regionService.getOntology("iowa", AZURE_PLATFORM);
-    assertEquals(1, result.getLocations().length);
+    assertEquals(1, result.getLocations().size());
   }
 
   @Test
   void getOntologyFiltersByGcpPlatform() {
     var result = regionService.getOntology("iowa", GCP_PLATFORM);
-    assertEquals(1, result.getLocations().length);
+    assertEquals(1, result.getLocations().size());
   }
 
   @Test

@@ -1,5 +1,7 @@
 package bio.terra.policy.service.region.model;
 
+import java.util.List;
+
 /**
  * Location is a Terra concept containing nested locations and regions corresponding to the cloud
  * concept of region.
@@ -8,7 +10,7 @@ public class Location {
   // Geographic name of the location (e.g. asia, usa, iowa)
   private String name;
   private String description;
-  private Location[] locations;
+  private List<Location> locations;
   private String cloudRegion;
   private String cloudPlatform;
 
@@ -28,11 +30,11 @@ public class Location {
     this.description = description;
   }
 
-  public Location[] getLocations() {
+  public List<Location> getLocations() {
     return locations;
   }
 
-  public void setLocations(Location[] locations) {
+  public void setLocations(List<Location> locations) {
     this.locations = locations;
   }
 

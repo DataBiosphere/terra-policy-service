@@ -4,7 +4,6 @@ import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.region.model.Location;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class RegionService {
     constructLocationMapsRecursively(rootLocation);
   }
 
-  /** Get the list including the given location and all subLocations, filtered by platform. */
+  /** Lists locations filtered by platform including the given location and all subLocations. */
   @Nullable
   public Set<Location> getLocationsForPlatform(String locationName, String platform) {
     String queryLocation = Strings.isNullOrEmpty(locationName) ? GLOBAL_LOCATION : locationName;
@@ -93,22 +92,17 @@ public class RegionService {
     result.setCloudRegion(location.getCloudRegion());
     result.setCloudPlatform(location.getCloudPlatform());
 
-    List<Location> subLocations = new ArrayList<>();
-    if (location.getLocations() != null) {
-      for (Location subLocation : location.getLocations()) {
-        if (subLocation.getCloudPlatform() == null
-            || subLocation.getCloudPlatform().equals(platform)) {
-          subLocations.add(getOntology(subLocation.getName(), platform));
-        }
-      }
-    }
-    result.setLocations(subLocations.toArray(new Location[0]));
+    var subLocations =
+        Optional.ofNullable(location.getLocations()).orElse(List.of()).stream()
+            .filter(l -> l.getCloudPlatform() == null || l.getCloudPlatform().equals(platform))
+            .map(l -> getOntology(l.getName(), platform))
+            .collect(Collectors.toList());
+    result.setLocations(subLocations);
 
     return result;
   }
 
   @Nullable
-  @VisibleForTesting
   public Location getLocation(String name) {
     return locationsByName.get(name);
   }
@@ -160,7 +154,7 @@ public class RegionService {
     locationsByName.put(current.getName(), current);
     HashSet<Location> currentSubLocations = new HashSet<>();
 
-    Location[] subLocations = current.getLocations();
+    var subLocations = current.getLocations();
     // Similarly, if there are no subLocations defined in the .yml file, then this
     // field will be null rather than an empty array.
     if (subLocations != null) {
