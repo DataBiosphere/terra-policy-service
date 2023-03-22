@@ -30,7 +30,7 @@ public class RegionEvaluateTest extends TestUnitBase {
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.isRegionAllowedByPao(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isCloudRegionAllowedByPao(pao, "us-central1", "gcp"));
   }
 
   @Test
@@ -39,7 +39,7 @@ public class RegionEvaluateTest extends TestUnitBase {
     createRegionConstrainedPao(paoId, US_REGION);
     Pao pao = paoService.getPao(paoId);
 
-    assertFalse(regionService.isRegionAllowedByPao(pao, "europe-west3", "gcp"));
+    assertFalse(regionService.isCloudRegionAllowedByPao(pao, "europe-west3", "gcp"));
   }
 
   @Test
@@ -48,9 +48,9 @@ public class RegionEvaluateTest extends TestUnitBase {
     paoService.createPao(paoId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     Pao pao = paoService.getPao(paoId);
 
-    assertTrue(regionService.isRegionAllowedByPao(pao, "europe-west3", "gcp"));
-    assertTrue(regionService.isRegionAllowedByPao(pao, "us-central1", "gcp"));
-    assertTrue(regionService.isRegionAllowedByPao(pao, "southcentralus", "azure"));
+    assertTrue(regionService.isCloudRegionAllowedByPao(pao, "europe-west3", "gcp"));
+    assertTrue(regionService.isCloudRegionAllowedByPao(pao, "us-central1", "gcp"));
+    assertTrue(regionService.isCloudRegionAllowedByPao(pao, "southcentralus", "azure"));
   }
 
   private void createRegionConstrainedPao(UUID objectId, String region) {

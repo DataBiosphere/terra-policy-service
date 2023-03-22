@@ -9,69 +9,113 @@ locations:
     description: Belgium
     locations:
     - name: gcp.europe-west1
-      description: Europe West 1
-      regions:
-      - gcp.europe-west1
+      description: Europe West 1 (GCP)
+      cloudRegion: europe-west1
+      cloudPlatform: gcp
   - name: finland
     description: Finland
     locations:
     - name: gcp.europe-north1
-      description: Europe North 1
-      regions:
-        - gcp.europe-north1
+      description: Europe North 1 (GCP)
+      cloudRegion: europe-north1
+      cloudPlatform: gcp
   - name: germany
     description: Germany
     locations:
     - name: gcp.europe-west3
-      description: Europe West 3
-      regions:
-      - gcp.europe-west3
+      description: Europe West 3 (GCP)
+      cloudRegion: europe-west3
+      cloudPlatform: gcp
+    - name: azure.germanywestcentral
+      cloudRegion: germanywestcentral
+      cloudPlatform: azure
+      description: Germany West Central (Azure)
   - name: italy
     description: Italy
     locations:
     - name: gcp.europe-west8
-      description: Europe West 8
-      regions:
-      - gcp.europe-west8
+      description: Europe West 8 (GCP)
+      cloudRegion: europe-west8
+      cloudPlatform: gcp
   - name: netherlands
     description: Netherlands
     locations:
     - name: gcp.europe-west4
-      description: Europe West 4
-      regions:
-      - gcp.europe-west4
+      description: Europe West 4 (GCP)
+      cloudRegion: europe-west4
+      cloudPlatform: gcp
+    - name: azure.westeurope
+      cloudRegion: westeurope
+      cloudPlatform: azure
+      description: West Europe (Azure)
   - name: poland
     description: Poland
     locations:
     - name: gcp.europe-central2
-      description: Europe Central 2
-      regions:
-      - gcp.europe-central2
+      description: Europe Central 2 (GCP)
+      cloudRegion: europe-central2
+      cloudPlatform: gcp
   - name: spain
     description: Spain
     locations:
     - name: gcp.europe-southwest1
-      description: Europe Southwest 1
-      regions:
-      - gcp.europe-southwest1
+      description: Europe Southwest 1 (GCP)
+      cloudRegion: europe-southwest1
+      cloudPlatform: gcp
   - name: switzerland
     description: Switzerland
     locations:
     - name: gcp.europe-west6
-      description: Europe West 6
-      regions:
-      - gcp.europe-west6
+      description: Europe West 6 (GCP)
+      cloudRegion: europe-west6
+      cloudPlatform: gcp
+    - name: azure.switzerlandnorth
+      cloudRegion: switzerlandnorth
+      cloudPlatform: azure
+      description: Switzerland North (Azure)
   - name: uk
     description: United Kingdom
     locations:
     - name: gcp.europe-west2
-      description: Europe West 2
-      regions:
-      - gcp.europe-west2
+      description: Europe West 2 (GCP)
+      cloudRegion: europe-west2
+      cloudPlatform: gcp
+    - name: azure.uksouth
+      cloudRegion: uksouth
+      cloudPlatform: azure
+      description: UK South (Azure)
+  - name: ireland
+    description: Ireland
+    locations:
+    - name: azure.northeurope
+      cloudRegion: northeurope
+      cloudPlatform: azure
+      description: North Europe (Azure)
+  - name: sweden
+    description: Sweden
+    locations:
+    - name: azure.swedencentral
+      cloudRegion: swedencentral
+      cloudPlatform: azure
+      description: Sweden Central (Azure)
+  - name: france
+    description: France
+    locations:
+    - name: azure.francecentral
+      cloudRegion: francecentral
+      cloudPlatform: azure
+      description: France Central (Azure)
+  - name: norway
+    description: Norway
+    locations:
+    - name: azure.norwayeast
+      cloudRegion: norwayeast
+      cloudPlatform: azure
+      description: Norway East (Azure)
   - name: multiregion-eu
-    description: Multi-Region EU
-    regions:
-    - gcp.EU
+    description: Multi-Region EU (GCP)
+    cloudRegion: EU
+    cloudPlatform: gcp
 
 - name: americas
   description: North and South America
@@ -83,80 +127,121 @@ locations:
       description: California
       locations:
       - name: gcp.us-west2
-        description: US West 2
-        regions:
-        - gcp.us-west2
+        description: US West 2 (GCP)
+        cloudRegion: us-west2
+        cloudPlatform: gcp
     - name: iowa
       description: Iowa
       locations:
       - name: gcp.us-central1
-        description: US Central 1
-        regions:
-        - gcp.us-central1
+        description: US Central 1 (GCP)
+        cloudRegion: us-central1
+        cloudPlatform: gcp
+      - name: azure.centralus
+        cloudRegion: centralus
+        cloudPlatform: azure
+        description: Central US (Azure)
     - name: nevada
       description: Nevada
       locations:
       - name: gcp.us-west4
-        description: US West 4
-        regions:
-        - gcp.us-west4
+        description: US West 4 (GCP)
+        cloudRegion: us-west4
+        cloudPlatform: gcp
     - name: oregon
       description: Oregon
       locations:
       - name: gcp.us-west1
-        description: US West 1
-        regions:
-        - gcp.us-west1
+        description: US West 1 (GCP)
+        cloudRegion: us-west1
+        cloudPlatform: gcp
     - name: south-carolina
       description: South Carolina
       locations:
       - name: gcp.us-east1
-        description: US East 1
-        regions:
-        - gcp.us-east1
+        description: US East 1 (GCP)
+        cloudRegion: us-east1
+        cloudPlatform: gcp
     - name: utah
       description: Utah
       locations:
       - name: gcp.us-west3
-        description: US West 3
-        regions:
-        - gcp.us-west3
+        description: US West 3 (GCP)
+        cloudRegion: us-west3
+        cloudPlatform: gcp
+    - name: texas
+      description: Texas
+      locations:
+        - name: azure.southcentralus
+          cloudRegion: southcentralus
+          cloudPlatform: azure
+          description: South Central US (Azure)
+    - name: washington
+      description: Washington
+      locations:
+      - name: azure.westus2
+        cloudRegion: westus2
+        cloudPlatform: azure
+        description: West US 2 (Azure)
+    - name: arizona
+      description: Arizona
+      locations:
+      - name: azure.westus3
+        cloudRegion: westus3
+        cloudPlatform: azure
+        description: West US 3 (Azure)
     - name: virginia
       description: Virginia
       locations:
       - name: gcp.us-east4
-        description: US East 4
-        regions:
-        - gcp.us-east4
+        description: US East 4 (GCP)
+        cloudRegion: us-east4
+        cloudPlatform: gcp
+      - name: azure.eastus
+        cloudRegion: eastus
+        cloudPlatform: azure
+        description: (US) East US
+      - name: azure.eastus2
+        cloudRegion: eastus2
+        cloudPlatform: azure
+        description: (US) East US 2
     - name: multiregion-us
       description: Multi-region US
-      regions:
-      - gcp.US
+      cloudRegion: US
+      cloudPlatform: gcp
   - name: canada
     description: Canada
     locations:
     - name: gcp.northamerica-northeast1
-      description: North America Northeast 1
-      regions:
-      - gcp.northamerica-northeast1
+      description: North America Northeast 1 (GCP)
+      cloudRegion: northamerica-northeast1
+      cloudPlatform: gcp
     - name: gcp.northamerica-northeast2
-      description: North America Northeast 2
-      regions:
-      - gcp.northamerica-northeast2
+      description: North America Northeast 2 (GCP)
+      cloudRegion: northamerica-northeast2
+      cloudPlatform: gcp
+    - name: azure.canadacentral
+      cloudRegion: canadacentral
+      cloudPlatform: azure
+      description: Canada Central (Azure)
   - name: brazil
     description: Brazil
     locations:
     - name: gcp.southamerica-east1
-      description: South America East 1
-      regions:
-      - gcp.southamerica-east1
+      description: South America East 1 (GCP)
+      cloudRegion: southamerica-east1
+      cloudPlatform: gcp
+    - name: azure.brazilsouth
+      cloudRegion: brazilsouth
+      cloudPlatform: azure
+      description: Brazil South (Azure)
   - name: chile
     description: Chile
     locations:
     - name: gcp.southamerica-west1
-      description: South America West 1
-      regions:
-      - gcp.southamerica-west1
+      description: South America West 1 (GCP)
+      cloudRegion: southamerica-west1
+      cloudPlatform: gcp
 
 - name: asiapacific
   description: Asia and Pacific
@@ -165,71 +250,124 @@ locations:
     description: Australia
     locations:
     - name: gcp.australia-southeast1
-      description: Australia Southeast 1
-      regions:
-      - gcp.australia-southeast1
+      description: Australia Southeast 1 (GCP)
+      cloudRegion: australia-southeast1
+      cloudPlatform: gcp
     - name: gcp.australia-southeast2
-      description: Australia Southeast 2
-      regions:
-      - gcp.australia-southeast2
+      description: Australia Southeast 2 (GCP)
+      cloudRegion: australia-southeast2
+      cloudPlatform: gcp
+    - name: azure.australiaeast
+      cloudRegion: australiaeast
+      cloudPlatform: azure
+      description: Australia East (Azure)
   - name: hongkong
     description: Hong Kong
     locations:
     - name: gcp.asia-east2
-      description: Asia East 2
-      regions:
-      - gcp.asia-east2
+      description: Asia East 2 (GCP)
+      cloudRegion: asia-east2
+      cloudPlatform: gcp
+    - name: azure.eastasia
+      cloudRegion: eastasia
+      cloudPlatform: azure
+      description: East Asia (Azure)
   - name: india
     description: India
     locations:
     - name: gcp.asia-south1
-      description: Asia South 1
-      regions:
-      - gcp.asia-south1
+      description: Asia South 1 (GCP)
+      cloudRegion: asia-south1
+      cloudPlatform: gcp
     - name: gcp.asia-south2
-      description: Asia South 2
-      regions:
-      - gcp.asia-south2
+      description: Asia South 2 (GCP)
+      cloudRegion: asia-south2
+      cloudPlatform: gcp
+    - name: azure.centralindia
+      cloudRegion: centralindia
+      cloudPlatform: azure
+      description: Central India (Azure)
   - name: indonesia
     description: Indonesia
     locations:
     - name: gcp.asia-southeast2
-      description: Asia Southeast 2
-      regions:
-      - gcp.asia-southeast2
+      description: Asia Southeast 2 (GCP)
+      cloudRegion: asia-southeast2
+      cloudPlatform: gcp
   - name: japan
     description: Japan
     locations:
     - name: gcp.asia-northeast1
-      description: Asia Northeast 1
-      regions:
-      - gcp.asia-northeast1
+      description: Asia Northeast 1 (GCP)
+      cloudRegion: asia-northeast1
+      cloudPlatform: gcp
     - name: gcp.asia-northeast2
-      description: Asia Northeast 2
-      regions:
-      - gcp.asia-northeast2
+      description: Asia Northeast 2 (GCP)
+      cloudRegion: asia-northeast2
+      cloudPlatform: gcp
+    - name: azure.japaneast
+      cloudRegion: japaneast
+      cloudPlatform: azure
+      description: Japan East (Azure)
   - name: korea
     description: Korea
     locations:
     - name: gcp.asia-northeast3
-      description: Asia Northeast 3
-      regions:
-      - gcp.asia-northeast3
+      description: Asia Northeast 3 (GCP)
+      cloudRegion: asia-northeast3
+      cloudPlatform: gcp
+    - name: azure.koreacentral
+      cloudRegion: koreacentral
+      cloudPlatform: azure
+      description: Korea Central (Azure)
   - name: singapore
     description: Singapore
     locations:
     - name: gcp.asia-southeast1
-      description: Asia Southeast 1
-      regions:
-      - gcp.asia-southeast1
+      description: Asia Southeast 1 (GCP)
+      cloudRegion: asia-southeast1
+      cloudPlatform: gcp
     - name: gcp.asia-northeast2
-      description: Asia Northeast 2
-      regions:
-      - gcp.asia-northeast2
+      description: Asia Northeast 2 (GCP)
+      cloudRegion: asia-northeast2
+      cloudPlatform: gcp
+    - name: azure.southeastasia
+      cloudRegion: southeastasia
+      cloudPlatform: azure
+      description: Southeast Asia (Azure)
   - name: taiwan
     description: Taiwan
     locations:
     - name: gcp.asia-east1
-      description: Asia East 1
-      regions:
-      - gcp.asia-east1
+      description: Asia East 1 (GCP)
+      cloudRegion: asia-east1
+      cloudPlatform: gcp
+
+- name: africa
+  description: Africa
+  locations:
+    - name: southafrica
+      description: South Africa
+      locations:
+      - name: azure.southafricanorth
+        cloudRegion: southafricanorth
+        cloudPlatform: azure
+        description: South Africa North (Azure)
+
+- name: middleeast
+  description: Middle East
+  locations:
+    - name: uae
+      description: UAE
+      locations:
+      - name: azure.uaenorth
+        cloudRegion: uaenorth
+        cloudPlatform: azure
+        description: UAE North (Azure)
+    - name: qatar
+      description: Qatar
+      locations:
+      - name: azure.qatarcentral
+        cloudRegion: qatarcentral
+        cloudPlatform: azure
+        description: Qatar Central (Azure)

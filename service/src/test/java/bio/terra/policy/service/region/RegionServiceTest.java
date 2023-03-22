@@ -13,7 +13,6 @@ import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.service.region.model.Location;
-import bio.terra.policy.service.region.model.Region;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Collections;
 import java.util.UUID;
@@ -29,78 +28,63 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getLocation() {
-    String searchRegion = "gcp.europe-west3";
-    Location result = regionService.getLocation(searchRegion);
+    String searchLocation = "europe";
+    Location result = regionService.getLocation(searchLocation);
     assertNotNull(result);
-    assertEquals(searchRegion, result.getName());
+    assertEquals(searchLocation, result.getName());
   }
 
   @Test
   void getLocationInvalidRegionReturnsNull() {
-    String searchRegion = "invalid";
-    Location result = regionService.getLocation(searchRegion);
-    assertNull(result);
-  }
-
-  @Test
-  void getRegion() {
-    String searchName = "gcp.us-central1";
-    Region result = regionService.getRegion(searchName);
-    assertNotNull(result);
-    assertEquals(searchName, result.getId());
-  }
-
-  @Test
-  void getRegionInvalidIdReturnsNull() {
-    String searchName = "invalid";
-    Region result = regionService.getRegion(searchName);
+    String searchLocation = "invalid";
+    Location result = regionService.getLocation(searchLocation);
     assertNull(result);
   }
 
   @Test
   void locationContainsRegionFromItself() {
-    assertTrue(regionService.locationContainsRegion("europe", "gcp.europe-west1"));
+    assertTrue(regionService.locationContainsCloudRegion("europe", "europe-west1", GCP_PLATFORM));
   }
 
   @Test
   void locationContainsRegionFromSubRegion() {
-    assertTrue(regionService.locationContainsRegion("usa", "gcp.us-central1"));
+    assertTrue(regionService.locationContainsCloudRegion("usa", "us-central1", GCP_PLATFORM));
   }
 
   @Test
   void locationContainsRegionNegative() {
-    assertFalse(regionService.locationContainsRegion("usa", "gcp.europe-west1"));
+    assertFalse(regionService.locationContainsCloudRegion("usa", "europe-west1", GCP_PLATFORM));
   }
 
   @Test
   void getRegionsForLocationInvalidRegion() {
-    var result = regionService.getRegionsForLocation("invalid", GCP_PLATFORM);
+    var result = regionService.getLocationsForPlatform("invalid", GCP_PLATFORM);
     assertNull(result);
   }
 
   @Test
   void getRegionsForLocationEmptyRegion() {
-    var result = regionService.getRegionsForLocation("", GCP_PLATFORM);
+    var result = regionService.getLocationsForPlatform("", GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
   void getRegionsForLocationNullRegion() {
-    var result = regionService.getRegionsForLocation(null, GCP_PLATFORM);
+    var result = regionService.getLocationsForPlatform(null, GCP_PLATFORM);
     assertNotNull(result);
     assertTrue(result.size() > 1);
   }
 
   @Test
   void getRegionsForLocationAzureFilter() {
-    var result = regionService.getRegionsForLocation("global", AZURE_PLATFORM);
-    assertEquals(0, result.size());
+    var result = regionService.getLocationsForPlatform("global", AZURE_PLATFORM);
+    assertEquals(25, result.size());
   }
 
   @Test
   void getRegionsForLocationGlobal() {
-    var result = regionService.getRegionsForLocation("global", GCP_PLATFORM);
+    var result = regionService.getLocationsForPlatform("global", GCP_PLATFORM);
     assertTrue(result.size() > 10);
   }
 
@@ -136,63 +120,77 @@ public class RegionServiceTest extends TestUnitBase {
 
   @Test
   void getOntologyFiltersByAzurePlatform() {
-    var result = regionService.getOntology("gcp.us-central1", AZURE_PLATFORM);
-    assertEquals(0, result.getRegions().length);
+    var result = regionService.getOntology("iowa", AZURE_PLATFORM);
+    assertEquals(1, result.getLocations().size());
   }
 
   @Test
   void getOntologyFiltersByGcpPlatform() {
-    var result = regionService.getOntology("gcp.us-central1", GCP_PLATFORM);
-    assertEquals(1, result.getRegions().length);
+    var result = regionService.getOntology("iowa", GCP_PLATFORM);
+    assertEquals(1, result.getLocations().size());
   }
 
   @Test
-  void getPolicyInputRegionCodesFromSelf() {
-    var targetRegion = GCP_PLATFORM + ".europe-west3";
+  void getPolicyInputCloudRegionsFromSelf() {
+    var targetLocation = "germany";
+    var targetRegion = "europe-west3";
 
-    var pao = createPao(targetRegion);
-    var actual = regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), GCP_PLATFORM);
+    var pao = createPao(targetLocation);
+    var actual =
+        regionService.getPolicyInputLocationsForPlatform(
+            pao.getEffectiveAttributes(), GCP_PLATFORM);
 
-    assertTrue(actual.stream().anyMatch(r -> r.getId().equals(targetRegion)));
+    assertTrue(
+        actual.stream()
+            .anyMatch(
+                l ->
+                    targetRegion.equals(l.getCloudRegion())
+                        && GCP_PLATFORM.equals(l.getCloudPlatform())));
   }
 
   @Test
-  void getPolicyInputRegionCodesFromChild() {
+  void getPolicyInputCloudRegionsFromChild() {
     var region = "usa";
-    var childRegion = "us-central1";
+    var childCloudRegion = "us-central1";
 
     var pao = createPao(region);
-    var regions = regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), GCP_PLATFORM);
+    var regions =
+        regionService.getPolicyInputLocationsForPlatform(
+            pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(regions.size() > 1);
-    assertTrue(regions.stream().anyMatch(r -> r.getCode().equals(childRegion)));
+    assertTrue(regions.stream().anyMatch(r -> childCloudRegion.equals(r.getCloudRegion())));
   }
 
   @Test
-  void getPolicyInputRegionCodesNegative() {
+  void getPolicyInputCloudRegionsNegative() {
     var region = "usa";
-    var childRegionCode = "europe-west3";
+    var childCloudRegion = "europe-west3";
 
     var pao = createPao(region);
-    var regions = regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), GCP_PLATFORM);
+    var regions =
+        regionService.getPolicyInputLocationsForPlatform(
+            pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     assertTrue(regions.size() > 1);
-    assertFalse(regions.contains(childRegionCode));
+    assertTrue(regions.stream().noneMatch(r -> childCloudRegion.equals(r.getCloudRegion())));
   }
 
   @Test
-  void getPolicyInputRegionCodesAllowAll() {
+  void getPolicyInputCloudRegionsAllowAll() {
     // Create a PAO without a region constraint
     var objectId = UUID.randomUUID();
     paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
     var pao = paoService.getPao(objectId);
 
-    var regions = regionService.getPolicyInputRegions(pao.getEffectiveAttributes(), GCP_PLATFORM);
+    var regions =
+        regionService.getPolicyInputLocationsForPlatform(
+            pao.getEffectiveAttributes(), GCP_PLATFORM);
 
     // Pao should be allowed all regions
     assertTrue(regions.size() > 10);
-    assertTrue(regions.stream().anyMatch(r -> r.getCode().equals("us-east1")));
-    assertTrue(regions.stream().anyMatch(r -> r.getCode().equals("europe-west3")));
+    assertTrue(regions.stream().anyMatch(r -> r.getCloudRegion().equals("us-east1")));
+    assertTrue(regions.stream().anyMatch(r -> r.getCloudRegion().equals("europe-west3")));
   }
 
   private Pao createPao(String region) {

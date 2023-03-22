@@ -19,7 +19,6 @@ import bio.terra.policy.service.policy.model.PolicyUpdateResult;
 import bio.terra.policy.service.region.model.Location;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -102,8 +101,8 @@ public class ConversionUtils {
         new ApiTpsLocation().name(location.getName()).description(location.getDescription());
 
     ApiTpsRegions regions = new ApiTpsRegions();
-    if (location.getRegions() != null) {
-      regions.addAll(Arrays.stream(location.getRegions()).toList());
+    if (location.getCloudRegion() != null) {
+      regions.add(location.getCloudRegion());
     }
     apiLocation.setRegions(regions);
 
