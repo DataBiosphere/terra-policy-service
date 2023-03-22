@@ -28,7 +28,6 @@ import bio.terra.policy.service.region.model.Location;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -121,7 +120,7 @@ public class TpsApiController implements TpsApi {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    result.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
+    result.addAll(locations.stream().map(Location::getCloudRegion).toList());
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
@@ -150,7 +149,7 @@ public class TpsApiController implements TpsApi {
     PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);
     Set<Location> locations = regionService.getPolicyInputLocationsForPlatform(inputs, platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
+    response.addAll(locations.stream().map(Location::getCloudRegion).toList());
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -160,7 +159,7 @@ public class TpsApiController implements TpsApi {
     var locations =
         regionService.getPolicyInputLocationsForPlatform(pao.getEffectiveAttributes(), platform);
     ApiTpsRegions response = new ApiTpsRegions();
-    response.addAll(locations.stream().map(Location::getCloudRegion).collect(Collectors.toList()));
+    response.addAll(locations.stream().map(Location::getCloudRegion).toList());
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
