@@ -35,6 +35,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import java.util.concurrent.TimeUnit;
 {{! End Terra change }}
 
 {{^supportJava6}}
@@ -825,7 +826,11 @@ public class ApiClient {
     // For JDK17, we need to use this connection provider to work around the way Jersey
     // implements PATCH
     clientConfig.connectorProvider(new ApacheConnectorProvider());
-    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+    // Default to a 45s idle connection timeout on the client side, rather than
+    // assuming connections stay open indefinitely. Terra servers tend to drop
+    // connections after ~60s of not being used, which can cause unexpected
+    // "Connection Reset" errors for clients.
+    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(/*timeToLive=*/45, /*timeUnit=*/TimeUnit.SECONDS);
     connectionManager.setDefaultMaxPerRoute(20);
     // Validate inactive connections after 1ms instead of default 2000ms. This is
     // the closest to "always validate" behavior we can get.
