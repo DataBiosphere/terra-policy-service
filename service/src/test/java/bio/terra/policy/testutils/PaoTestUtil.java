@@ -22,6 +22,7 @@ public class PaoTestUtil {
   public static final String GROUP_CONSTRAINT = "group-constraint";
   public static final String REGION_KEY = "region-name";
   public static final String REGION_NAME_USA = "usa";
+  public static final String REGION_NAME_IOWA = "iowa";
   public static final String REGION_NAME_EUROPE = "europe";
   public static final String GROUP_KEY = "group";
   public static final String GROUP_NAME = "mygroup";

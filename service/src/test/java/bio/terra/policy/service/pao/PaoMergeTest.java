@@ -23,9 +23,7 @@ public class PaoMergeTest extends TestUnitBase {
   void mergeSourceToEmptyDestination() {
     UUID paoSourceId =
         PaoTestUtil.makePao(
-            paoService,
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            paoService, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
     logger.info("paoSourceId: {}", paoSourceId);
 
     UUID paoDestinationId = PaoTestUtil.makePao(paoService);
@@ -38,9 +36,7 @@ public class PaoMergeTest extends TestUnitBase {
     assertTrue(result.conflicts().isEmpty());
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
-        resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        resultPao, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
   }
 
   @Test
@@ -48,17 +44,13 @@ public class PaoMergeTest extends TestUnitBase {
     // PaoA - has flag A and data policy X, data1
     UUID paoAid =
         PaoTestUtil.makePao(
-            paoService,
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            paoService, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_USA));
     logger.info("paoAid: {}", paoAid);
 
     // PaoB - has flag B and data policy X, data1
     UUID paoBid =
         PaoTestUtil.makePao(
-            paoService,
-            PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-            PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+            paoService, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_IOWA));
     logger.info("paoBid: {}", paoBid);
 
     // merge A into B
@@ -68,10 +60,7 @@ public class PaoMergeTest extends TestUnitBase {
     assertTrue(result.conflicts().isEmpty());
     Pao resultPao = result.computedPao();
     PaoTestUtil.checkForPolicies(
-        resultPao,
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_A),
-        PaoTestUtil.makeFlagInput(PaoTestUtil.TEST_FLAG_POLICY_B),
-        PaoTestUtil.makeDataInput(PaoTestUtil.TEST_DATA_POLICY_X, PaoTestUtil.DATA1));
+        resultPao, PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_IOWA));
   }
 
   @Test

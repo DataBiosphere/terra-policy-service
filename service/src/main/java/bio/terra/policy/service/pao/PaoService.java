@@ -66,9 +66,7 @@ public class PaoService {
         objectId,
         component.name(),
         objectType.name());
-
-    // TODO: Validate policy inputs against the policy descriptions when those are available.
-
+    validatePolicyInputs(inputs);
     // The DAO does the heavy lifting.
     paoDao.createPao(objectId, component, objectType, inputs);
   }
@@ -211,7 +209,7 @@ public class PaoService {
         targetPaoId,
         replacementAttributes,
         updateMode);
-
+    validatePolicyInputs(replacementAttributes);
     Pao targetPao = paoDao.getPao(targetPaoId);
     return updateAttributesWorker(replacementAttributes, targetPao, updateMode);
   }
@@ -338,5 +336,14 @@ public class PaoService {
     }
 
     return conflicts;
+  }
+
+  private void validatePolicyInputs(PolicyInputs inputs) {
+    for (PolicyInput policyInput : inputs.getInputs().values()) {
+      if (!PolicyMutator.validate(policyInput)) {
+        throw new InvalidInputException(
+            String.format("Invalid PolicyInput: %s", policyInput.getKey()));
+      }
+    }
   }
 }

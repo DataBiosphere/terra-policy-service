@@ -1,5 +1,7 @@
 package bio.terra.policy.service.policy;
 
+import static bio.terra.policy.common.model.Constants.TERRA_NAMESPACE;
+
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.model.PolicyInput;
 import java.util.Map;
@@ -34,8 +36,12 @@ public class PolicyMutator {
   }
 
   public static boolean validate(PolicyInput policyInput) {
-    PolicyBase policy = findPolicy(policyInput);
-    return policy.isValid(policyInput);
+    if (policyInput.getPolicyName().getNamespace().equals(TERRA_NAMESPACE)) {
+      PolicyBase policy = findPolicy(policyInput);
+      return policy.isValid(policyInput);
+    }
+
+    return true;
   }
 
   private static void validateMatchedPolicies(PolicyInput one, PolicyInput two) {
