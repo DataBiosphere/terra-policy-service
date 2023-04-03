@@ -1,11 +1,13 @@
 package bio.terra.policy.service.policy;
 
+import bio.terra.policy.common.model.Constants;
 import bio.terra.policy.common.model.PolicyName;
 import java.util.Optional;
 
 public enum KnownPolicy {
   GROUP_CONSTRAINT(new PolicyGroupConstraint()),
-  REGION_CONSTRAINT(new PolicyRegionConstraint());
+  REGION_CONSTRAINT(new PolicyRegionConstraint()),
+  PROTECTED_DATA(new PolicyLabel(Constants.PROTECTED_DATA_POLICY_NAME));
 
   private final PolicyBase policy;
 

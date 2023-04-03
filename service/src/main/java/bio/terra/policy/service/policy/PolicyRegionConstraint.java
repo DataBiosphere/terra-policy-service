@@ -1,5 +1,6 @@
 package bio.terra.policy.service.policy;
 
+import bio.terra.policy.common.model.Constants;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 import bio.terra.policy.service.region.RegionService;
@@ -11,14 +12,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PolicyRegionConstraint implements PolicyBase {
-  private static final PolicyName POLICY_NAME = new PolicyName("terra", "region-constraint");
   private static final String DATA_KEY = "region-name";
 
   private static final RegionService regionService = new RegionService();
 
   @Override
   public PolicyName getPolicyName() {
-    return POLICY_NAME;
+    return Constants.REGION_CONSTRAINT_POLICY_NAME;
   }
 
   /**
@@ -83,7 +83,7 @@ public class PolicyRegionConstraint implements PolicyBase {
 
     if (resultSet.size() > 0) {
       newData.putAll(DATA_KEY, resultSet);
-      return new PolicyInput(POLICY_NAME, newData);
+      return new PolicyInput(Constants.REGION_CONSTRAINT_POLICY_NAME, newData);
     }
 
     return null;
@@ -109,7 +109,7 @@ public class PolicyRegionConstraint implements PolicyBase {
 
     Multimap<String, String> newData = ArrayListMultimap.create();
     targetRegions.forEach(group -> newData.put(DATA_KEY, group));
-    return new PolicyInput(POLICY_NAME, newData);
+    return new PolicyInput(Constants.REGION_CONSTRAINT_POLICY_NAME, newData);
   }
 
   /**

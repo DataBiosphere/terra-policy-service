@@ -1,6 +1,7 @@
 package bio.terra.policy.service.policy;
 
 import bio.terra.policy.common.exception.InvalidInputException;
+import bio.terra.policy.common.model.Constants;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 import com.google.common.annotations.VisibleForTesting;
@@ -11,12 +12,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PolicyGroupConstraint implements PolicyBase {
-  private static final PolicyName POLICY_NAME = new PolicyName("terra", "group-constraint");
   private static final String DATA_KEY = "group";
 
   @Override
   public PolicyName getPolicyName() {
-    return POLICY_NAME;
+    return Constants.GROUP_CONSTRAINT_POLICY_NAME;
   }
 
   /**
