@@ -93,7 +93,9 @@ public class ConversionUtils {
         .attributes(policyInputsToApi(pao.getAttributes()))
         .effectiveAttributes(policyInputsToApi(pao.getEffectiveAttributes()))
         .sourcesObjectIds(pao.getSourceObjectIds().stream().toList())
-        .deleted((pao.getDeleted()));
+        .deleted(pao.getDeleted())
+        .createdDate(pao.getCreated().toString())
+        .lastUpdatedDate(pao.getLastUpdated().toString());
   }
 
   static ApiTpsLocation regionToApi(Location location) {

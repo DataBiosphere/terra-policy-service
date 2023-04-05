@@ -2,6 +2,7 @@ package bio.terra.policy.service.pao.model;
 
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.DbPao;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,8 @@ public class Pao {
   private PolicyInputs effectiveAttributes;
   private Set<UUID> sourceObjectIds;
   private boolean deleted;
+  private Instant created;
+  private Instant lastUpdated;
 
   public Pao(
       UUID objectId,
@@ -25,7 +28,9 @@ public class Pao {
       PolicyInputs attributes,
       PolicyInputs effectiveAttributes,
       Set<UUID> sourceObjectIds,
-      boolean deleted) {
+      boolean deleted,
+      Instant created,
+      Instant lastUpdated) {
     this.objectId = objectId;
     this.component = component;
     this.objectType = objectType;
@@ -33,6 +38,8 @@ public class Pao {
     this.effectiveAttributes = effectiveAttributes;
     this.sourceObjectIds = sourceObjectIds;
     this.deleted = deleted;
+    this.created = created;
+    this.lastUpdated = lastUpdated;
   }
 
   public UUID getObjectId() {
@@ -67,16 +74,20 @@ public class Pao {
     return sourceObjectIds;
   }
 
-  public void setSourceObjectIds(Set<UUID> sourceObjectIds) {
-    this.sourceObjectIds = sourceObjectIds;
-  }
-
   public boolean getDeleted() {
     return deleted;
   }
 
   public void setDeleted(boolean deleted) {
     this.deleted = deleted;
+  }
+
+  public Instant getCreated() {
+    return created;
+  }
+
+  public Instant getLastUpdated() {
+    return lastUpdated;
   }
 
   public String toShortString() {
@@ -93,6 +104,8 @@ public class Pao {
         .add("effectiveAttributes=" + effectiveAttributes)
         .add("sourceObjectIds=" + sourceObjectIds)
         .add("deleted=" + deleted)
+        .add("created=" + created)
+        .add("lastUpdated=" + lastUpdated)
         .toString();
   }
 
@@ -106,6 +119,8 @@ public class Pao {
         .setAttributes(attributeSetMap.get(dbPao.attributeSetId()))
         .setEffectiveAttributes(attributeSetMap.get(dbPao.effectiveSetId()))
         .setDeleted(dbPao.deleted())
+        .setCreated(dbPao.created())
+        .setLastUpdated(dbPao.lastUpdated())
         .build();
   }
 
@@ -117,6 +132,8 @@ public class Pao {
     private PolicyInputs effectiveAttributes;
     private Set<UUID> sourceObjectIds;
     private boolean deleted;
+    private Instant created;
+    private Instant lastUpdated;
 
     public Builder setObjectId(UUID objectId) {
       this.objectId = objectId;
@@ -153,6 +170,16 @@ public class Pao {
       return this;
     }
 
+    public Builder setCreated(Instant created) {
+      this.created = created;
+      return this;
+    }
+
+    public Builder setLastUpdated(Instant lastUpdated) {
+      this.lastUpdated = lastUpdated;
+      return this;
+    }
+
     public Pao build() {
       if (sourceObjectIds == null) {
         sourceObjectIds = new HashSet<>();
@@ -164,7 +191,9 @@ public class Pao {
           attributes,
           effectiveAttributes,
           sourceObjectIds,
-          deleted);
+          deleted,
+          created,
+          lastUpdated);
     }
   }
 }

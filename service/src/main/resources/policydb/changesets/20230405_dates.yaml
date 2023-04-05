@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: remove policy description table and add dates to
+      author: dd
+      changes:
+      - dropTable:
+          tableName: policy_attribute
+      - addColumn:
+          tableName: policy_object
+          columns:
+              - column:
+                  name: created
+                  type: timestamptz
+              - column:
+                  name: last_updated
+                  type: timestamptz

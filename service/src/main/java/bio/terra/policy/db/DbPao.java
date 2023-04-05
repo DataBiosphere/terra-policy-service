@@ -2,6 +2,7 @@ package bio.terra.policy.db;
 
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,4 +14,6 @@ public record DbPao(
     Set<String> sources,
     String attributeSetId,
     String effectiveSetId,
-    boolean deleted) {}
+    boolean deleted,
+    Instant created,
+    Instant lastUpdated) {}

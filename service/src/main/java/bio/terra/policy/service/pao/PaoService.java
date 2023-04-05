@@ -5,7 +5,6 @@ import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.InvalidInputException;
-import bio.terra.policy.common.exception.PolicyNotImplementedException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.DbPao;
@@ -44,10 +43,6 @@ public class PaoService {
   @Autowired
   public PaoService(PaoDao paoDao) {
     this.paoDao = paoDao;
-  }
-
-  public void clonePao(UUID sourceObjectId, UUID destinationObjectId) {
-    throw new PolicyNotImplementedException("Deprecated method. Here until we change the WSM call");
   }
 
   /**

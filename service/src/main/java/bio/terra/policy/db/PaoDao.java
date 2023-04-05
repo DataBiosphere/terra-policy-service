@@ -12,6 +12,8 @@ import bio.terra.policy.service.pao.graph.model.GraphNode;
 import bio.terra.policy.service.pao.model.Pao;
 import bio.terra.policy.service.pao.model.PaoComponent;
 import bio.terra.policy.service.pao.model.PaoObjectType;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PaoDao {
+  // Handle nulls in existing data by returning the epoch date.
+  private static Instant instantFromTimestamp(@Nullable Timestamp sqlTimestamp) {
+    if (sqlTimestamp == null) {
+      return Instant.EPOCH;
+    }
+    return sqlTimestamp.toInstant();
+  }
+
   private static final RowMapper<DbPao> DB_PAO_ROW_MAPPER =
       (rs, rowNum) -> {
         String[] sourcesArray = (String[]) rs.getArray("sources").getArray();
@@ -44,7 +55,9 @@ public class PaoDao {
             sources,
             rs.getString("attribute_set_id"),
             rs.getString("effective_set_id"),
-            rs.getBoolean("deleted"));
+            rs.getBoolean("deleted"),
+            instantFromTimestamp(rs.getTimestamp("created")),
+            instantFromTimestamp(rs.getTimestamp("last_updated")));
       };
 
   private static final RowMapper<DbAttribute> DB_ATTRIBUTE_SET_ROW_MAPPER =
@@ -101,7 +114,8 @@ public class PaoDao {
    * @param objectId The PAO to flag
    */
   public void markPaoDeleted(UUID objectId) {
-    final String sql = "UPDATE policy_object SET deleted=true WHERE object_id=:object_id";
+    final String sql =
+        "UPDATE policy_object SET deleted=true, last_updated=CURRENT_TIMESTAMP WHERE object_id=:object_id";
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());
     tpsJdbcTemplate.update(sql, params);
@@ -228,11 +242,16 @@ public class PaoDao {
     PolicyInputs dbAttributes = attributeSetMap.get(dbPao.attributeSetId());
     PolicyInputs dbEffectiveAttributes = attributeSetMap.get(dbPao.effectiveSetId());
 
+    // If there are any changes to the PAO or attributes, we update the last_updated
+    // column with the current timestamp.
+    boolean recordUpdated = false;
+
     // Update attributes if changed
     if (!attributes.equals(dbAttributes)) {
       String attributeSetId = dbPao.attributeSetId();
       deleteAttributeSet(attributeSetId);
       createAttributeSet(attributeSetId, attributes);
+      recordUpdated = true;
     }
 
     // Update effective attributes if changed
@@ -240,6 +259,7 @@ public class PaoDao {
       String effectiveSetId = dbPao.effectiveSetId();
       deleteAttributeSet(effectiveSetId);
       createAttributeSet(effectiveSetId, effectiveAttributes);
+      recordUpdated = true;
     }
 
     // Update sources if changed
@@ -247,7 +267,10 @@ public class PaoDao {
         dbPao.sources().stream().map(UUID::fromString).collect(Collectors.toSet());
     if (!dbSources.equals(pao.getSourceObjectIds())) {
       final String sql =
-          "UPDATE policy_object SET sources = string_to_array(:sources, ',') WHERE object_id = :object_id";
+          """
+        UPDATE policy_object
+        SET last_updated = CURRENT_TIMESTAMP, sources = string_to_array(:sources, ',') WHERE object_id = :object_id;
+        """;
 
       String sourcesSqlArray = makeCsvFromUuidSet(pao.getSourceObjectIds());
 
@@ -261,6 +284,20 @@ public class PaoDao {
           "Update sources array for pao object id {}, sources {}",
           pao.getObjectId().toString(),
           sourcesSqlArray);
+
+      // We recorded the last updated, so no need to do it again
+      recordUpdated = false;
+    }
+
+    // Record last updated if there were any unrecorded updates
+    if (recordUpdated) {
+      final String sqlUpdated =
+          "UPDATE policy_object SET last_updated = CURRENT_TIMESTAMP WHERE object_id = :object_id";
+      MapSqlParameterSource params =
+          new MapSqlParameterSource().addValue("object_id", pao.getObjectId().toString());
+
+      tpsJdbcTemplate.update(sqlUpdated, params);
+      logger.info("Updated last update pao object id {}", pao.getObjectId().toString());
     }
   }
 
@@ -327,9 +364,11 @@ public class PaoDao {
     final String sql =
         """
         INSERT INTO policy_object
-          (object_id, component, object_type, sources, attribute_set_id, effective_set_id)
+          (object_id, component, object_type, sources, attribute_set_id, effective_set_id,
+           created, last_updated)
         VALUES
-          (:object_id, :component, :object_type, string_to_array(:sources, ','), :attribute_set_id, :effective_set_id)
+          (:object_id, :component, :object_type, string_to_array(:sources, ','), :attribute_set_id, :effective_set_id,
+           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """;
 
     MapSqlParameterSource params =
@@ -359,7 +398,7 @@ public class PaoDao {
   public DbPao getDbPao(UUID objectId) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted, created, last_updated
         FROM policy_object WHERE object_id = :object_id
         """;
 
@@ -376,7 +415,7 @@ public class PaoDao {
   private List<DbPao> getDbPaos(List<UUID> objectIdList) {
     final String sql =
         """
-        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted
+        SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted, created, last_updated
         FROM policy_object
         WHERE object_id IN (:object_id_list)
         """;

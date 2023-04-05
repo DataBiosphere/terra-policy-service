@@ -45,9 +45,6 @@ public class TpsApiController implements TpsApi {
     this.regionService = regionService;
   }
 
-  // -- Policy Queries --
-  // TODO: PF-1733 Next step is to add group membership constraint
-
   // -- Policy Attribute Objects --
   @Override
   public ResponseEntity<Void> createPao(ApiTpsPaoCreateRequest body) {
@@ -79,7 +76,9 @@ public class TpsApiController implements TpsApi {
                         .component(ep.getComponent().toApi())
                         .objectType(ep.getObjectType().toApi())
                         .objectId(ep.getObjectId())
-                        .deleted(ep.getDeleted()))
+                        .deleted(ep.getDeleted())
+                        .createdDate(ep.getCreated().toString())
+                        .lastUpdatedDate(ep.getLastUpdated().toString()))
             .toList();
 
     // Convert the explanations to API form

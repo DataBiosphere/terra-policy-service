@@ -1,6 +1,7 @@
 package bio.terra.policy.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -42,9 +43,11 @@ public class TpsBasicControllerTest extends TestUnitBase {
 
     // Create a PAO
     UUID paoIdA = mvcUtils.createPao(inputs);
+    String lastUpdatedA = checkInitialLastUpdate(paoIdA);
 
     // Create another PAO with a group policy
     UUID paoIdB = mvcUtils.createPao(new ApiTpsPolicyInputs().addInputsItem(regionPolicy));
+    String lastUpdatedB = checkInitialLastUpdate(paoIdB);
 
     // Get a PAO
     var apiPao = mvcUtils.getPao(paoIdA);
@@ -56,12 +59,14 @@ public class TpsBasicControllerTest extends TestUnitBase {
     assertTrue(updateResult.isUpdateApplied());
     assertEquals(0, updateResult.getConflicts().size());
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes(), US_REGION);
+    checkLastUpdateChanged(lastUpdatedA, paoIdA);
 
     // Link a PAO
     updateResult = mvcUtils.linkPao(paoIdB, paoIdA);
     assertTrue(updateResult.isUpdateApplied());
     assertEquals(0, updateResult.getConflicts().size());
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes(), US_REGION);
+    lastUpdatedB = checkLastUpdateChanged(lastUpdatedB, paoIdB);
 
     // need to work with region inputs since we can't update groups.
     var iowaRegionPolicy =
@@ -74,10 +79,13 @@ public class TpsBasicControllerTest extends TestUnitBase {
     // Update a PAO
     updateResult = mvcUtils.updatePao(paoIdB, iowaInputs);
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes(), IOWA_REGION);
+    lastUpdatedB = checkLastUpdateChanged(lastUpdatedB, paoIdB);
 
     // Replace a PAO
     updateResult = mvcUtils.replacePao(paoIdB, iowaInputs);
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes(), IOWA_REGION);
+    dumpDates(paoIdA, paoIdB);
+    checkLastUpdateChanged(lastUpdatedB, paoIdB);
 
     // Delete a PAO
     mvcUtils.deletePao(paoIdA);
@@ -99,5 +107,28 @@ public class TpsBasicControllerTest extends TestUnitBase {
         fail();
       }
     }
+  }
+
+  /** check that the initial Pao create matches lastUpdated and return lastUpdated */
+  private String checkInitialLastUpdate(UUID paoId) throws Exception {
+    var apiPao = mvcUtils.getPao(paoId);
+    assertEquals(apiPao.getCreatedDate(), apiPao.getLastUpdatedDate());
+    return apiPao.getLastUpdatedDate();
+  }
+
+  /** check that lastUpdated changed and return new lastUpdated */
+  private String checkLastUpdateChanged(String lastUpdated, UUID paoId) throws Exception {
+    var apiPao = mvcUtils.getPao(paoId);
+    assertNotEquals(lastUpdated, apiPao.getLastUpdatedDate());
+    return apiPao.getLastUpdatedDate();
+  }
+
+  private void dumpDates(UUID paoIdA, UUID paoIdB) throws Exception {
+    var paoA = mvcUtils.getPao(paoIdA);
+    var paoB = mvcUtils.getPao(paoIdB);
+    System.out.println("PAO-A");
+    System.out.print(paoA);
+    System.out.println("PAO-B");
+    System.out.print(paoB);
   }
 }
