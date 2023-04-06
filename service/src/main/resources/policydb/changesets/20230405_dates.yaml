@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: remove policy description table and add dates to
+      id: remove policy description table and add dates to policy_object table
       author: dd
       changes:
       - dropTable:

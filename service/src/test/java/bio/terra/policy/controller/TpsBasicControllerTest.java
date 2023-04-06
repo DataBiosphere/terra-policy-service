@@ -84,7 +84,6 @@ public class TpsBasicControllerTest extends TestUnitBase {
     // Replace a PAO
     updateResult = mvcUtils.replacePao(paoIdB, iowaInputs);
     checkAttributeSet(updateResult.getResultingPao().getEffectiveAttributes(), IOWA_REGION);
-    dumpDates(paoIdA, paoIdB);
     checkLastUpdateChanged(lastUpdatedB, paoIdB);
 
     // Delete a PAO
@@ -121,14 +120,5 @@ public class TpsBasicControllerTest extends TestUnitBase {
     var apiPao = mvcUtils.getPao(paoId);
     assertNotEquals(lastUpdated, apiPao.getLastUpdatedDate());
     return apiPao.getLastUpdatedDate();
-  }
-
-  private void dumpDates(UUID paoIdA, UUID paoIdB) throws Exception {
-    var paoA = mvcUtils.getPao(paoIdA);
-    var paoB = mvcUtils.getPao(paoIdB);
-    System.out.println("PAO-A");
-    System.out.print(paoA);
-    System.out.println("PAO-B");
-    System.out.print(paoB);
   }
 }
