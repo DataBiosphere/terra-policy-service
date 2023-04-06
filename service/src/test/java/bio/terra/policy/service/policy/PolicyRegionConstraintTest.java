@@ -1,9 +1,7 @@
 package bio.terra.policy.service.policy;
 
 import static bio.terra.policy.service.policy.PolicyTestUtils.buildMultimap;
-import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
-import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
@@ -104,11 +102,10 @@ public class PolicyRegionConstraintTest extends TestUnitBase {
   void regionConstraintTest_combineEmptySets() {
     var regionConstraint = new PolicyRegionConstraint();
 
-    // neither input contains a region constraint
     var dependentPolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(GROUP_KEY));
     var sourcePolicy =
-        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(GROUP_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(GROUP_KEY));
 
     PolicyInput resultPolicy = regionConstraint.combine(dependentPolicy, sourcePolicy);
 
