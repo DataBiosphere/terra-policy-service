@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PolicyRegionConstraint implements PolicyBase {
+public class PolicyRegionConstraint extends PolicyBase {
   private static final String DATA_KEY = "region-name";
 
   private static final RegionService regionService = new RegionService();
@@ -33,7 +33,7 @@ public class PolicyRegionConstraint implements PolicyBase {
    * </pre>
    */
   @Override
-  public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+  protected PolicyInput performCombine(PolicyInput dependent, PolicyInput source) {
     if (dependent == null) {
       return source;
     }
@@ -98,7 +98,7 @@ public class PolicyRegionConstraint implements PolicyBase {
    * @return the target with regions removed; null if no regions left
    */
   @Override
-  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
+  protected PolicyInput performRemove(PolicyInput target, PolicyInput removePolicy) {
     Set<String> targetRegions = dataToSet(target.getData(DATA_KEY));
     Set<String> removeRegions = dataToSet(removePolicy.getData(DATA_KEY));
     targetRegions.removeAll(removeRegions);
@@ -119,7 +119,7 @@ public class PolicyRegionConstraint implements PolicyBase {
    * @param policyInput the input to validate
    */
   @Override
-  public boolean isValid(PolicyInput policyInput) {
+  protected boolean performIsValid(PolicyInput policyInput) {
     Multimap<String, String> additionalData = policyInput.getAdditionalData();
     for (String key : additionalData.keySet()) {
       if (!key.equals(DATA_KEY)) {

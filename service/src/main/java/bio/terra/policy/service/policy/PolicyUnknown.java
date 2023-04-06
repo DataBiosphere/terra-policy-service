@@ -6,7 +6,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 /** When we process a policy that is not known to TPS, then we use this combiner. */
-public class PolicyUnknown implements PolicyBase {
+public class PolicyUnknown extends PolicyBase {
   private final PolicyName policyName;
 
   public PolicyUnknown(PolicyName policyName) {
@@ -31,7 +31,7 @@ public class PolicyUnknown implements PolicyBase {
    * @return policy input or null, if there is a conflict
    */
   @Override
-  public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+  protected PolicyInput performCombine(PolicyInput dependent, PolicyInput source) {
     if (dependent == null) {
       return source;
     }
@@ -67,7 +67,7 @@ public class PolicyUnknown implements PolicyBase {
    * @return null
    */
   @Override
-  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
+  protected PolicyInput performRemove(PolicyInput target, PolicyInput removePolicy) {
     return null;
   }
 
@@ -78,7 +78,7 @@ public class PolicyUnknown implements PolicyBase {
    * @return true
    */
   @Override
-  public boolean isValid(PolicyInput policyInput) {
+  protected boolean performIsValid(PolicyInput policyInput) {
     return true;
   }
 }

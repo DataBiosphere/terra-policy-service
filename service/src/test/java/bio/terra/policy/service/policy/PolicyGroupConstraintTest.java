@@ -5,7 +5,6 @@ import static bio.terra.policy.testutils.PaoTestUtil.GROUP_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME;
 import static bio.terra.policy.testutils.PaoTestUtil.GROUP_NAME_ALT;
-import static bio.terra.policy.testutils.PaoTestUtil.REGION_CONSTRAINT;
 import static bio.terra.policy.testutils.PaoTestUtil.REGION_KEY;
 import static bio.terra.policy.testutils.PaoTestUtil.TERRA_NAMESPACE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,11 +76,10 @@ public class PolicyGroupConstraintTest extends TestUnitBase {
   void groupConstraintTest_combineEmptySourceAndDestination() throws Exception {
     var groupConstraint = new PolicyGroupConstraint();
 
-    // Only adding region constraints.
     var dependentPolicy =
-        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(REGION_KEY));
     var sourcePolicy =
-        new PolicyInput(TERRA_NAMESPACE, REGION_CONSTRAINT, buildMultimap(REGION_KEY, GROUP_NAME));
+        new PolicyInput(TERRA_NAMESPACE, GROUP_CONSTRAINT, buildMultimap(REGION_KEY));
 
     PolicyInput resultPolicy = groupConstraint.combine(dependentPolicy, sourcePolicy);
 

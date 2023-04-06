@@ -4,7 +4,7 @@ import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
 
 /** A policy that does not contain any additional data. */
-public class PolicyLabel implements PolicyBase {
+public class PolicyLabel extends PolicyBase {
   private final PolicyName policyName;
 
   public PolicyLabel(PolicyName policyName) {
@@ -24,7 +24,7 @@ public class PolicyLabel implements PolicyBase {
    * @return policy input or null, if there is a conflict
    */
   @Override
-  public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+  protected PolicyInput performCombine(PolicyInput dependent, PolicyInput source) {
     return dependent == null ? source : dependent;
   }
 
@@ -36,7 +36,7 @@ public class PolicyLabel implements PolicyBase {
    * @return null
    */
   @Override
-  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
+  protected PolicyInput performRemove(PolicyInput target, PolicyInput removePolicy) {
     return null;
   }
 
@@ -47,7 +47,7 @@ public class PolicyLabel implements PolicyBase {
    * @return true if additional data is empty
    */
   @Override
-  public boolean isValid(PolicyInput policyInput) {
+  protected boolean performIsValid(PolicyInput policyInput) {
     return policyInput.getAdditionalData().isEmpty();
   }
 }

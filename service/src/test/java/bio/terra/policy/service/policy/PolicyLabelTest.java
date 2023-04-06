@@ -7,10 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyName;
+import bio.terra.policy.testutils.TestUnitBase;
 import com.google.common.collect.ArrayListMultimap;
 import org.junit.jupiter.api.Test;
 
-public class PolicyLabelTest {
+public class PolicyLabelTest extends TestUnitBase {
   private final PolicyName testName = new PolicyName("terra", "test-policy");
   private final PolicyInput testPolicyInput = new PolicyInput(testName, ArrayListMultimap.create());
 

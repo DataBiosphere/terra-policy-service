@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PolicyGroupConstraint implements PolicyBase {
+public class PolicyGroupConstraint extends PolicyBase {
   private static final String DATA_KEY = "group";
 
   @Override
@@ -30,7 +30,7 @@ public class PolicyGroupConstraint implements PolicyBase {
    * @return policy input
    */
   @Override
-  public PolicyInput combine(PolicyInput dependent, PolicyInput source) {
+  protected PolicyInput performCombine(PolicyInput dependent, PolicyInput source) {
     if (source == null) {
       return dependent;
     }
@@ -55,7 +55,7 @@ public class PolicyGroupConstraint implements PolicyBase {
    * @return the target with groups removed; null if no groups left
    */
   @Override
-  public PolicyInput remove(PolicyInput target, PolicyInput removePolicy) {
+  protected PolicyInput performRemove(PolicyInput target, PolicyInput removePolicy) {
     throw new InvalidInputException("Cannot remove a group constraint");
   }
 
@@ -67,7 +67,7 @@ public class PolicyGroupConstraint implements PolicyBase {
    * @return
    */
   @Override
-  public boolean isValid(PolicyInput policyInput) {
+  protected boolean performIsValid(PolicyInput policyInput) {
     for (var key : policyInput.getAdditionalData().keySet()) {
       if (!key.equals(DATA_KEY)) {
         return false;
