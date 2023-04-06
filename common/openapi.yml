@@ -633,6 +633,15 @@ components:
         deleted:
           description: Policy source has been deleted. Policies from the source still apply.
           type: boolean
+        createdDate:
+          description: Timestamp when the policy object was created; ISO 8601 full-date format
+          type: string
+        lastUpdatedDate:
+          description: |
+            Timestamp where the policy was last updated. Updates may be direct changes
+            to this policy object or indirect changes coming from source policy objects.
+            ISO 8601 full-date format
+          type: string
 
     TpsPaoGetResult:
       type: object
@@ -655,6 +664,15 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/TpsObjectId'
+        createdDate:
+          description: Timestamp when the policy object was created; ISO 8601 full-date format
+          type: string
+        lastUpdatedDate:
+          description: |
+            Timestamp where the policy was last updated. Updates may be direct changes
+            to this policy object or indirect changes coming from source policy objects.
+            ISO 8601 full-date format
+          type: string
 
     TpsPolicyInputs:
       type: object

@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -11,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import bio.terra.policy.generated.model.ApiTpsComponent;
 import bio.terra.policy.generated.model.ApiTpsObjectType;
 import bio.terra.policy.generated.model.ApiTpsPaoExplainResult;
+import bio.terra.policy.generated.model.ApiTpsPaoGetResult;
 import bio.terra.policy.generated.model.ApiTpsPaoUpdateResult;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplainSource;
 import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
@@ -179,9 +181,23 @@ public class TpsExplainControllerTest extends TestUnitBase {
     UUID threePao = mvcUtils.createPao(YU_POLICY_INPUT);
     UUID fourPao = mvcUtils.createPao(MC_POLICY_INPUT);
 
-    // Connect top to one and two
+    // Connect top to one and two; validate dates
+    ApiTpsPaoGetResult topPaoData = mvcUtils.getPao(topPao);
+    ApiTpsPaoGetResult onePaoData = mvcUtils.getPao(onePao);
+    assertEquals(topPaoData.getCreatedDate(), topPaoData.getLastUpdatedDate());
+    assertEquals(onePaoData.getCreatedDate(), onePaoData.getLastUpdatedDate());
+
     ApiTpsPaoUpdateResult linkResult = mvcUtils.linkPao(topPao, onePao);
     assertTrue(linkResult.isUpdateApplied());
+
+    ApiTpsPaoGetResult topPaoUpdatedData = mvcUtils.getPao(topPao);
+    ApiTpsPaoGetResult onePaoUpdatedData = mvcUtils.getPao(onePao);
+    // Created data should not change
+    assertEquals(topPaoUpdatedData.getCreatedDate(), topPaoData.getCreatedDate());
+    assertEquals(onePaoUpdatedData.getCreatedDate(), onePaoData.getCreatedDate());
+    // Last updated date should change on the link dependent
+    assertNotEquals(topPaoUpdatedData.getCreatedDate(), topPaoUpdatedData.getLastUpdatedDate());
+
     linkResult = mvcUtils.linkPao(topPao, twoPao);
     assertTrue(linkResult.isUpdateApplied());
 
