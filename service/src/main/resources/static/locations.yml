@@ -130,6 +130,10 @@ locations:
         description: US West 2 (GCP)
         cloudRegion: us-west2
         cloudPlatform: gcp
+      - name: aws.us-west-1
+        description: US West (N. California)
+        cloudRegion: us-west-1
+        cloudPlatform: aws
     - name: iowa
       description: Iowa
       locations:
@@ -205,6 +209,10 @@ locations:
         cloudRegion: eastus2
         cloudPlatform: azure
         description: (US) East US 2
+      - name: aws.us-east-1
+        description: US East (N. Virginia)
+        cloudRegion: us-east-1
+        cloudPlatform: aws
     - name: multiregion-us
       description: Multi-region US
       cloudRegion: US
