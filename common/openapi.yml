@@ -423,11 +423,11 @@ components:
     Platform:
       name: platform
       in: query
-      description: The cloud platform (gcp, azure)
+      description: The cloud platform (gcp, azure, aws)
       required: true
       schema:
         type: string
-        enum: ["gcp", "azure"]
+        enum: ["gcp", "azure", "aws"]
 
     Location:
       name: location
