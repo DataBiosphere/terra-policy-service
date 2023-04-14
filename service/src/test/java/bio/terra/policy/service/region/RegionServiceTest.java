@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RegionServiceTest extends TestUnitBase {
   private static final String GCP_PLATFORM = "gcp";
   private static final String AZURE_PLATFORM = "azure";
+  private static final String AWS_PLATFORM = "aws";
 
   @Autowired private RegionService regionService;
   @Autowired private PaoService paoService;
@@ -77,6 +78,12 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
+  void getRegionsForLocationAwsFilter() {
+    var result = regionService.getLocationsForPlatform("global", AWS_PLATFORM);
+    assertEquals(2, result.size());
+  }
+
+  @Test
   void getRegionsForLocationAzureFilter() {
     var result = regionService.getLocationsForPlatform("global", AZURE_PLATFORM);
     assertEquals(25, result.size());
@@ -116,6 +123,12 @@ public class RegionServiceTest extends TestUnitBase {
   @Test
   void getOntologyInvalidRegionName() {
     assertNull(regionService.getOntology("invalid", GCP_PLATFORM));
+  }
+
+  @Test
+  void getOntologyFiltersByAwsPlatform() {
+    var result = regionService.getOntology("virginia", AWS_PLATFORM);
+    assertEquals(1, result.getLocations().size());
   }
 
   @Test
