@@ -543,7 +543,7 @@ components:
     TpsComponent:
       type: string
       description: Enum representing a policy-bearing Terra component.
-      enum: [ 'WSM' ]
+      enum: [ 'BPM', 'WSM', 'TDR' ]
 
     TpsRegions:
       type: array
@@ -569,7 +569,7 @@ components:
     TpsObjectType:
       type: string
       description: Enum representing an object type of a policy-bearing Terra component.
-      enum: [ 'workspace' ]
+      enum: [ 'dataset', 'snapshot', 'billing-profile', 'workspace' ]
 
     TpsPaoCreateRequest:
       type: object

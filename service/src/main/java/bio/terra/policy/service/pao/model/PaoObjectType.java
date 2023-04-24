@@ -6,6 +6,9 @@ import bio.terra.policy.generated.model.ApiTpsObjectType;
 import org.apache.commons.lang3.StringUtils;
 
 public enum PaoObjectType {
+  DATASET("dataset", ApiTpsObjectType.DATASET),
+  SNAPSHOT("snapshot", ApiTpsObjectType.SNAPSHOT),
+  BILLING_PROFILE("billing-profile", ApiTpsObjectType.BILLING_PROFILE),
   WORKSPACE("workspace", ApiTpsObjectType.WORKSPACE);
 
   /** Object type string used in the database */
