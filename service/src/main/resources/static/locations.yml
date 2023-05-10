@@ -257,14 +257,20 @@ locations:
   - name: australia
     description: Australia
     locations:
-    - name: gcp.australia-southeast1
-      description: Australia Southeast 1 (GCP)
-      cloudRegion: australia-southeast1
-      cloudPlatform: gcp
-    - name: gcp.australia-southeast2
-      description: Australia Southeast 2 (GCP)
-      cloudRegion: australia-southeast2
-      cloudPlatform: gcp
+    - name: sydney
+      description: Sydney
+      locations:
+      - name: gcp.australia-southeast1
+        description: Australia Southeast 1 (GCP)
+        cloudRegion: australia-southeast1
+        cloudPlatform: gcp
+    - name: melbourne
+      description: Melbourne
+      locations:
+      - name: gcp.australia-southeast2
+        description: Australia Southeast 2 (GCP)
+        cloudRegion: australia-southeast2
+        cloudPlatform: gcp
     - name: azure.australiaeast
       cloudRegion: australiaeast
       cloudPlatform: azure
@@ -283,14 +289,20 @@ locations:
   - name: india
     description: India
     locations:
-    - name: gcp.asia-south1
-      description: Asia South 1 (GCP)
-      cloudRegion: asia-south1
-      cloudPlatform: gcp
-    - name: gcp.asia-south2
-      description: Asia South 2 (GCP)
-      cloudRegion: asia-south2
-      cloudPlatform: gcp
+    - name: mumbai
+      description: Mumbai
+      locations:
+      - name: gcp.asia-south1
+        description: Asia South 1 (GCP)
+        cloudRegion: asia-south1
+        cloudPlatform: gcp
+    - name: delhi
+      description: Delhi
+      locations:
+      - name: gcp.asia-south2
+        description: Asia South 2 (GCP)
+        cloudRegion: asia-south2
+        cloudPlatform: gcp
     - name: azure.centralindia
       cloudRegion: centralindia
       cloudPlatform: azure
@@ -305,14 +317,20 @@ locations:
   - name: japan
     description: Japan
     locations:
-    - name: gcp.asia-northeast1
-      description: Asia Northeast 1 (GCP)
-      cloudRegion: asia-northeast1
-      cloudPlatform: gcp
-    - name: gcp.asia-northeast2
-      description: Asia Northeast 2 (GCP)
-      cloudRegion: asia-northeast2
-      cloudPlatform: gcp
+    - name: tokyo
+      description: Tokyo
+      locations:
+      - name: gcp.asia-northeast1
+        description: Asia Northeast 1 (GCP)
+        cloudRegion: asia-northeast1
+        cloudPlatform: gcp
+    - name: osaka
+      description: Osaka
+      locations:
+      - name: gcp.asia-northeast2
+        description: Asia Northeast 2 (GCP)
+        cloudRegion: asia-northeast2
+        cloudPlatform: gcp
     - name: azure.japaneast
       cloudRegion: japaneast
       cloudPlatform: azure
@@ -335,14 +353,17 @@ locations:
       description: Asia Southeast 1 (GCP)
       cloudRegion: asia-southeast1
       cloudPlatform: gcp
-    - name: gcp.asia-northeast2
-      description: Asia Northeast 2 (GCP)
-      cloudRegion: asia-northeast2
-      cloudPlatform: gcp
     - name: azure.southeastasia
       cloudRegion: southeastasia
       cloudPlatform: azure
       description: Southeast Asia (Azure)
+  - name: indonesia
+    description: Indonesia
+    locations:
+    - name: gcp.asia-southeast2
+      description: Asia Southeast 2 (GCP)
+      cloudRegion: asia-southeast2
+      cloudPlatform: gcp
   - name: taiwan
     description: Taiwan
     locations:
