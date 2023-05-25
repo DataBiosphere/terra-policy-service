@@ -35,6 +35,19 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Git secrets setup
+        run: |
+          git clone https://github.com/awslabs/git-secrets.git ~/git-secrets
+          cd ~/git-secrets
+          git checkout 99d01d58ebcc06e237c0e3f3ff5ae628aeef6aa6
+          sudo make install
+
+      - name: Secrets check
+        run: |
+          sudo ln -s "$(which echo)" /usr/local/bin/say
+          ./minnie-kenny.sh --force
+          git secrets --scan-history
+
       - name: Build the test harness and, by dependency, the service library
         run: ./gradlew --build-cache build -x test
 
@@ -103,6 +116,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
+
+      - name: Git secrets setup
+        run: |
+          git clone https://github.com/awslabs/git-secrets.git ~/git-secrets
+          cd ~/git-secrets
+          git checkout 99d01d58ebcc06e237c0e3f3ff5ae628aeef6aa6
+          sudo make install
+
+      - name: Secrets check
+        run: |
+          sudo ln -s "$(which echo)" /usr/local/bin/say
+          ./minnie-kenny.sh --force
+          git secrets --scan-history
 
       - name: initialize the database
         env:
