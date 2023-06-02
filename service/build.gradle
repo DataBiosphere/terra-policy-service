@@ -62,6 +62,10 @@ dependencies {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
+
+    // Metrics collection
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.6'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.8.6'
 }
 
 task runMinnieKenny(type: Exec) {

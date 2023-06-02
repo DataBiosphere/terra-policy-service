@@ -62,3 +62,8 @@ policy:
     upgrade-on-start: true
     uri: ${env.db.host}/${env.db.policy.name}
     username: ${env.db.policy.user}
+
+management:
+  server:
+    port: 9098
+
