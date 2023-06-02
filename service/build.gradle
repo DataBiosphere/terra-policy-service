@@ -73,12 +73,19 @@ test {
     useJUnitPlatform ()
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
 sonarqube {
     properties {
         property 'sonar.projectName', 'terra-policy-service'
         property 'sonar.projectKey', 'terra-policy-service'
         property 'sonar.organization', 'broad-databiosphere'
         property 'sonar.host.url', 'https://sonarcloud.io'
+        property "sonar.sources", "src/main/java,src/main/resources/templates"
     }
 }
 
