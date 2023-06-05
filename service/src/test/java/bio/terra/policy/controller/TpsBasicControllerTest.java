@@ -2,6 +2,7 @@ package bio.terra.policy.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -9,7 +10,11 @@ import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyInputs;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
 import bio.terra.policy.testutils.TestUnitBase;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +29,20 @@ public class TpsBasicControllerTest extends TestUnitBase {
   private static final String IOWA_REGION = "iowa";
 
   @Autowired private MvcUtils mvcUtils;
+
+  private SimpleMeterRegistry meterRegistry;
+
+  @BeforeEach
+  void setUp() {
+    meterRegistry = new SimpleMeterRegistry();
+    Metrics.globalRegistry.add(meterRegistry);
+  }
+
+  @AfterEach
+  void tearDown() {
+    meterRegistry.clear();
+    Metrics.globalRegistry.clear();
+  }
 
   @Test
   public void basicPaoTest() throws Exception {
@@ -45,9 +64,17 @@ public class TpsBasicControllerTest extends TestUnitBase {
     UUID paoIdA = mvcUtils.createPao(inputs);
     String lastUpdatedA = checkInitialLastUpdate(paoIdA);
 
+    var createCounter = meterRegistry.find("tps.pao.create.count").counter();
+    assertNotNull(createCounter);
+    assertEquals(createCounter.count(), 1);
+
     // Create another PAO with a group policy
     UUID paoIdB = mvcUtils.createPao(new ApiTpsPolicyInputs().addInputsItem(regionPolicy));
     String lastUpdatedB = checkInitialLastUpdate(paoIdB);
+
+    var secondCreateCounter = meterRegistry.find("tps.pao.create.count").counter();
+    assertNotNull(secondCreateCounter);
+    assertEquals(secondCreateCounter.count(), 2);
 
     // Get a PAO
     var apiPao = mvcUtils.getPao(paoIdA);
