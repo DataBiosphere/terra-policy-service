@@ -65,7 +65,8 @@ dependencies {
 
     // Metrics collection
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.6'
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.8.6'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
+
 }
 
 task runMinnieKenny(type: Exec) {
