@@ -1,7 +1,6 @@
 package bio.terra.policy.app.controller;
 
 import bio.terra.common.exception.ConflictException;
-import bio.terra.policy.common.MetricsUtils;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.generated.api.TpsApi;
 import bio.terra.policy.generated.model.ApiTpsLocation;
@@ -54,7 +53,6 @@ public class TpsApiController implements TpsApi {
         PaoComponent.fromApi(body.getComponent()),
         PaoObjectType.fromApi(body.getObjectType()),
         ConversionUtils.policyInputsFromApi(body.getAttributes()));
-    MetricsUtils.incrementPaoCreation();
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
@@ -94,8 +92,6 @@ public class TpsApiController implements TpsApi {
             .explainObjects(explainSources)
             .explanation(explanations);
 
-    MetricsUtils.incrementPaoExplain();
-
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
@@ -110,7 +106,6 @@ public class TpsApiController implements TpsApi {
   public ResponseEntity<ApiTpsPaoGetResult> getPao(UUID objectId) {
     Pao pao = paoService.getPao(objectId);
     ApiTpsPaoGetResult result = ConversionUtils.paoToApi(pao);
-    MetricsUtils.incrementPaoGet();
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
