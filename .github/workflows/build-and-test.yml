@@ -134,7 +134,7 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: |
-          psql -h localhost -U postgres -f ./scripts/postgres-init.sql
+          psql -h localhost -U postgres -f ./docker/postgres-init.sql
 
       - name: Test with coverage
         run: ./gradlew --build-cache service:test jacocoTestReport --scan

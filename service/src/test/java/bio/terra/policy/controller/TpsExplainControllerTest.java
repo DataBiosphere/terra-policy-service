@@ -19,6 +19,8 @@ import bio.terra.policy.generated.model.ApiTpsPolicyExplanation;
 import bio.terra.policy.generated.model.ApiTpsPolicyInput;
 import bio.terra.policy.generated.model.ApiTpsPolicyPair;
 import bio.terra.policy.testutils.TestUnitBase;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,6 +77,20 @@ public class TpsExplainControllerTest extends TestUnitBase {
 
   @Autowired private MvcUtils mvcUtils;
 
+  private SimpleMeterRegistry meterRegistry;
+
+  @BeforeEach
+  void setUp() {
+    meterRegistry = new SimpleMeterRegistry();
+    Metrics.globalRegistry.add(meterRegistry);
+  }
+
+  @AfterEach
+  void tearDown() {
+    meterRegistry.clear();
+    Metrics.globalRegistry.clear();
+  }
+
   /* TODO: PF-2321 Add tests for:
    *  - group and region policies
    *  - region conflict state
@@ -86,6 +104,10 @@ public class TpsExplainControllerTest extends TestUnitBase {
     assertEquals(emptyPao, explainResult.getObjectId());
     checkExplainSources(explainResult, 1, emptyPao);
     assertTrue(explainResult.getExplanation().isEmpty());
+
+    var explainCounter = meterRegistry.find("tps.pao.explain.count").counter();
+    assertNotNull(explainCounter);
+    assertEquals(explainCounter.count(), 1);
   }
 
   @Test
