@@ -1,4 +1,4 @@
-# Sam Smoke Tests
+# TPS Smoke Tests
 
 These smoke tests provide a means for running a small set of tests against a live running TPS instance to validate that
 it is up and functional.  Ideally, these tests should verify more than the `/status` endpoint and should additionally try to 
