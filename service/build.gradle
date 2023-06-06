@@ -29,10 +29,10 @@ dependencies {
         implementation 'com.google.guava:guava:31.1-jre' // "-jre" for Java 8 or higher
     }
     implementation group: "com.google.guava", name:"guava"
-    implementation 'org.apache.taglibs:taglibs-standard-impl:1.2.5' // fixes taglibs vulnerability in javax.servlet:jstl:1.2
-    implementation 'org.json:json:20230227' // fixes json-java vulnerability
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2' // fixes jackson-databind vulnerability from terra-common-lib:0.0.91-SNAPSHOT
-    implementation 'com.google.oauth-client:google-oauth-client:1.33.3' // fixes google oauth vuln from terra-common-lib:0.0.91-SNAPSHOT
+    implementation 'org.apache.taglibs:taglibs-standard-impl:1.2.5'
+    implementation 'org.json:json:20230227'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.google.oauth-client:google-oauth-client:1.33.3'
 
     implementation 'bio.terra:terra-common-lib:0.0.91-SNAPSHOT'
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
