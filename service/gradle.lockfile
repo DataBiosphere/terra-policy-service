@@ -266,6 +266,6 @@ org.webjars.npm:swagger-ui-dist:4.9.0=productionRuntimeClasspath,runtimeClasspat
 org.webjars:webjars-locator-core:0.50=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.xmlresolver:xmlresolver:4.2.0=spotbugs
 org.xmlunit:xmlunit-core:2.9.0=testCompileClasspath,testRuntimeClasspath
-org.yaml:snakeyaml:1.30=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.yaml:snakeyaml:2.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 xml-apis:xml-apis:1.4.01=spotbugs
 empty=developmentOnly,spotbugsPlugins,swaggerTemplate,swaggerUI,testAnnotationProcessor
