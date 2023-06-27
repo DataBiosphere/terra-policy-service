@@ -49,9 +49,9 @@ dependencies {
 
     implementation 'bio.terra:terra-common-lib:0.0.66-SNAPSHOT'
 
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    implementation 'io.swagger.core.v3:swagger-annotations:2.2.12'
-    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.45'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
+
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.35'
 }
 
 tasks.named('test') {
