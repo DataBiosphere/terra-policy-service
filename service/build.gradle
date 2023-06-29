@@ -32,6 +32,7 @@ dependencies {
     implementation 'org.json:json:20230227'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.google.oauth-client:google-oauth-client:1.33.3'
+    implementation 'org.scala-lang:scala-library:2.13.10' //required by the sam-client
     implementation('bio.terra:terra-common-lib:0.0.91-SNAPSHOT') {
         exclude group: 'org.springframework.boot'
         exclude group: 'org.yaml', module: 'snakeyaml'
@@ -40,7 +41,7 @@ dependencies {
 
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-    implementation 'org.postgresql:postgresql:42.3.3'
+    implementation 'org.postgresql:postgresql:42.6.0'
     implementation 'javax.servlet:jstl:1.2'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jdbc:$springBootVersion"
@@ -54,7 +55,7 @@ dependencies {
 
     liquibaseRuntime 'org.liquibase:liquibase-core:3.10.0'
     liquibaseRuntime 'info.picocli:picocli:4.6.1'
-    liquibaseRuntime 'org.postgresql:postgresql:42.3.3'
+    liquibaseRuntime 'org.postgresql:postgresql:42.6.0'
     liquibaseRuntime 'ch.qos.logback:logback-classic:1.4.8'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
@@ -65,6 +66,7 @@ dependencies {
     spotbugs 'org.slf4j:slf4j-simple:2.0.7'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testImplementation 'org.jacoco:org.jacoco.agent:0.8.7'
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion") {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
