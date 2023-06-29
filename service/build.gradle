@@ -32,7 +32,7 @@ dependencies {
     implementation 'org.json:json:20230227'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.google.oauth-client:google-oauth-client:1.33.3'
-    implementation 'org.scala-lang:scala-library:2.13.10'
+    implementation 'org.scala-lang:scala-library:2.13.10' //required by the sam-client
     implementation('bio.terra:terra-common-lib:0.0.91-SNAPSHOT') {
         exclude group: 'org.springframework.boot'
         exclude group: 'org.yaml', module: 'snakeyaml'
@@ -66,6 +66,7 @@ dependencies {
     spotbugs 'org.slf4j:slf4j-simple:2.0.7'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testImplementation 'org.jacoco:org.jacoco.agent:0.8.7'
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion") {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
