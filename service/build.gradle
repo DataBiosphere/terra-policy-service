@@ -37,7 +37,6 @@ dependencies {
         exclude group: 'org.springframework.boot'
         exclude group: 'org.yaml', module: 'snakeyaml'
     }
-    implementation 'org.yaml:snakeyaml:2.0'
 
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
