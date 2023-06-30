@@ -19,4 +19,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.1.1'
     // This is required due to a dependency conflict between jib and srcclr. Removing it will cause jib to fail.
     implementation 'org.apache.commons:commons-compress:1.21'
+    implementation 'org.yaml:snakeyaml:2.0'
 }
