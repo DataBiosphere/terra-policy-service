@@ -16,3 +16,15 @@ dependencyManagement {
 
 apply from: 'artifactory.gradle'
 apply from: 'swagger.gradle'
+
+dependencies {
+    implementation('bio.terra:terra-common-lib:0.0.91-SNAPSHOT') {
+        exclude group: 'org.springframework.boot'
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+    implementation('org.yaml:snakeyaml') {
+        version {
+            strictly('2.0')
+        }
+    }
+}
