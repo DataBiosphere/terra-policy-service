@@ -3,7 +3,7 @@ name: global
 description: Global Region
 locations:
 - name: europe
-  description: Europe
+  description: Europe Multi-Region
   locations:
   - name: belgium
     description: Belgium
@@ -112,19 +112,16 @@ locations:
       cloudRegion: norwayeast
       cloudPlatform: azure
       description: Norway East (Azure)
-  - name: eu-multi-region
+  - name: gcp.EU
     description: Multi-Region EU (GCP)
-    locations:
-    - name: gcp.EU
-      description: Multi-Region EU (GCP)
-      cloudRegion: EU
-      cloudPlatform: gcp
+    cloudRegion: EU
+    cloudPlatform: gcp
 
 - name: americas
   description: North and South America
   locations:
   - name: usa
-    description: United States of America
+    description: US Multi-Region
     locations:
     - name: california
       description: California
@@ -216,13 +213,10 @@ locations:
         description: US East (N. Virginia)
         cloudRegion: us-east-1
         cloudPlatform: aws
-    - name: usa-multi-region
+    - name: gcp.US
       description: Multi-region US
-      locations:
-      - name: gcp.US
-        description: Multi-region US
-        cloudRegion: US
-        cloudPlatform: gcp
+      cloudRegion: US
+      cloudPlatform: gcp
   - name: canada
     description: Canada
     locations:
