@@ -112,10 +112,13 @@ locations:
       cloudRegion: norwayeast
       cloudPlatform: azure
       description: Norway East (Azure)
-  - name: gcp.multiregion-eu
+  - name: eu-multi-region
     description: Multi-Region EU (GCP)
-    cloudRegion: EU
-    cloudPlatform: gcp
+    locations:
+    - name: gcp.EU
+      description: Multi-Region EU (GCP)
+      cloudRegion: EU
+      cloudPlatform: gcp
 
 - name: americas
   description: North and South America
@@ -213,10 +216,13 @@ locations:
         description: US East (N. Virginia)
         cloudRegion: us-east-1
         cloudPlatform: aws
-    - name: gcp.multiregion-us
+    - name: usa-multi-region
       description: Multi-region US
-      cloudRegion: US
-      cloudPlatform: gcp
+      locations:
+      - name: gcp.US
+        description: Multi-region US
+        cloudRegion: US
+        cloudPlatform: gcp
   - name: canada
     description: Canada
     locations:
