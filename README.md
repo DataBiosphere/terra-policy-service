@@ -4,6 +4,9 @@
 
 ## Local Development
 
+## Prod Deployment
+* [Swagger UI](https://tps.dsde-prod.broadinstitute.org/)
+
 ### Setup
 Run `./gradlew generateSwaggerCode` to generate the Swagger code for models and the Swagger UI.
 Run `docker compose up` to start the postgres db locally.
