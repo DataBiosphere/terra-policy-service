@@ -357,13 +357,6 @@ locations:
       cloudRegion: southeastasia
       cloudPlatform: azure
       description: Southeast Asia (Azure)
-  - name: indonesia
-    description: Indonesia
-    locations:
-    - name: gcp.asia-southeast2
-      description: Asia Southeast 2 (GCP)
-      cloudRegion: asia-southeast2
-      cloudPlatform: gcp
   - name: taiwan
     description: Taiwan
     locations:
