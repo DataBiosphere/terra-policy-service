@@ -79,9 +79,16 @@ compileJava {
 
 // Spotbugs configuration
 spotbugs {
-    toolVersion = '4.7.0'
+    toolVersion = '4.7.3'
     reportLevel = 'high'
     effort = 'max'
+}
+// The latest version of spotbugs still pulls in a vulnerable dependency.
+// This can be removed when a new spotbugs version is available.
+dependencies {
+    constraints {
+        spotbugs 'org.apache.bcel:bcel:6.6.1'
+    }
 }
 spotbugsMain {
     reports {
