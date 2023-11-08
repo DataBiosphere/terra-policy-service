@@ -3,7 +3,7 @@ dependencies {
 
 	implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 	implementation 'io.swagger.core.v3:swagger-annotations:2.2.12'
-	swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.45'
+	swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
 	// Versioned by Spring:
 	implementation 'org.webjars:webjars-locator-core'

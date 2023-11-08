@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       "bio.terra.common.retry.transaction",
       // Scan all policy service packages
       "bio.terra.policy",
+      "bio.terra.common.tracing"
     })
 @EnableRetry
 @EnableTransactionManagement
