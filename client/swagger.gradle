@@ -1,4 +1,4 @@
-def jerseyVersion = '2.40'
+def jerseyVersion = '3.1.2'
 
 dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
@@ -9,12 +9,12 @@ dependencies {
     implementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
     implementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
 
-    implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
-    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.35'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.12'
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
 
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
-    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:2.1.6'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
 }
 
 def artifactGroup = "${group}.policy"
@@ -23,10 +23,6 @@ generateSwaggerCode {
     inputFile = file('../common/openapi.yml')
     language = 'java'
     library = 'jersey2'
-
-    // For Swagger Codegen v3 on Java 16+
-    // See https://github.com/swagger-api/swagger-codegen/issues/10966
-    jvmArgs = ['--add-opens=java.base/java.util=ALL-UNNAMED']
 
     components = [
         apiDocs  : false, apiTests: false,
@@ -38,6 +34,7 @@ generateSwaggerCode {
         modelPackage  : "${artifactGroup}.model",
         apiPackage    : "${artifactGroup}.api",
         invokerPackage: "${artifactGroup}.client",
+        jakarta       : true,
         dateLibrary   : 'java8'
     ]
 
