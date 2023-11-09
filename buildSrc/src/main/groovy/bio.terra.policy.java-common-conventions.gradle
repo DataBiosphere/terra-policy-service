@@ -40,23 +40,29 @@ repositories {
     }
 }
 
-// Use Gradle dependency locking in all subprojects.
-dependencyLocking {
-    lockAllConfigurations()
-}
-
 dependencies {
     compileOnly "com.google.code.findbugs:annotations:3.0.1"
-    implementation 'org.slf4j:slf4j-api:1.7.35'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
 
-    testImplementation 'ch.qos.logback:logback-classic:1.2.10'
+    testImplementation 'ch.qos.logback:logback-classic:1.4.8'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     implementation 'bio.terra:terra-common-lib:0.0.66-SNAPSHOT'
 
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
 
-    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.35'
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
+
+    var openTelemetryVersion = '1.31.0'
+    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}"
+    implementation "io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:${openTelemetryVersion}-alpha"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
+    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
 }
 
 tasks.named('test') {
@@ -84,9 +90,16 @@ compileJava {
 
 // Spotbugs configuration
 spotbugs {
-    toolVersion = '4.7.0'
+    toolVersion = '4.7.3'
     reportLevel = 'high'
     effort = 'max'
+}
+// The latest version of spotbugs still pulls in a vulnerable dependency.
+// This can be removed when a new spotbugs version is available.
+dependencies {
+    constraints {
+        spotbugs 'org.apache.bcel:bcel:6.6.1'
+    }
 }
 spotbugsMain {
     reports {

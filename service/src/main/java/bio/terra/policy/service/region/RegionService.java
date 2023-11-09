@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -38,7 +39,7 @@ public class RegionService {
   @Autowired
   public RegionService() {
     logger.info("Loading locations from locations.yml resource.");
-    Yaml locationYaml = new Yaml(new Constructor(Location.class));
+    Yaml locationYaml = new Yaml(new Constructor(Location.class, new LoaderOptions()));
     InputStream inputStream =
         this.getClass().getClassLoader().getResourceAsStream("static/locations.yml");
     Location rootLocation = locationYaml.load(inputStream);
