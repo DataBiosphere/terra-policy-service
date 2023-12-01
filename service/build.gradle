@@ -76,7 +76,8 @@ dependencies {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
-
+    testImplementation 'au.com.dius.pact.provider:junit5:4.1.7'
+    testImplementation'au.com.dius.pact.provider:junit5spring:4.1.7'
     // Metrics collection
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
     implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
@@ -98,6 +99,23 @@ jacocoTestReport {
     reports {
         xml.required = true
     }
+}
+
+task verifyPacts(type: Test) {
+    outputs.upToDateWhen { false } // always run this task even if it's up to date
+    useJUnitPlatform {
+        includeTags 'Pact'
+    }
+    testLogging {
+        showStandardStreams = true
+    }
+    systemProperty 'pact.provider.version', System.getenv('PACT_PROVIDER_COMMIT')
+    systemProperty 'pact.provider.branch', System.getenv('PACT_PROVIDER_BRANCH')
+    systemProperty 'pact.verifier.publishResults', true
+    systemProperty 'pactbroker.host', System.getenv('PACT_BROKER_URL')
+    systemProperty 'pactbroker.auth.username', System.getenv('PACT_BROKER_USERNAME')
+    systemProperty 'pactbroker.auth.password', System.getenv('PACT_BROKER_PASSWORD')
+    systemProperty 'pactbroker.scheme', 'https'
 }
 
 sonarqube {
