@@ -3,7 +3,7 @@ package bio.terra.policy.controller;
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
-import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
+import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
 import au.com.dius.pact.provider.spring.junit5.MockMvcTestTarget;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.policy.app.controller.PublicApiController;
@@ -22,7 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest
 @ContextConfiguration(classes = {PublicApiController.class})
 @Provider("tps")
-@PactBroker()
+// @PactBroker()
+@PactFolder("pacts")
 class VerifyPactsTpsPublicApiController {
 
   @MockBean private PublicApiController publicApiController;
