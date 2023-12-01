@@ -51,7 +51,6 @@ terra.common:
     in-kubernetes: false
   tracing:
     sampling-ratio: ${env.tracing.samplingRate}
-    excluded-urls: ["/status", "/version"]
   google:
     tracing:
       enabled: ${env.tracing.exportEnabled}

@@ -10,8 +10,6 @@ policy:
 terra.common:
   kubernetes:
     in-kubernetes: false
-  tracing:
-    excluded-urls: ["/status", "/version"]
   google:
     tracing:
       enabled: false
