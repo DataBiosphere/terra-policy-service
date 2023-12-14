@@ -67,6 +67,20 @@ policy:
 management:
   server:
     port: 9098
+  endpoints:
+    prometheus:
+      enabled: true
+    web:
+      exposure:
+        include: "prometheus"
+  metrics:
+    distribution:
+      # Used to publish a histogram suitable for computing aggregable (across dimensions) percentile
+      # latency approximations in Prometheus (by using histogram_quantile)
+      # For more information: https://micrometer.io/docs/concepts#_histograms_and_percentiles
+      minimum-expected-value[http.server.requests]: 10ms
+      maximum-expected-value[http.server.requests]: 10s
+      percentiles-histogram[http.server.requests]: true
 
 otel:
   sdk:
