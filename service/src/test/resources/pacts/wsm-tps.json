@@ -7,17 +7,37 @@
   },
   "interactions": [
     {
-      "description": "",
+      "description": "tps is ok",
       "request": {
-        "method": "POST",
-        "path": "/api/policy/v1alpha1/pao"
+        "method": "GET",
+        "path": "/status"
       },
       "response": {
         "status": 200
-      }
+      },
+      "providerStates": [
+        {
+          "name": "tpsIsOk"
+        }
+      ]
     },
     {
-      "description": "A for information about a location",
+      "description": "tps is not ok",
+      "request": {
+        "method": "GET",
+        "path": "/status"
+      },
+      "response": {
+        "status": 500
+      },
+      "providerStates": [
+        {
+          "name": "tpsIsNotOk"
+        }
+      ]
+    },
+    {
+      "description": "A request for information about a location",
       "request": {
         "method": "GET",
         "path": "/api/policy/v1alpha1/location",
@@ -648,7 +668,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy for a workspace"
+          "name": "one policy exists"
         }
       ]
     },
@@ -670,7 +690,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy for a workspace"
+          "name": "one policy exists"
         }
       ]
     },
@@ -749,7 +769,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy for a workspace"
+          "name": "one policy exists"
         }
       ]
     },
@@ -813,7 +833,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy for a workspace"
+          "name": "a group policy exists"
         }
       ]
     },
@@ -939,7 +959,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy for a workspace"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1035,10 +1055,10 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         },
         {
-          "name": "another existing policy"
+          "name": "two policies exist"
         }
       ]
     },
@@ -1139,7 +1159,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1240,7 +1260,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1262,7 +1282,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1354,7 +1374,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1465,7 +1485,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1576,7 +1596,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1653,7 +1673,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1805,7 +1825,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -1951,7 +1971,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2047,10 +2067,10 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         },
         {
-          "name": "another existing policy"
+          "name": "two policies exist"
         }
       ]
     },
@@ -2151,7 +2171,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2173,7 +2193,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2265,7 +2285,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2376,7 +2396,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2528,7 +2548,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     },
@@ -2674,7 +2694,7 @@
       },
       "providerStates": [
         {
-          "name": "an existing workspace policy"
+          "name": "one policy exists"
         }
       ]
     }
