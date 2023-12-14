@@ -67,6 +67,12 @@ policy:
 management:
   server:
     port: 9098
+  endpoints:
+    prometheus:
+      enabled: true
+    web:
+      exposure:
+        include: "prometheus"
 
 otel:
   sdk:
