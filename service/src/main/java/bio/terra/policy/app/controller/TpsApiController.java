@@ -148,6 +148,13 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
+  public ResponseEntity<List<ApiTpsPaoGetResult>> listPaos(List<UUID> objectIds) {
+    return new ResponseEntity<>(
+        paoService.listPaos(objectIds).stream().map(ConversionUtils::paoToApi).toList(),
+        HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<ApiTpsRegions> listValidByPolicyInput(
       String platform, ApiTpsPolicyInputs policyInputs) {
     PolicyInputs inputs = ConversionUtils.policyInputsFromApi(policyInputs);

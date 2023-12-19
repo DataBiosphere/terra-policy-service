@@ -1,5 +1,6 @@
 package bio.terra.policy.service.pao;
 
+import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
@@ -89,6 +90,11 @@ public class PaoService {
   public Pao getPao(UUID objectId) {
     logger.info("Get PAO id {}", objectId);
     return paoDao.getPao(objectId);
+  }
+
+  @ReadTransaction
+  public List<Pao> listPaos(List<UUID> objectIds) {
+    return paoDao.getPaos(objectIds);
   }
 
   /**
