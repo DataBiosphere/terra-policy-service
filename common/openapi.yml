@@ -64,6 +64,41 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/policy/v1alpha1/pao/list:
+    post:
+      summary: List policy attribute objects for given ids
+      description: |
+        Gets the policy attribute objects for the given ids. If the id is not found, it is not returned.
+      operationId: listPaos
+      tags: [Tps]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TpsObjectId'
+      responses:
+        '200':
+          description: Policy retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TpsPaoGetResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /api/policy/v1alpha1/pao/{objectId}:
     parameters:
       - $ref: '#/components/parameters/TpsObjectId'

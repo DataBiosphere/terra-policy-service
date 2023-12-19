@@ -15,6 +15,7 @@ import bio.terra.policy.service.pao.model.PaoObjectType;
 import bio.terra.policy.testutils.TestUnitBase;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,21 @@ public class PaoServiceTest extends TestUnitBase {
     paoService.deletePao(objectId);
 
     assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId));
+  }
+
+  @Test
+  void listPaosTest() {
+    var objectId = UUID.randomUUID();
+    var objectId2 = UUID.randomUUID();
+
+    paoService.createPao(objectId, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
+    paoService.createPao(objectId2, PaoComponent.WSM, PaoObjectType.WORKSPACE, new PolicyInputs());
+
+    // add an extra object id that doesn't exist
+    var paos = paoService.listPaos(List.of(objectId, objectId2, UUID.randomUUID()));
+    assertEquals(2, paos.size());
+    assertTrue(paos.stream().anyMatch(p -> p.getObjectId().equals(objectId)));
+    assertTrue(paos.stream().anyMatch(p -> p.getObjectId().equals(objectId2)));
   }
 
   @Test
