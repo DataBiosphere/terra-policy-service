@@ -1,0 +1,108 @@
+{
+  "consumer": {
+    "name": "datarepo"
+  },
+  "interactions": [
+    {
+      "description": "create PAO with ID <uuid>",
+      "providerStates": [
+        {
+          "name": "no pao exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "attributes": {
+            "inputs": [
+              {
+                "name": "protected-data",
+                "namespace": "terra"
+              }
+            ]
+          },
+          "component": "TDR",
+          "objectId": "76cb2e37-277c-45b4-95c5-4ddfb481c654",
+          "objectType": "snapshot"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.attributes.inputs[0].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.attributes.inputs[0].namespace": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.component": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.objectId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.objectType": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "method": "POST",
+        "path": "/api/policy/v1alpha1/pao"
+      },
+      "response": {
+        "status": 204
+      }
+    },
+    {
+      "description": "delete PAO with ID <uuid>",
+      "providerStates": [
+        {
+          "name": "no pao exists"
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "path": "/api/policy/v1alpha1/pao/a6955649-cf4e-4108-b2dc-e42d22458efd"
+      },
+      "response": {
+        "status": 404
+      }
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.6.1"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "tps"
+  }
+}
