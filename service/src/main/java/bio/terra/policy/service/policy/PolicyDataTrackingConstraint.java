@@ -75,7 +75,12 @@ public class PolicyDataTrackingConstraint extends PolicyBase {
    */
   @Override
   protected boolean performIsValid(PolicyInput policyInput) {
-    for (var entry : policyInput.getAdditionalData().entries()) {
+    var dataTypes = policyInput.getAdditionalData();
+    if (dataTypes.isEmpty()) {
+      return false;
+    }
+
+    for (var entry : dataTypes.entries()) {
       if (!entry.getKey().equals(DATA_KEY)) {
         return false;
       }

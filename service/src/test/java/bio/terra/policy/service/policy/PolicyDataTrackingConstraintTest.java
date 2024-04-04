@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.testutils.TestUnitBase;
+import com.google.common.collect.ArrayListMultimap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -253,6 +254,8 @@ public class PolicyDataTrackingConstraintTest extends TestUnitBase {
     var validPolicy =
         new PolicyInput(
             TERRA_NAMESPACE, DATA_TRACKING_CONSTRAINT, buildMultimap(DATA_TRACKING_KEY, dataTypes));
+    var emptyPolicy =
+        new PolicyInput(TERRA_NAMESPACE, DATA_TRACKING_CONSTRAINT, ArrayListMultimap.create());
     var invalidKey =
         new PolicyInput(
             TERRA_NAMESPACE,
@@ -265,6 +268,7 @@ public class PolicyDataTrackingConstraintTest extends TestUnitBase {
             TERRA_NAMESPACE, DATA_TRACKING_CONSTRAINT, buildMultimap(DATA_TRACKING_KEY, dataTypes));
 
     assertTrue(dataTrackingConstraint.isValid(validPolicy));
+    assertFalse(dataTrackingConstraint.isValid(emptyPolicy));
     assertFalse(dataTrackingConstraint.isValid(invalidKey));
     // we don't currently validate the value
     assertTrue(dataTrackingConstraint.isValid(invalidValue));
