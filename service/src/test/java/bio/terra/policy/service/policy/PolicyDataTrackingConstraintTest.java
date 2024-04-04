@@ -79,8 +79,8 @@ public class PolicyDataTrackingConstraintTest extends TestUnitBase {
     Set<String> dataTypeSet =
         dataTrackingConstraint.dataToSet(resultPolicy.getAdditionalData().get(DATA_TRACKING_KEY));
 
-    assertEquals(1, dataTypeSet.size());
-    assertTrue(dataTypeSet.containsAll(Arrays.asList(DATA_TYPE_NAME)));
+    assertEquals(1, dataTypeSet.size(), "Contains 1 dataType");
+    assertThat(dataTypeSet, contains(DATA_TYPE_NAME));
   }
 
   @Test
