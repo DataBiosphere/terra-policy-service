@@ -9,7 +9,8 @@
 
 ### Setup
 Run `./gradlew generateSwaggerCode` to generate the Swagger code for models and the Swagger UI.
-Run `docker compose up` to start the postgres db locally.
+Run `docker compose up -d` to start the postgres db locally in the background.
 Run `./gradlew test` to run the unit tests.
 Run `./gradlew bootRun` to run the Policy Service locally (Swagger UI at localhost:8080).
 Run `./gradlew service:dependencies --write-locks ` to rewrite the gradle dependency lock for the spring boot service.
+Run `docker compose down` to stop the postgres db.

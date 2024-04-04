@@ -2,9 +2,10 @@ version: "3.3"
 services:
   db:
     build:
-      context: ./docker
-      dockerfile: db.Dockerfile
+      dockerfile: ./docker/db.Dockerfile
     volumes:
       - ./var/pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    env_file:
+      - ./docker/db.env
