@@ -20,6 +20,7 @@ public class PaoTestUtil {
   public static final String TERRA_NAMESPACE = "terra";
   public static final String REGION_CONSTRAINT = "region-constraint";
   public static final String GROUP_CONSTRAINT = "group-constraint";
+  public static final String DATA_TRACKING_CONSTRAINT = "data-tracking";
   public static final String REGION_KEY = "region-name";
   public static final String REGION_NAME_USA = "usa";
   public static final String REGION_NAME_IOWA = "iowa";
@@ -27,7 +28,9 @@ public class PaoTestUtil {
   public static final String GROUP_KEY = "group";
   public static final String GROUP_NAME = "mygroup";
   public static final String GROUP_NAME_ALT = "myaltgroup";
-
+  public static final String DATA_TRACKING_KEY = "dataType";
+  public static final String DATA_TYPE_NAME = "PHI";
+  public static final String DATA_TYPE_NAME_ALT = "FEDERAL";
   public static final String TEST_NAMESPACE = "test_namespace";
   public static final String TEST_FLAG_POLICY_A = "test_flag_a";
   public static final String TEST_FLAG_POLICY_B = "test_flag_b";

@@ -9,4 +9,7 @@ public class Constants {
       new PolicyName(TERRA_NAMESPACE, "region-constraint");
   public static final PolicyName PROTECTED_DATA_POLICY_NAME =
       new PolicyName(TERRA_NAMESPACE, "protected-data");
+
+  public static final PolicyName DATA_TRACKING_POLICY_NAME =
+      new PolicyName(TERRA_NAMESPACE, "data-tracking");
 }

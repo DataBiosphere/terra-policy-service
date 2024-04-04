@@ -7,6 +7,7 @@ import java.util.Optional;
 public enum KnownPolicy {
   GROUP_CONSTRAINT(new PolicyGroupConstraint()),
   REGION_CONSTRAINT(new PolicyRegionConstraint()),
+  DATA_TRACKING(new PolicyDataTrackingConstraint()),
   PROTECTED_DATA(new PolicyLabel(Constants.PROTECTED_DATA_POLICY_NAME));
 
   private final PolicyBase policy;
