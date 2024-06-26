@@ -6,6 +6,7 @@ import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.InvalidInputException;
+import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
@@ -82,9 +83,18 @@ public class PaoService {
     return walker.getExplainGraph();
   }
 
-  public Pao getPao(UUID objectId) {
+  public Pao getPao(UUID objectId, boolean includeDeleted) {
     logger.info("Get PAO id {}", objectId);
-    return paoDao.getPao(objectId);
+    var pao = paoDao.getPao(objectId);
+
+    if (pao.getDeleted() && !includeDeleted) {
+      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
+    }
+    return pao;
+  }
+
+  public Pao getPao(UUID objectId) {
+    return getPao(objectId, false);
   }
 
   @ReadTransaction

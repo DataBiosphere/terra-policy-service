@@ -28,27 +28,28 @@ public class PaoDeleteTest extends TestUnitBase {
 
   @Autowired private PaoService paoService;
 
-  /**
-   * A standalone PAO with no sources and no dependents should be marked as deleted in the DB.
-   */
+  /** A standalone PAO with no sources and no dependents should be marked as deleted in the DB. */
   @Test
   void deleteStandalonePaoMarksDeleted() {
     var objectId = UUID.randomUUID();
     createDefaultPao(objectId);
 
     // Retrieve and validate
-    Pao pao = paoService.getPao(objectId);
+    Pao pao = paoService.getPao(objectId, true);
     assertEquals(objectId, pao.getObjectId());
+    assertFalse(pao.getDeleted());
 
     // Delete removes the PAO from the DB
     paoService.deletePao(objectId);
-    final var deletedPao = paoService.getPao(objectId);
+    final var deletedPao = paoService.getPao(objectId, true);
     assertNotNull(deletedPao);
     assertTrue(deletedPao.getDeleted());
   }
 
   /**
-   * If the PAO being deleted is referenced as a source by another PAO, then it gets marked as deleted.
+   * If the PAO being deleted is referenced as a source by another PAO, then it gets marked as
+   * deleted.
+   *
    * <pre>
    *     {dependentPao}
    *          |
@@ -70,13 +71,13 @@ public class PaoDeleteTest extends TestUnitBase {
 
     // Since sourcePao has a dependent, it should be flagged as 'deleted' but should not be removed
     // from the db.
-    final var sourcePao = paoService.getPao(sourcePaoId);
+    final var sourcePao = paoService.getPao(sourcePaoId, true);
     assertNotNull(sourcePao);
     assertEquals(sourcePaoId, sourcePao.getObjectId());
     assertTrue(sourcePao.getDeleted());
 
     // Dependent should still link back to the source and not be deleted.
-    final var dependentPao = paoService.getPao(dependentPaoId);
+    final var dependentPao = paoService.getPao(dependentPaoId, true);
     assertNotNull(dependentPao);
     assertTrue(dependentPao.getSourceObjectIds().contains(sourcePaoId));
     assertFalse(dependentPao.getDeleted());
