@@ -3,8 +3,10 @@ package bio.terra.policy.service.pao;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.service.pao.model.Pao;
@@ -44,6 +46,7 @@ public class PaoDeleteTest extends TestUnitBase {
     final var deletedPao = paoService.getPao(objectId, true);
     assertNotNull(deletedPao);
     assertTrue(deletedPao.getDeleted());
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(objectId, false));
   }
 
   /**
@@ -75,6 +78,7 @@ public class PaoDeleteTest extends TestUnitBase {
     assertNotNull(sourcePao);
     assertEquals(sourcePaoId, sourcePao.getObjectId());
     assertTrue(sourcePao.getDeleted());
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(sourcePaoId, false));
 
     // Dependent should still link back to the source and not be deleted.
     final var dependentPao = paoService.getPao(dependentPaoId, true);

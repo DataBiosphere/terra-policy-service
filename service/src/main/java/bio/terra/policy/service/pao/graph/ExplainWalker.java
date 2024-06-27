@@ -170,7 +170,7 @@ public class ExplainWalker {
   private Pao getPao(UUID objectId) {
     Pao pao = paoMap.get(objectId);
     if (pao == null) {
-      pao = paoDao.getPao(objectId);
+      pao = paoDao.getPao(objectId, true);
       paoMap.put(objectId, pao);
     }
     return pao;

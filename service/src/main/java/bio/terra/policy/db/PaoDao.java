@@ -122,8 +122,8 @@ public class PaoDao {
   }
 
   @ReadTransaction
-  public Pao getPao(UUID objectId) {
-    DbPao dbPao = getDbPao(objectId);
+  public Pao getPao(UUID objectId, boolean includeDeleted) {
+    DbPao dbPao = getDbPao(objectId, includeDeleted);
     Map<String, PolicyInputs> attributeSetMap =
         getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
     return Pao.fromDb(dbPao, attributeSetMap);
@@ -236,7 +236,7 @@ public class PaoDao {
     PolicyInputs effectiveAttributes = change.getEffectivePolicyAttributes();
 
     // Get the dbPao and the attribute sets from the db for comparison
-    DbPao dbPao = getDbPao(pao.getObjectId());
+    DbPao dbPao = getDbPao(pao.getObjectId(), false);
     Map<String, PolicyInputs> attributeSetMap =
         getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
     PolicyInputs dbAttributes = attributeSetMap.get(dbPao.attributeSetId());
@@ -395,12 +395,16 @@ public class PaoDao {
     tpsJdbcTemplate.update(sql, params);
   }
 
-  public DbPao getDbPao(UUID objectId) {
-    final String sql =
+  public DbPao getDbPao(UUID objectId, boolean includeDeleted) {
+    String sql =
         """
         SELECT object_id, component, object_type, attribute_set_id, effective_set_id, sources, deleted, created, last_updated
         FROM policy_object WHERE object_id = :object_id
         """;
+
+    if (!includeDeleted) {
+      sql += " AND (deleted is null or not deleted)";
+    }
 
     MapSqlParameterSource params =
         new MapSqlParameterSource().addValue("object_id", objectId.toString());

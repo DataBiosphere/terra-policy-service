@@ -6,7 +6,6 @@ import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
 import bio.terra.policy.common.exception.InvalidInputException;
-import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.db.PaoDao;
@@ -85,12 +84,8 @@ public class PaoService {
 
   public Pao getPao(UUID objectId, boolean includeDeleted) {
     logger.info("Get PAO id {}", objectId);
-    var pao = paoDao.getPao(objectId);
 
-    if (pao.getDeleted() && !includeDeleted) {
-      throw new PolicyObjectNotFoundException("Policy object not found: " + objectId);
-    }
-    return pao;
+    return paoDao.getPao(objectId, includeDeleted);
   }
 
   public Pao getPao(UUID objectId) {
@@ -119,7 +114,7 @@ public class PaoService {
     logger.info(
         "LinkSourcePao: dependent {} source {} mode {}", objectId, sourceObjectId, updateMode);
 
-    Pao targetPao = paoDao.getPao(objectId);
+    Pao targetPao = paoDao.getPao(objectId, false);
     boolean newSource = targetPao.getSourceObjectIds().add(sourceObjectId);
 
     // We didn't actually change the source list, so we are done
@@ -169,8 +164,8 @@ public class PaoService {
         "Merge from PAO id {} to {} mode {}", sourceObjectId, destinationObjectId, updateMode);
 
     // Step 0: get the paos. This will throw if they are not present
-    Pao sourcePao = paoDao.getPao(sourceObjectId);
-    Pao destinationPao = paoDao.getPao(destinationObjectId);
+    Pao sourcePao = paoDao.getPao(sourceObjectId, false);
+    Pao destinationPao = paoDao.getPao(destinationObjectId, false);
 
     // If the source and destination are the same PAO, there is nothing to do
     if (sourceObjectId.equals(destinationObjectId)) {
@@ -216,7 +211,7 @@ public class PaoService {
         replacementAttributes,
         updateMode);
     validatePolicyInputs(replacementAttributes);
-    Pao targetPao = paoDao.getPao(targetPaoId);
+    Pao targetPao = paoDao.getPao(targetPaoId, false);
     return updateAttributesWorker(replacementAttributes, targetPao, updateMode);
   }
 
@@ -241,7 +236,7 @@ public class PaoService {
         removeAttributes,
         updateMode);
 
-    Pao targetPao = paoDao.getPao(targetPaoId);
+    Pao targetPao = paoDao.getPao(targetPaoId, false);
     PolicyInputs attributesToUpdate = new PolicyInputs(targetPao.getAttributes());
 
     // We do the removes first, so we don't remove newly added things
