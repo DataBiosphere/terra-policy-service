@@ -103,11 +103,6 @@ public class PaoDao {
         effectiveSetId);
   }
 
-  @WriteTransaction
-  public void deletePaos(Collection<DbPao> paos) {
-    paos.forEach((DbPao pao) -> removeDbPao(pao));
-  }
-
   /**
    * Set the 'deleted' field on the PAO to true.
    *
