@@ -119,6 +119,8 @@ paths:
           $ref: '#/components/responses/ServerError'
     get:
       summary: Retrieve a Policy Attribute Object
+      parameters:
+        - $ref: '#/components/parameters/IncludeDeleted'
       operationId: getPao
       tags: [Tps]
       responses:
@@ -488,6 +490,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/TpsDepth'
+
+    IncludeDeleted:
+      name: includeDeleted
+      in: query
+      description: |
+        Include deleted policy attribute objects in the response. Defaults to false.
+      required: false
+      schema:
+        type: boolean
 
   responses:
     # Error Responses

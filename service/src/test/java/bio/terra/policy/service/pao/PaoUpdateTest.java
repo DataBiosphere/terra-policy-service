@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import bio.terra.policy.common.exception.DirectConflictException;
 import bio.terra.policy.common.exception.IllegalCycleException;
 import bio.terra.policy.common.exception.InternalTpsErrorException;
+import bio.terra.policy.common.exception.PolicyObjectNotFoundException;
 import bio.terra.policy.common.model.PolicyInput;
 import bio.terra.policy.common.model.PolicyInputs;
 import bio.terra.policy.common.model.PolicyName;
@@ -474,6 +475,33 @@ public class PaoUpdateTest extends TestUnitBase {
     // Double check that the policy got saved properly
     checkD = paoService.getPao(paoDid);
     assertTrue(checkD.getEffectiveAttributes().getInputs().isEmpty());
+  }
+
+  @Test
+  void updateOneSourceTest_sourcePolicyPropagatesThroughDeletedPaoCorrectly() throws Exception {
+    // We build this graph A --> B --> C
+    // Then we delete B and update A
+    // We expect the update to A to propagate to C
+    PolicyInput europeRegion = PaoTestUtil.makeRegionPolicyInput(PaoTestUtil.REGION_NAME_EUROPE);
+    PolicyInputs newPolicy = PaoTestUtil.makePolicyInputs(europeRegion);
+    PolicyInputs emptyPolicy = PaoTestUtil.makePolicyInputs();
+
+    UUID paoAid = PaoTestUtil.makePao(paoService);
+    UUID paoBid = PaoTestUtil.makePao(paoService);
+    UUID paoCid = PaoTestUtil.makePao(paoService);
+
+    // Hook up the graph and then delete B
+    paoService.linkSourcePao(paoBid, paoAid, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.linkSourcePao(paoCid, paoBid, PaoUpdateMode.FAIL_ON_CONFLICT);
+    paoService.deletePao(paoBid);
+
+    PolicyUpdateResult result =
+        paoService.updatePao(paoAid, newPolicy, emptyPolicy, PaoUpdateMode.FAIL_ON_CONFLICT);
+    assertTrue(result.updateApplied());
+    assertEquals(0, result.conflicts().size());
+    PaoTestUtil.checkForPolicies(paoService.getPao(paoAid), europeRegion);
+    assertThrows(PolicyObjectNotFoundException.class, () -> paoService.getPao(paoBid));
+    PaoTestUtil.checkForPolicies(paoService.getPao(paoCid), europeRegion);
   }
 
   @Test

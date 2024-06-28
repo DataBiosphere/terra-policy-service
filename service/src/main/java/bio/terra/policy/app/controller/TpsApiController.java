@@ -107,8 +107,11 @@ public class TpsApiController implements TpsApi {
   }
 
   @Override
-  public ResponseEntity<ApiTpsPaoGetResult> getPao(UUID objectId) {
-    Pao pao = paoService.getPao(objectId);
+  public ResponseEntity<ApiTpsPaoGetResult> getPao(UUID objectId, Boolean includeDeleted) {
+    if (includeDeleted == null) {
+      includeDeleted = false;
+    }
+    Pao pao = paoService.getPao(objectId, includeDeleted);
     ApiTpsPaoGetResult result = ConversionUtils.paoToApi(pao);
     MetricsUtils.incrementPaoGet();
     return new ResponseEntity<>(result, HttpStatus.OK);
