@@ -497,7 +497,6 @@ public class PaoUpdateTest extends TestUnitBase {
 
     PolicyUpdateResult result =
         paoService.updatePao(paoAid, newPolicy, emptyPolicy, PaoUpdateMode.FAIL_ON_CONFLICT);
-    logger.info("Result: {}", result);
     assertTrue(result.updateApplied());
     assertEquals(0, result.conflicts().size());
     PaoTestUtil.checkForPolicies(paoService.getPao(paoAid), europeRegion);
