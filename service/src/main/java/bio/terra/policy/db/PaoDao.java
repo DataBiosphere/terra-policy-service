@@ -230,7 +230,7 @@ public class PaoDao {
     PolicyInputs effectiveAttributes = change.getEffectivePolicyAttributes();
 
     // Get the dbPao and the attribute sets from the db for comparison
-    DbPao dbPao = getDbPao(pao.getObjectId(), false);
+    DbPao dbPao = getDbPao(pao.getObjectId(), true);
     Map<String, PolicyInputs> attributeSetMap =
         getAttributeSets(List.of(dbPao.attributeSetId(), dbPao.effectiveSetId()));
     PolicyInputs dbAttributes = attributeSetMap.get(dbPao.attributeSetId());
