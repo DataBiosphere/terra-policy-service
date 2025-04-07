@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum PaoComponent {
   TDR("tdr", ApiTpsComponent.TDR),
   BPM("bpm", ApiTpsComponent.BPM),
+  RAWLS("rawls", ApiTpsComponent.RAWLS),
   WSM("wsm", ApiTpsComponent.WSM);
 
   /** Component string used in the database */
