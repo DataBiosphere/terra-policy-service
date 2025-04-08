@@ -589,7 +589,7 @@ components:
     TpsComponent:
       type: string
       description: Enum representing a policy-bearing Terra component.
-      enum: [ 'BPM', 'WSM', 'TDR' ]
+      enum: [ 'BPM', 'WSM', 'TDR' , 'Rawls' ]
 
     TpsRegions:
       type: array
