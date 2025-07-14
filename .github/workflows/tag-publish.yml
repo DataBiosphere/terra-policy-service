@@ -22,10 +22,9 @@ on:
   push:
     branches:
     - main
-    - core-593-testing
     paths-ignore:
     - 'README.md'
-#    - '.github/**'
+    - '.github/**'
     - 'local-dev/**'
   workflow_dispatch:
     inputs:
@@ -133,13 +132,13 @@ jobs:
       env:
         GOOGLE_CLOUD_PROJECT: dsp-artifact-registry
         GAR_LOCATION: us-central1
-        GAR_REPOSITORY_ID: libs-snapshot-standard
+        GAR_REPOSITORY_ID: libs-release-standard
 
-#    - name: Make release
-#      uses: ncipollo/release-action@v1
-#      id: create_release
-#      with:
-#        tag: ${{ steps.tag.outputs.tag }}
+    - name: Make release
+      uses: ncipollo/release-action@v1
+      id: create_release
+      with:
+        tag: ${{ steps.tag.outputs.tag }}
 
     - name: Auth to GCR
       uses: google-github-actions/auth@v1
@@ -148,9 +147,6 @@ jobs:
 
     - name: Explicitly auth Docker for GCR
       run: gcloud auth configure-docker --quiet
-
-    - name: Verify GCR Authentication
-      run: gcloud auth list && gcloud artifacts repositories list --location=us
 
     - name: Construct docker image name and tag
       id: image-name

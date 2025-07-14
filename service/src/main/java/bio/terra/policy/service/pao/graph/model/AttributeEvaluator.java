@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
  * </ol>
  */
 public class AttributeEvaluator {
-  private static final Logger logger = LoggerFactory.getLogger(AttributeEvaluator.class);
   private final Map<String, List<GraphAttribute>> inputs;
   private final Pao containingPao; // The PAO we are evaluating
 
