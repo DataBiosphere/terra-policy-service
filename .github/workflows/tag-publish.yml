@@ -142,10 +142,9 @@ jobs:
 #        tag: ${{ steps.tag.outputs.tag }}
 
     - name: Auth to GCR
-      uses: google-github-actions/setup-gcloud@v2
+      uses: google-github-actions/auth@v1
       with:
-        service_account_email: ${{ secrets.GCR_PUBLISH_EMAIL }}
-        service_account_key: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
+        credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
 
     - name: Explicitly auth Docker for GCR
       run: gcloud auth configure-docker --quiet
@@ -153,18 +152,18 @@ jobs:
     - name: Verify GCR Authentication
       run: gcloud auth list && gcloud artifacts repositories list --location=us
 
-#    - name: Construct docker image name and tag
-#      id: image-name
-#      run: echo "name=gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
-#
-#    - name: Build image locally with jib
-#      run: |
-#        ./gradlew --build-cache :service:jibDockerBuild \
-#        --image=${{ steps.image-name.outputs.name }} \
-#        -Djib.console=plain
-#
-#    - name: Push GCR image
-#      run: docker push ${{ steps.image-name.outputs.name }}
+    - name: Construct docker image name and tag
+      id: image-name
+      run: echo "name=gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
+
+    - name: Build image locally with jib
+      run: |
+        ./gradlew --build-cache :service:jibDockerBuild \
+        --image=${{ steps.image-name.outputs.name }} \
+        -Djib.console=plain
+
+    - name: Push GCR image
+      run: docker push ${{ steps.image-name.outputs.name }}
 
     - name: Notify slack on failure
       id: slack
