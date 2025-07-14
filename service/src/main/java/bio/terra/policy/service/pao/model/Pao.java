@@ -16,7 +16,7 @@ public class Pao {
   private final PaoObjectType objectType;
   private PolicyInputs attributes;
   private PolicyInputs effectiveAttributes;
-  private Set<UUID> sourceObjectIds;
+  private final Set<UUID> sourceObjectIds;
   private boolean deleted;
   private Instant created;
   private Instant lastUpdated;

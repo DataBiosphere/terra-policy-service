@@ -141,10 +141,9 @@ jobs:
         tag: ${{ steps.tag.outputs.tag }}
 
     - name: Auth to GCR
-      uses: google-github-actions/setup-gcloud@v0
+      uses: google-github-actions/auth@v1
       with:
-        service_account_email: ${{ secrets.GCR_PUBLISH_EMAIL }}
-        service_account_key: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
+        credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
 
     - name: Explicitly auth Docker for GCR
       run: gcloud auth configure-docker --quiet
@@ -167,8 +166,8 @@ jobs:
       if: failure()
       uses: slackapi/slack-github-action@v1.23.0
       with:
-            # Channel is for platform-foundation-alerts
-        channel-id: 'C01B0NLTYQ5'
+            # Channel is for dsp-core-services-alerts
+        channel-id: 'C07Q8H7F8LV'
         slack-message: "Tag-Publish failed for tag: ${{ steps.tag.outputs.tag }} eventUrl: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACKBOT_TOKEN }}
