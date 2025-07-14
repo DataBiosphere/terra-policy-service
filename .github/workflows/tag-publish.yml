@@ -24,6 +24,7 @@ on:
   push:
     branches:
     - main
+    - core-593-jfrog-to-gar
     paths-ignore:
     - 'README.md'
     - '.github/**'
@@ -63,6 +64,9 @@ jobs:
 
   tag-publish-docker-deploy:
     needs: [ bump-check ]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     outputs:
@@ -119,12 +123,26 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Publish to Artifactory
-      run: ./gradlew :client:artifactoryPublish --scan
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+        service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+    - name: Publish client to GAR
+      run: ./gradlew publish
       env:
-        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
+        GOOGLE_CLOUD_PROJECT: dsp-artifact-registry
+        GAR_LOCATION: us-central1
+        GAR_REPOSITORY_ID: libs-snapshot-standard
+
+#    - name: Publish to Artifactory
+#      run: ./gradlew :client:artifactoryPublish --scan
+#      env:
+#        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
 
     - name: Make release
       uses: ncipollo/release-action@v1
