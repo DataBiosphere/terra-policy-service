@@ -62,7 +62,7 @@ public class PolicyRegionConstraint extends PolicyBase {
       return new PolicyInput(dependent.getPolicyName(), newData);
     }
 
-    Set<String> resultSet = new HashSet<String>();
+    Set<String> resultSet = new HashSet<>();
 
     /**
      * n*m algorithm. Compare each source region with each dependent region. If they're the same,
@@ -81,7 +81,7 @@ public class PolicyRegionConstraint extends PolicyBase {
       }
     }
 
-    if (resultSet.size() > 0) {
+    if (!resultSet.isEmpty()) {
       newData.putAll(DATA_KEY, resultSet);
       return new PolicyInput(Constants.REGION_CONSTRAINT_POLICY_NAME, newData);
     }
