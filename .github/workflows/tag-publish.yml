@@ -62,7 +62,6 @@ jobs:
   tag-publish-docker-deploy:
     needs: [ bump-check ]
     permissions:
-      contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
