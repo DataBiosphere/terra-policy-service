@@ -44,7 +44,7 @@ public class PolicyUnknown extends PolicyBase {
     Multimap<String, String> newData = ArrayListMultimap.create();
 
     // "Flag" mode - no possible conflict; empty data
-    if (dependentData.size() == 0 && sourceData.size() == 0) {
+    if (dependentData.isEmpty() && sourceData.isEmpty()) {
       return new PolicyInput(dependent.getPolicyName(), newData);
     }
 
