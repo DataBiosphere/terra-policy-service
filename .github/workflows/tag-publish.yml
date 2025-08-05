@@ -14,8 +14,6 @@ name: Bump, Tag, Publish, and Deploy
 # When run manually, you can specify the part of the semantic version to bump
 #
 # The workflow relies on github secrets:
-# - ARTIFACTORY_PASSWORD - password for publishing the client to artifactory
-# - ARTIFACTORY_USERNAME - username for publishing the client to artifactory
 # - GCR_PUBLISH_EMAIL - email for publishing the docker to GCR
 # - GCR_PUBLISH_KEY_B64   - key for publishing the docker to GCR
 # - BROADBOT_TOKEN - the broadbot token, so we can avoid two reviewer rule on GHA operations
@@ -63,6 +61,9 @@ jobs:
 
   tag-publish-docker-deploy:
     needs: [ bump-check ]
+    permissions:
+      contents: 'write'
+      id-token: 'write'
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     outputs:
@@ -119,12 +120,19 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Publish to Artifactory
-      run: ./gradlew :client:artifactoryPublish --scan
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+        service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+    - name: Publish client to GAR
+      run: ./gradlew publish
       env:
-        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
+        GOOGLE_CLOUD_PROJECT: dsp-artifact-registry
+        GAR_LOCATION: us-central1
+        GAR_REPOSITORY_ID: libs-release-standard
 
     - name: Make release
       uses: ncipollo/release-action@v1
@@ -133,10 +141,9 @@ jobs:
         tag: ${{ steps.tag.outputs.tag }}
 
     - name: Auth to GCR
-      uses: google-github-actions/setup-gcloud@v0
+      uses: google-github-actions/auth@v1
       with:
-        service_account_email: ${{ secrets.GCR_PUBLISH_EMAIL }}
-        service_account_key: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
+        credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
 
     - name: Explicitly auth Docker for GCR
       run: gcloud auth configure-docker --quiet
@@ -159,8 +166,8 @@ jobs:
       if: failure()
       uses: slackapi/slack-github-action@v1.23.0
       with:
-            # Channel is for platform-foundation-alerts
-        channel-id: 'C01B0NLTYQ5'
+            # Channel is for dsp-core-services-alerts
+        channel-id: 'C07Q8H7F8LV'
         slack-message: "Tag-Publish failed for tag: ${{ steps.tag.outputs.tag }} eventUrl: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACKBOT_TOKEN }}
