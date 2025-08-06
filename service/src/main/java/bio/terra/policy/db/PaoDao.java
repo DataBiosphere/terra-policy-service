@@ -179,11 +179,13 @@ public class PaoDao {
    * Given a source id, RECURSIVELY find all of the dependents and return their ids. Consult the
    * documentation on Postgres recursive queries in this document:
    *
-   * <p>https://www.postgresql.org/docs/current/queries-with.html
+   * <p><a
+   * href="https://www.postgresql.org/docs/current/queries-with.html">https://www.postgresql.org/docs/current/queries-with.html</a>
    *
    * <p>And in this tutorial:
    *
-   * <p>https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-recursive-query/
+   * <p><a
+   * href="https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-recursive-query/">https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-recursive-query/</a>
    *
    * @param sourceId source to hunt for
    * @return Set of all dependent UUIDs
