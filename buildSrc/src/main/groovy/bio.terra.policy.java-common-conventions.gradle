@@ -44,24 +44,29 @@ dependencies {
     compileOnly "com.google.code.findbugs:annotations:3.0.1"
     implementation 'org.slf4j:slf4j-api:2.0.7'
 
-    testImplementation 'ch.qos.logback:logback-classic:1.4.14'
-    testImplementation 'ch.qos.logback:logback-core:1.4.14'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.18'
+    testImplementation 'ch.qos.logback:logback-core:1.5.18'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.0'
 
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
-    var openTelemetryVersion = '1.31.0'
-    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}"
-    implementation "io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:${openTelemetryVersion}-alpha"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
-    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
+    var openTelemetryBomVersion = '2.3.0'
+
+    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryBomVersion}")
+    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryBomVersion}-alpha")
+
+    implementation "io.opentelemetry:opentelemetry-api"
+    implementation "io.opentelemetry:opentelemetry-sdk"
+    implementation "io.opentelemetry:opentelemetry-sdk-metrics"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging"
+    implementation "io.opentelemetry.semconv:opentelemetry-semconv"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot"
+
+    implementation "com.google.cloud.opentelemetry:exporter-trace:0.32.0"
 }
 
 tasks.named('test') {
