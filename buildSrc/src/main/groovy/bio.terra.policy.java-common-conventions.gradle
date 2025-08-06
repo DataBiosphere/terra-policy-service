@@ -52,19 +52,9 @@ dependencies {
 
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
-    var openTelemetryBomVersion = '2.3.0'
-
-    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryBomVersion}")
-    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryBomVersion}-alpha")
-
-    implementation "io.opentelemetry:opentelemetry-api"
-    implementation "io.opentelemetry:opentelemetry-sdk"
-    implementation "io.opentelemetry:opentelemetry-sdk-metrics"
-    implementation "io.opentelemetry:opentelemetry-exporter-logging"
-    implementation "io.opentelemetry.semconv:opentelemetry-semconv"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot"
+    // these next two versions should match the versions used by terra-common-lib
+    implementation "io.opentelemetry:opentelemetry-api:1.42.1"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.8.0"
 
     implementation "com.google.cloud.opentelemetry:exporter-trace:0.32.0"
 }
