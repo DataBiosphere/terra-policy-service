@@ -93,14 +93,11 @@ spotbugs {
     reportLevel = 'high'
     effort = 'max'
 }
-
+// The latest version of spotbugs still pulls in a vulnerable dependency.
+// This can be removed when a new spotbugs version is available.
 dependencies {
     constraints {
-        // The latest version of spotbugs still pulls in a vulnerable dependency.
-        // This can be removed when a new spotbugs version is available.
         spotbugs 'org.apache.bcel:bcel:6.6.1'
-        // CVE-2024-7254
-        implementation 'com.google.protobuf:protobuf-java:3.25.5'
     }
 }
 spotbugsMain {
