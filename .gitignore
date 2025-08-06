@@ -46,3 +46,6 @@ gha-creds-*.json
 
 ### jEnv
 .java-version
+
+### data directory for postgres in local development
+/var/
