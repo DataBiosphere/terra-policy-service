@@ -69,7 +69,8 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 
     // Spotbugs dependencies
-    compileOnly"com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    spotbugs "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
     spotbugs "com.github.spotbugs:spotbugs:${spotbugs.toolVersion.get()}"
     spotbugs 'org.slf4j:slf4j-simple:2.0.17'
 
