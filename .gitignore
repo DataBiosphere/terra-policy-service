@@ -47,5 +47,5 @@ gha-creds-*.json
 ### jEnv
 .java-version
 
-### Docker compose directory ###
-var/
+### data directory for postgres in local development
+/var/
