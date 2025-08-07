@@ -5,7 +5,6 @@ plugins {
     id 'bio.terra.policy.java-spring-app-conventions'
     id 'de.undercouch.download'
     id 'com.google.cloud.tools.jib'
-    id 'com.srcclr.gradle'
     id 'org.sonarqube'
     id 'org.liquibase.gradle' version '2.1.0'
     id 'org.hidetake.swagger.generator'
