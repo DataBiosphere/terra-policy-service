@@ -21,7 +21,7 @@ dependencyManagement {
     }
 }
 
-def springBootVersion = '3.3.4'
+def springBootVersion = '3.5.4'
 
 dependencies {
 
@@ -32,7 +32,7 @@ dependencies {
     implementation 'com.google.oauth-client:google-oauth-client:1.33.3'
     implementation 'org.scala-lang:scala-library:2.13.10' //required by the sam-client
     // when updating terra-common-lib, also update the opentelemetry versions in Java common conventions
-    implementation('bio.terra:terra-common-lib:1.1.20-SNAPSHOT') {
+    implementation('bio.terra:terra-common-lib:1.1.43-SNAPSHOT') {
         exclude group: 'org.springframework.boot'
         exclude group: 'org.yaml', module: 'snakeyaml'
     }
