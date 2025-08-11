@@ -1,4 +1,8 @@
 version: 2
+registries:
+  broad-artifactory:
+    type: maven-repository
+    url: https://us-central1-maven.pkg.dev/dsp-artifact-registry/libs-release-standard/
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
@@ -14,7 +18,7 @@ updates:
       interval: "monthly"
       time: "06:00"
       timezone: "America/New_York"
-    target-branch: "dev"
+    target-branch: "main"
     labels:
       - "dependency"
       - "gradle"
