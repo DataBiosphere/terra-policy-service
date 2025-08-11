@@ -1,6 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: "gradle"
+    registries:
+      - "broad-artifactory"
     directory: "/"
     open-pull-requests-limit: 10
     groups:
