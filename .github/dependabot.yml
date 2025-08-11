@@ -1,12 +1,6 @@
 version: 2
-registries:
-  broad-artifactory:
-    type: maven-repository
-    url: https://us-central1-maven.pkg.dev/dsp-artifact-registry/libs-release-standard/
 updates:
   - package-ecosystem: "gradle"
-    registries:
-      - "broad-artifactory"
     directory: "/"
     open-pull-requests-limit: 10
     groups:
