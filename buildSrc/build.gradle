@@ -10,14 +10,16 @@ dependencies {
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.7.1'
     implementation 'com.felipefzdz.gradle.shellcheck:shellcheck:1.4.6'
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.3.0'
-    implementation 'com.srcclr.gradle:com.srcclr.gradle.gradle.plugin:3.1.12'
     implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.1.0'
-    implementation group: 'com.github.spotbugs.snom', name: 'spotbugs-gradle-plugin', version: '5.0.7'
+    implementation group: 'com.github.spotbugs.snom', name: 'spotbugs-gradle-plugin', version: '6.2.3'
     implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.0.11.RELEASE'
     implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.1'
-    implementation 'org.sonarqube:org.sonarqube.gradle.plugin:3.4.0.2513'
-    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.3.4'
-    // This is required due to a dependency conflict between jib and srcclr. Removing it will cause jib to fail.
-    implementation 'org.apache.commons:commons-compress:1.26.0'
+    implementation 'org.sonarqube:org.sonarqube.gradle.plugin:6.2.0.5505'
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.5.4'
+
+    // Commons lib required by jib
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+
     implementation 'org.yaml:snakeyaml:2.0'
+
 }

@@ -52,11 +52,10 @@ dependencies {
 
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
-    // these next two versions should match the versions used by terra-common-lib
-    implementation "io.opentelemetry:opentelemetry-api:1.42.1"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.8.0"
-
-    implementation "com.google.cloud.opentelemetry:exporter-trace:0.32.0"
+    // these next three versions should match the versions used by terra-common-lib
+    implementation "io.opentelemetry:opentelemetry-api:1.49.0"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.12.0"
+    implementation "com.google.cloud.opentelemetry:exporter-trace:0.36.0"
 }
 
 tasks.named('test') {
@@ -84,17 +83,11 @@ compileJava {
 
 // Spotbugs configuration
 spotbugs {
-    toolVersion = '4.7.3'
+    toolVersion = '4.9.3'
     reportLevel = 'high'
     effort = 'max'
 }
-// The latest version of spotbugs still pulls in a vulnerable dependency.
-// This can be removed when a new spotbugs version is available.
-dependencies {
-    constraints {
-        spotbugs 'org.apache.bcel:bcel:6.6.1'
-    }
-}
+
 spotbugsMain {
     reports {
         if (isGithubAction) {
