@@ -23,6 +23,7 @@ public class Walker {
   private final PaoDao paoDao;
   private final Map<UUID, GraphNode> paoMap;
   private final List<PolicyConflict> newConflicts;
+
   /**
    * Constructing the Walker object performs the graph walk. That computes new effective policies
    * for the objects.

@@ -13,6 +13,7 @@ public enum PaoObjectType {
 
   /** Object type string used in the database */
   private final String dbObjectType;
+
   /** API object type */
   private final ApiTpsObjectType apiObjectType;
 

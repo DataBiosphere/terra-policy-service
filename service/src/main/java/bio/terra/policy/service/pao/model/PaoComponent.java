@@ -13,6 +13,7 @@ public enum PaoComponent {
 
   /** Component string used in the database */
   private final String dbComponent;
+
   /** Component enum used in teh API */
   private final ApiTpsComponent apiComponent;
 
