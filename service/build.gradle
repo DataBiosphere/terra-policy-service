@@ -108,7 +108,7 @@ sonarqube {
 liquibase {
     activities {
         catalog {
-            changeLogFile 'src/main/resources/db/changelog.xml'
+            changelogFile 'src/main/resources/db/changelog.xml'
             url 'jdbc:postgresql://localhost:5432/policy_db'
             username 'dbuser'
             password 'dbpwd'
