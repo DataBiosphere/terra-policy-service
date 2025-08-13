@@ -1,6 +1,14 @@
 
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
+buildscript {
+    dependencies {
+        // required by the liquibase plugin; see https://github.com/liquibase/liquibase-gradle-plugin/blob/master/doc/releases.md
+        // must match the version of liquibase-core specified by liquibaseRuntime below
+        classpath 'org.liquibase:liquibase-core:4.33.0'
+    }
+}
+
 plugins {
     id 'bio.terra.policy.java-spring-app-conventions'
     id 'de.undercouch.download'
