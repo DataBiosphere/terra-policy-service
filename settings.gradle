@@ -1,4 +1,4 @@
 rootProject.name = 'terra-policy-service'
 include('service', 'scripts', 'client')
 
-gradle.ext.releaseVersion = "1.0.37-SNAPSHOT"
+gradle.ext.releaseVersion = "1.0.38-SNAPSHOT"
