@@ -59,8 +59,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-thymeleaf:$springBootVersion"
     implementation 'org.springframework.retry:spring-retry:2.0.12'
-    implementation "org.springframework:spring-aop:6.2.12"
-    implementation 'org.springframework:spring-aspects:6.2.12'
+    implementation "org.springframework:spring-aop:7.0.2"
+    implementation 'org.springframework:spring-aspects:7.0.2'
     implementation 'io.sentry:sentry-spring-boot-starter:8.25.0'
     implementation 'ch.qos.logback:logback-classic:1.5.20'
     implementation 'ch.qos.logback:logback-core:1.5.20'
