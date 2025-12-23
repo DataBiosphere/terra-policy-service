@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.diffplug.spotless:spotless-plugin-gradle:8.0.0'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:8.1.0'
     implementation 'com.felipefzdz.gradle.shellcheck:shellcheck:1.4.6'
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.3.0'
     implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0'
@@ -18,7 +18,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.5.7'
 
     // Commons lib required by jib
-    implementation 'org.apache.commons:commons-lang3:3.19.0'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     implementation 'org.yaml:snakeyaml:2.5'
 
