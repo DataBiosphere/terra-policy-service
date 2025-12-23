@@ -20,3 +20,7 @@ updates:
       - "gradle"
     commit-message:
       prefix: "[CORE-69]"
+    ignore:
+      - dependency-name: "org.liquibase:liquibase-core"
+        versions:
+          - "5.x"
