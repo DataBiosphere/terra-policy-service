@@ -15,7 +15,7 @@ dependencies {
     implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.7'
     implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.1'
     implementation 'org.sonarqube:org.sonarqube.gradle.plugin:6.2.0.5505'
-    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.5.7'
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:4.0.1'
 
     // Commons lib required by jib
     implementation 'org.apache.commons:commons-lang3:3.19.0'
