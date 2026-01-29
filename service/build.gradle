@@ -29,14 +29,14 @@ dependencyManagement {
     }
 }
 
-def springBootVersion = '3.5.7'
+def springBootVersion = '3.5.10'
 
 dependencies {
 
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'org.apache.taglibs:taglibs-standard-impl:1.2.5'
     implementation 'org.json:json:20250517'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.0'
     implementation 'com.google.oauth-client:google-oauth-client:1.39.0'
     implementation 'org.scala-lang:scala-library:2.13.18' //required by the sam-client
     // when updating terra-common-lib, also update the opentelemetry versions in Java common conventions
@@ -52,7 +52,7 @@ dependencies {
 
     implementation 'org.apache.commons:commons-dbcp2:2.14.0'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-    implementation 'org.postgresql:postgresql:42.7.8'
+    implementation 'org.postgresql:postgresql:42.7.9'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jdbc:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
@@ -61,17 +61,17 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry:2.0.12'
     implementation "org.springframework:spring-aop:6.2.12"
     implementation 'org.springframework:spring-aspects:6.2.12'
-    implementation 'io.sentry:sentry-spring-boot-starter:8.29.0'
-    implementation 'ch.qos.logback:logback-classic:1.5.23'
-    implementation 'ch.qos.logback:logback-core:1.5.23'
+    implementation 'io.sentry:sentry-spring-boot-starter:8.31.0'
+    implementation 'ch.qos.logback:logback-classic:1.5.26'
+    implementation 'ch.qos.logback:logback-core:1.5.26'
 
     implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     liquibaseRuntime 'org.liquibase:liquibase-core:4.33.0'
     liquibaseRuntime 'info.picocli:picocli:4.7.7'
-    liquibaseRuntime 'org.postgresql:postgresql:42.7.8'
-    liquibaseRuntime 'ch.qos.logback:logback-classic:1.5.23'
-    liquibaseRuntime 'ch.qos.logback:logback-core:1.5.23'
+    liquibaseRuntime 'org.postgresql:postgresql:42.7.9'
+    liquibaseRuntime 'ch.qos.logback:logback-classic:1.5.26'
+    liquibaseRuntime 'ch.qos.logback:logback-core:1.5.26'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 
@@ -89,7 +89,7 @@ dependencies {
 
     // Metrics collection
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.16.1'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.16.2'
 
 }
 
