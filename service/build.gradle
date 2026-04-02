@@ -29,7 +29,7 @@ dependencyManagement {
     }
 }
 
-def springBootVersion = '3.5.7'
+def springBootVersion = '3.5.12'
 
 dependencies {
 
