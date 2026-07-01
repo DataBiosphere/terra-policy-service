@@ -33,14 +33,14 @@ dependencyManagement {
     }
 }
 
-def springBootVersion = '3.5.12'
+def springBootVersion = '3.5.16'
 
 dependencies {
 
-    implementation 'com.google.guava:guava:33.5.0-jre'
+    implementation 'com.google.guava:guava:33.6.0-jre'
     implementation 'org.apache.taglibs:taglibs-standard-impl:1.2.5'
     implementation 'org.json:json:20251224'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.0'
     implementation 'com.google.oauth-client:google-oauth-client:1.39.0'
     implementation 'org.scala-lang:scala-library:2.13.18' //required by the sam-client
     // when updating terra-common-lib, also update the opentelemetry versions in Java common conventions
@@ -56,26 +56,26 @@ dependencies {
 
     implementation 'org.apache.commons:commons-dbcp2:2.14.0'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-    implementation 'org.postgresql:postgresql:42.7.8'
+    implementation 'org.postgresql:postgresql:42.7.12'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jdbc:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-thymeleaf:$springBootVersion"
-    implementation 'org.springframework.retry:spring-retry:2.0.12'
+    implementation 'org.springframework.retry:spring-retry:2.0.13'
     implementation "org.springframework:spring-aop:6.2.12"
     implementation 'org.springframework:spring-aspects:6.2.12'
-    implementation 'io.sentry:sentry-spring-boot-starter:8.29.0'
-    implementation 'ch.qos.logback:logback-classic:1.5.23'
-    implementation 'ch.qos.logback:logback-core:1.5.23'
+    implementation 'io.sentry:sentry-spring-boot-starter:8.46.0'
+    implementation 'ch.qos.logback:logback-classic:1.5.37'
+    implementation 'ch.qos.logback:logback-core:1.5.37'
 
     implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     liquibaseRuntime 'org.liquibase:liquibase-core:4.33.0'
     liquibaseRuntime 'info.picocli:picocli:4.7.7'
-    liquibaseRuntime 'org.postgresql:postgresql:42.7.8'
-    liquibaseRuntime 'ch.qos.logback:logback-classic:1.5.23'
-    liquibaseRuntime 'ch.qos.logback:logback-core:1.5.23'
+    liquibaseRuntime 'org.postgresql:postgresql:42.7.12'
+    liquibaseRuntime 'ch.qos.logback:logback-classic:1.5.37'
+    liquibaseRuntime 'ch.qos.logback:logback-core:1.5.37'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 
@@ -83,9 +83,9 @@ dependencies {
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
     spotbugs "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
     spotbugs "com.github.spotbugs:spotbugs:${spotbugs.toolVersion.get()}"
-    spotbugs 'org.slf4j:slf4j-simple:2.0.17'
+    spotbugs 'org.slf4j:slf4j-simple:2.0.18'
 
-    testImplementation 'org.jacoco:org.jacoco.agent:0.8.14'
+    testImplementation 'org.jacoco:org.jacoco.agent:0.8.15'
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion") {
         // Fixes warning about multiple occurrences of JSONObject on the classpath
         exclude group: 'com.vaadin.external.google', module: 'android-json'
@@ -93,7 +93,7 @@ dependencies {
 
     // Metrics collection
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.16.1'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.17.0'
 
 }
 
