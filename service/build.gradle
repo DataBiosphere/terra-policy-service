@@ -48,6 +48,11 @@ dependencyManagement {
         dependencySet(group: 'com.fasterxml.jackson.module', version: '2.22.1') {
             entry 'jackson-module-parameter-names'
         }
+        dependencySet(group: 'org.bouncycastle', version: '1.85') {
+            entry 'bcpkix-jdk18on'
+            entry 'bcutil-jdk18on'
+            entry 'bcprov-jdk18on'
+        }
     }
 }
 
