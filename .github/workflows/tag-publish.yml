@@ -84,7 +84,7 @@ jobs:
         echo "checkout-branch=$CHECKOUT_BRANCH" >> $GITHUB_OUTPUT
 
     - name: Checkout current code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: ${{ steps.controls.outputs.checkout-branch }}
         token: ${{ secrets.BROADBOT_TOKEN }}
@@ -120,6 +120,9 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v3'
+
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v3
       with:
@@ -141,7 +144,7 @@ jobs:
         tag: ${{ steps.tag.outputs.tag }}
 
     - name: Auth to GCR
-      uses: google-github-actions/auth@v1
+      uses: google-github-actions/auth@v3
       with:
         credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
 
