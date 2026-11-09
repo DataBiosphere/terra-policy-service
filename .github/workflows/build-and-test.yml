@@ -24,6 +24,8 @@ jobs:
 
   build:
     needs: [ bump-check ]
+    permissions:
+      id-token: 'write'
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     steps:
@@ -34,6 +36,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          token_format: access_token
+          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+          service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
 
       - name: Build the test harness and, by dependency, the service library
         run: ./gradlew --build-cache build -x test
