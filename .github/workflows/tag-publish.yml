@@ -120,9 +120,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v3'
-
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v3
       with:
