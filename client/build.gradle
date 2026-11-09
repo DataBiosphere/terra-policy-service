@@ -5,8 +5,6 @@ plugins {
     id 'maven-publish'
     id 'io.spring.dependency-management'
     id 'org.hidetake.swagger.generator'
-    // See https://github.com/GoogleCloudPlatform/artifact-registry-maven-tools/issues/106
-    // for the artifactregistry version
     id 'com.google.cloud.artifactregistry.gradle-plugin' version '2.2.5'
 }
 
