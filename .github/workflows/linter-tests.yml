@@ -20,6 +20,8 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: 17
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v3
     - name: Run linter
       id: run_linter
       run: ./gradlew spotlessCheck
