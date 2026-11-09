@@ -108,7 +108,7 @@ public class RegionServiceTest extends TestUnitBase {
   }
 
   @Test
-  /** As an optional query param for the primary API caller, the name might be null. * */
+  /* As an optional query param for the primary API caller, the name might be null. * */
   void getOntologyNullRegion() {
     var result = regionService.getOntology(null, GCP_PLATFORM);
     assertNotNull(result);

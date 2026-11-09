@@ -64,7 +64,7 @@ public class PolicyRegionConstraint extends PolicyBase {
 
     Set<String> resultSet = new HashSet<>();
 
-    /**
+    /*
      * n*m algorithm. Compare each source region with each dependent region. If they're the same,
      * then add it to the result set. If one is a subregion of the other, then add the subregion to
      * the result.
