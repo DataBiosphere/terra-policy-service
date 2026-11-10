@@ -24,6 +24,8 @@ jobs:
 
   build:
     needs: [ bump-check ]
+    permissions:
+      id-token: 'write'
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     steps:
@@ -34,6 +36,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          token_format: access_token
+          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+          service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Build the test harness and, by dependency, the service library
         run: ./gradlew --build-cache build -x test
@@ -46,6 +58,8 @@ jobs:
   jib:
     needs: [ build ]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: 'write'
 
     steps:
       - uses: actions/checkout@v3
@@ -63,6 +77,16 @@ jobs:
           GIT_SHORT_HASH=$(git rev-parse --short HEAD)
           echo "name=${GITHUB_REPO}:${GIT_SHORT_HASH}" >> $GITHUB_OUTPUT
 
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          token_format: access_token
+          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+          service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
       - name: Build image locally with jib
         run: |
           ./gradlew --build-cache :service:jibDockerBuild \
@@ -77,6 +101,8 @@ jobs:
   tests-and-sonarqube:
     needs: [ bump-check, build ]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: 'write'
     if: needs.bump-check.outputs.is-bump == 'no'
 
     services:
@@ -109,6 +135,16 @@ jobs:
           PGPASSWORD: postgres
         run: |
           psql -h localhost -U postgres -f ./scripts/postgres-init.sql
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          token_format: access_token
+          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+          service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Test with coverage
         run: ./gradlew --build-cache service:test jacocoTestReport --scan
